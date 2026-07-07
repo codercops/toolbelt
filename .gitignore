@@ -36,7 +36,6 @@ yarn-error.log*
 .idea
 .vscode/*
 !.vscode/extensions.json
-.claude/settings.local.json
 
 # vercel
 .vercel
