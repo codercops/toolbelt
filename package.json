@@ -1,0 +1,61 @@
+{
+  "name": "toolbelt",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A developer's toolbelt: fast, privacy-first browser tools — JSON formatter, JWT decoder, Base64, invoice generator. By CODERCOPS.",
+  "license": "MIT",
+  "author": "CODERCOPS (https://www.codercops.com)",
+  "homepage": "https://tools.codercops.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codercops/toolbelt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/codercops/toolbelt/issues"
+  },
+  "keywords": [
+    "developer-tools",
+    "json-formatter",
+    "jwt-decoder",
+    "base64",
+    "invoice-generator",
+    "nextjs",
+    "privacy",
+    "client-side"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
+    "clsx": "^2.1.1",
+    "json5": "^2.2.3",
+    "jsonpath-plus": "^10.4.0",
+    "jspdf": "^4.2.1",
+    "lossless-json": "^4.3.0",
+    "lucide-react": "^0.468.0",
+    "next": "^14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "^14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "vitest": "^4.1.9"
+  }
+}
