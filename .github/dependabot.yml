@@ -8,6 +8,11 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # Major upgrades (Next, React, vitest, lucide, etc.) need manual migration,
+      # so keep Dependabot to minor and patch updates plus security fixes.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
