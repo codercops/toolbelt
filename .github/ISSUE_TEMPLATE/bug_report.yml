@@ -1,0 +1,45 @@
+name: Bug report
+description: Something in a tool is wrong or broken
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. For anything security-sensitive (leaked tokens, XSS, CSP bypass), please use SECURITY.md instead of a public issue.
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Which tool?
+      options:
+        - JSON formatter
+        - JWT decoder
+        - Base64
+        - Invoice generator
+        - Shell (theme, command palette, header)
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: Steps to reproduce, ideally with a sample input.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and OS
+      placeholder: e.g. Chrome 140 on macOS, Firefox on Windows
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: This does not include a real secret or token in the reproduction.
+          required: true

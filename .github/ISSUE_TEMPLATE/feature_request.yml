@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest a new tool or an improvement to an existing one
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do, and where does the current tooling fall short?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to see? If it is a new tool, note that it must run fully client-side.
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Fit
+      options:
+        - label: This can work entirely in the browser with no server or data leaving the tab.
+          required: true
