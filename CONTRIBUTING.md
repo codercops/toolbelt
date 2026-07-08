@@ -38,11 +38,17 @@ npm run lint && npm run test && npm run build
 3. Add pure logic to `lib/` with tests.
 4. That is it — the home page, sitemap, manifest, and palette pick it up automatically.
 
-## Commits and pull requests
+## Branching and releases
 
-- Write clear commit messages in the imperative mood ("Add X", "Fix Y").
-- Open a PR against `main`, describe what changed and why, and link any related issue.
-- CI runs lint, tests, and the build on every PR. Green CI is required to merge.
+toolbelt follows the standard CODERCOPS flow:
+
+- `develop` is the default and integration branch; `production` is the deployed branch (tools.codercops.com). Never commit directly to either.
+- Start every change on a branch off `develop`: `feat/*`, `fix/*`, `chore/*`, or `docs/*`.
+- Open a PR into `develop` and **squash and merge** it (one squashed commit per feature). Use conventional commit titles (`feat:`, `fix:`, `chore:`, `docs:`). CI (lint, tests, build) must be green.
+- A release is a PR from `develop` into `production`, merged as a **merge commit** (not squash), so production keeps full history. Bump the `package.json` version in that PR, and add a `release:minor` or `release:major` label if it is not a patch.
+- Merging the release PR runs the Release workflow: it tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop` back up to `production`.
+
+Every push and PR to `develop` also deploys a preview (the develop branch has a staging domain); production deploys only from `production`.
 
 ## Reporting bugs and requesting features
 

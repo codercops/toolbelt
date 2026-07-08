@@ -1,3 +1,9 @@
+<!--
+Branch off `develop`. Feature PRs target `develop` and are squash-merged.
+Release PRs go `develop` → `production` and are merged as a merge commit
+(add a release:minor / release:major label if it is not a patch).
+-->
+
 ## What and why
 
 <!-- What does this change, and what problem does it solve? Link any related issue. -->

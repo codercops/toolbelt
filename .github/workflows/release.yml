@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  pull_request:
+    branches: [production]
+    types: [closed]
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: production
+
+      - name: Get latest tag
+        id: latest_tag
+        run: |
+          TAG=$(git tag -l "v*" --sort=-v:refname | head -n1)
+          echo "tag=${TAG:-v0.0.0}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine next version
+        id: next_version
+        env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          CURRENT: ${{ steps.latest_tag.outputs.tag }}
+        run: |
+          VERSION="${CURRENT#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          if echo "$LABELS" | grep -q "release:major"; then
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif echo "$LABELS" | grep -q "release:minor"; then
+            MINOR=$((MINOR + 1)); PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+          NEXT="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Next version: $NEXT"
+
+      - name: Generate changelog
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PREV_TAG: ${{ steps.latest_tag.outputs.tag }}
+          NEXT_VERSION: ${{ steps.next_version.outputs.version }}
+        run: |
+          {
+            echo "## $PR_TITLE (#$PR_NUMBER)"
+            echo ""
+            echo "$PR_BODY" | head -100
+            echo ""
+            echo "---"
+            echo "**Full diff:** [$PREV_TAG...$NEXT_VERSION]($PR_URL)"
+          } > release-notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.next_version.outputs.version }}" \
+            --target production \
+            --title "${{ steps.next_version.outputs.version }}" \
+            --notes-file release-notes.md
+
+  smoke-test:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel deploy
+        run: sleep 60
+
+      - name: Homepage reachable
+        run: |
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://tools.codercops.com/)
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Homepage returned status $STATUS"
+            exit 1
+          fi
+          echo "Homepage check passed"
+
+      - name: Tool page reachable
+        run: |
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://tools.codercops.com/json-formatter)
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::/json-formatter returned status $STATUS"
+            exit 1
+          fi
+          echo "Tool page check passed"
+
+      - name: Sitemap valid
+        run: |
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://tools.codercops.com/sitemap.xml)
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::sitemap.xml returned status $STATUS"
+            exit 1
+          fi
+          echo "Sitemap check passed"
+
+  sync-develop:
+    needs: [release, smoke-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: develop
+
+      - name: Sync develop with production
+        run: |
+          git fetch origin production
+          # A release PR is a merge commit, so develop should fast-forward to
+          # production. If it can't (e.g. a squash slipped in), reset to match.
+          if git merge --ff-only origin/production; then
+            git push origin develop
+          else
+            echo "::warning::develop did not fast-forward — resetting develop to production."
+            git reset --hard origin/production
+            git push origin develop --force-with-lease
+          fi

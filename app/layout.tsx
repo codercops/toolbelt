@@ -32,6 +32,10 @@ const plexSans = IBM_Plex_Sans({
 // flash. Reads the saved choice, then falls back to the OS preference.
 const THEME_INIT = `(function(){try{var t=localStorage.getItem("cc:theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}var d=document.documentElement;d.setAttribute("data-theme",t);d.style.colorScheme=t;}catch(e){}})();`;
 
+// Non-production deployments (Vercel previews and the develop staging domain)
+// are marked noindex so they never get crawled or compete with production.
+const IS_NON_PROD = Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://tools.codercops.com"),
   title: {
@@ -42,6 +46,7 @@ export const metadata: Metadata = {
     "Free, fast, privacy-first developer tools: JSON formatter, JWT decoder, Base64 encoder, and more. Runs entirely in your browser.",
   applicationName: "CODERCOPS Tools",
   authors: [{ name: "CODERCOPS", url: "https://www.codercops.com" }],
+  ...(IS_NON_PROD ? { robots: { index: false, follow: false } } : {}),
   openGraph: {
     type: "website",
     siteName: "CODERCOPS Tools",

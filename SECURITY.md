@@ -26,4 +26,4 @@ toolbelt runs entirely in the browser and has no backend or user accounts, so th
 
 ## Supported versions
 
-This is a continuously deployed web app. Only the latest `main` (and what is live at tools.codercops.com) is supported.
+This is a continuously deployed web app. Only `production` (live at tools.codercops.com) and the current `develop` branch are supported.

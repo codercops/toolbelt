@@ -67,6 +67,14 @@ public/fonts/        subset Noto Sans used by the invoice PDF (OFL, see OFL.txt)
 middleware.ts        per-request CSP nonce
 ```
 
+## Branching and releases
+
+- `develop` is the default and integration branch; `production` deploys to tools.codercops.com. The `develop` branch deploys to a staging domain, and every PR gets a Vercel preview.
+- Work on `feat/*` / `fix/*` / `chore/*` / `docs/*` off `develop`, PR into `develop` and squash-merge.
+- Release by merging a `develop` → `production` PR as a merge commit. That tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop`.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full flow.
+
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) and the [Code of Conduct](./CODE_OF_CONDUCT.md). In short: keep logic in `lib/`, add a test, and make sure `npm run lint && npm run test && npm run build` passes.
