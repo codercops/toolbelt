@@ -1,11 +1,24 @@
+import type { Metadata } from "next";
 import { ToolCard } from "@/components/shared/ToolCard";
 import { CtaBanner } from "@/components/shared/CtaBanner";
 import { Footer } from "@/components/shared/Footer";
 import { TOOLS } from "@/lib/tools";
+import { homeJsonLd } from "@/lib/jsonLd";
+
+// Only the canonical is set here; title, description, and OpenGraph are inherited
+// from the root layout (Next merges metadata shallowly, so re-declaring openGraph
+// would drop the root's siteName/locale/type from the homepage).
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd()) }}
+      />
       <section className="relative">
         <div className="absolute inset-0 grid-bg opacity-50" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 pt-20 pb-14">
