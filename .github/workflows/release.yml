@@ -114,16 +114,19 @@ jobs:
         with:
           fetch-depth: 0
           ref: develop
+          # develop requires PRs, so the default token cannot push to it. Use a
+          # maintainer PAT in RELEASE_TOKEN (a bypass actor) for the fast-forward.
+          # Without it this step warns and you sync develop manually.
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Sync develop with production
         run: |
           git fetch origin production
-          # A release PR is a merge commit, so develop should fast-forward to
-          # production. If it can't (e.g. a squash slipped in), reset to match.
-          if git merge --ff-only origin/production; then
-            git push origin develop
-          else
-            echo "::warning::develop did not fast-forward — resetting develop to production."
-            git reset --hard origin/production
-            git push origin develop --force-with-lease
+          # A release PR is a merge commit, so develop should fast-forward.
+          git merge --ff-only origin/production || {
+            echo "::warning::develop did not fast-forward; leaving it unchanged."
+            exit 0
+          }
+          if ! git push origin develop; then
+            echo "::warning::Could not push develop (branch protection). Add a RELEASE_TOKEN secret with a bypass-capable PAT, or sync manually: git checkout develop && git merge --ff-only origin/production && git push origin develop"
           fi
