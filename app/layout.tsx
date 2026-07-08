@@ -51,9 +51,14 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "CODERCOPS Tools",
     url: "https://tools.codercops.com",
+    locale: "en_US",
+    title: "CODERCOPS Tools — Developer Utilities",
+    description:
+      "Free, fast, privacy-first developer tools: JSON formatter, JWT decoder, Base64 encoder, and more. Runs entirely in your browser.",
   },
   twitter: {
     card: "summary_large_image",
+    site: "@codercops",
     creator: "@codercops",
   },
 };
