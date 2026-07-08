@@ -247,3 +247,7 @@ export function getTool(slug: string): Tool | undefined {
 }
 
 export const SITE_URL = "https://tools.codercops.com";
+
+// The open-source repo. GITHUB_REPO is the "owner/name" slug used for the API.
+export const GITHUB_REPO = "codercops/toolbelt";
+export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`;
