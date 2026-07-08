@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { CommandPaletteButton } from "./CommandPaletteButton";
+import { GitHubStars } from "./GitHubStars";
 
 export function Header() {
   return (
@@ -37,6 +38,7 @@ export function Header() {
             <ArrowLeft className="w-3 h-3" />
             <span>Back to CODERCOPS</span>
           </a>
+          <GitHubStars />
           <CommandPaletteButton />
           <ThemeToggle />
         </nav>
