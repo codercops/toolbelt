@@ -36,6 +36,21 @@ const THEME_INIT = `(function(){try{var t=localStorage.getItem("cc:theme");if(t!
 // are marked noindex so they never get crawled or compete with production.
 const IS_NON_PROD = Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production";
 
+// Search-engine ownership verification tags. Tokens come from env so they are
+// configurable per deployment and never committed; the tags render only when a
+// token is set, so previews and forks stay clean. Both are optional.
+const googleVerification = process.env.GOOGLE_SITE_VERIFICATION;
+const bingVerification = process.env.BING_SITE_VERIFICATION;
+const verification: Metadata =
+  googleVerification || bingVerification
+    ? {
+        verification: {
+          ...(googleVerification ? { google: googleVerification } : {}),
+          ...(bingVerification ? { other: { "msvalidate.01": bingVerification } } : {}),
+        },
+      }
+    : {};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://tools.codercops.com"),
   title: {
@@ -46,6 +61,7 @@ export const metadata: Metadata = {
     "Free, fast, privacy-first developer tools: JSON formatter, JWT decoder, Base64 encoder, and more. Runs entirely in your browser.",
   applicationName: "CODERCOPS Tools",
   authors: [{ name: "CODERCOPS", url: "https://www.codercops.com" }],
+  ...verification,
   ...(IS_NON_PROD ? { robots: { index: false, follow: false } } : {}),
   openGraph: {
     type: "website",

@@ -98,6 +98,13 @@ npm run test       # vitest unit tests (lib/)
 
 The app deploys to any Node host. On Vercel, import the repo and it builds with zero config. There are no required environment variables. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`) and `app/robots.ts` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
 
+Optional environment variables (all safe to omit):
+
+| Variable | Purpose |
+|----------|---------|
+| `GOOGLE_SITE_VERIFICATION` | Renders the Google Search Console `google-site-verification` meta tag so you can verify ownership of the property. |
+| `BING_SITE_VERIFICATION` | Renders the Bing Webmaster Tools (`msvalidate.01`) verification meta tag. |
+
 ## Add a tool
 
 The tool set is a single typed registry in [`lib/tools.ts`](lib/tools.ts). The home grid, per-tool metadata, JSON-LD (SoftwareApplication, breadcrumb, FAQ), social share images, hero, FAQ, CTA, sitemap, web manifest, and command palette all derive from it. To add a tool:
