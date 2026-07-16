@@ -31,6 +31,12 @@ export function toolJsonLd(tool: Tool) {
     operatingSystem: "Any (Browser)",
     description: tool.jsonLdDescription,
     url: `${SITE_URL}${tool.path}`,
+    inLanguage: "en",
+    // Every tool is free and needs no account, so this is truthful and helps
+    // Google understand the offer. No datePublished — we have no authoritative
+    // publish date to state, and fabricating one is against the same policy that
+    // keeps aggregateRating off these nodes.
+    isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     publisher: { "@type": "Organization", name: "CODERCOPS", url: "https://www.codercops.com" },
   };
@@ -80,6 +86,7 @@ export function homeJsonLd() {
         url: SITE_URL,
         name: "CODERCOPS Tools",
         description: "Free, fast, privacy-first developer tools that run entirely in your browser.",
+        inLanguage: "en",
         publisher: { "@id": ORG_ID },
       },
       {
