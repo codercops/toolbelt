@@ -63,10 +63,10 @@ export const TOOLS: Tool[] = [
     features: ["Beautify", "Validate", "Tree view", "TypeScript", "CSV", "YAML"],
     accentVar: "--sky",
     accentHex: "#5AB5FF",
-    metaTitle: "JSON Formatter & Validator — Free Online Tool | CODERCOPS Tools",
+    metaTitle: "JSON Formatter & Validator - Free Online Tool",
     metaDescription:
-      "Format, beautify, validate, and minify JSON instantly. Free online JSON formatter with syntax highlighting, error detection, and JSON-to-TypeScript conversion. No signup required.",
-    ogTitle: "JSON Formatter & Validator — CODERCOPS Tools",
+      "Free online JSON formatter, validator, and beautifier. Format, minify, and validate JSON instantly with syntax highlighting and JSON-to-TypeScript. No signup.",
+    ogTitle: "JSON Formatter & Validator - CODERCOPS Tools",
     ogDescription:
       "Format, validate, and minify JSON with syntax highlighting and JSON-to-TypeScript conversion. Runs entirely in your browser.",
     heroBreadcrumb: "100% client-side",
@@ -78,7 +78,20 @@ export const TOOLS: Tool[] = [
     jsonLdDescription:
       "Free online JSON formatter, validator, and minifier with syntax highlighting and JSON-to-TypeScript/CSV/YAML conversion.",
     applicationCategory: "DeveloperApplication",
-    faqs: [],
+    faqs: [
+      {
+        q: "Is my JSON uploaded anywhere?",
+        a: "No. All formatting, validation, and conversion run locally in your browser. The JSON you paste never leaves your tab, is never sent to a server, and is never logged.",
+      },
+      {
+        q: "Why does my JSON fail to validate?",
+        a: "The usual causes are trailing commas, single quotes instead of double quotes, unquoted keys, and unbalanced brackets. The validator points to the line and character where parsing breaks so you can fix it quickly.",
+      },
+      {
+        q: "Does it keep large numbers accurate?",
+        a: "Yes. It parses with lossless-json, so very large integers and high-precision decimals keep every digit instead of being rounded by the browser's native JSON parser.",
+      },
+    ],
     cta: {
       headline: "Building an app that handles JSON APIs?",
       sub: "CODERCOPS builds production-grade backends, REST APIs, and full-stack applications for startups and businesses.",
@@ -99,10 +112,10 @@ export const TOOLS: Tool[] = [
     features: ["Decode", "Encode", "Health panel", "HS256/384/512", "URL share"],
     accentVar: "--violet",
     accentHex: "#9E7BFF",
-    metaTitle: "JWT Decoder & Inspector — Free Online Tool | CODERCOPS Tools",
+    metaTitle: "JWT Decoder & Verifier - Free Online Tool",
     metaDescription:
-      "Decode and inspect any JWT token instantly. See header, payload, expiry status, and all claims in a human-readable format. Free, no login, runs in your browser.",
-    ogTitle: "JWT Decoder & Inspector — CODERCOPS Tools",
+      "Free online JWT decoder and verifier. Decode any token to read its header, payload, claims, and expiry, and verify HS/RS/ES signatures in your browser. No login.",
+    ogTitle: "JWT Decoder & Verifier - CODERCOPS Tools",
     ogDescription:
       "Decode JWT tokens in-browser. Humanized claims, expiry status, built-in HS256 encoder.",
     heroBreadcrumb: "Decoder · Inspector · Encoder",
@@ -127,6 +140,10 @@ export const TOOLS: Tool[] = [
         q: "Can this tool verify JWT signatures?",
         a: "Yes. The Verify tab checks HMAC (HS256/384/512) signatures with your secret, and RSA, ECDSA, or PSS signatures with a PEM or JWK public key, all in your browser via WebCrypto. It can also fetch a JWKS URL to pick the right key. Your production apps should still verify server-side.",
       },
+      {
+        q: "What is the difference between decoding and verifying a JWT?",
+        a: "Decoding just base64url-decodes the header and payload so you can read the claims; it does not prove the token is authentic. Verifying checks the signature against a secret or public key to confirm the token was issued by who it claims and has not been tampered with. This tool does both.",
+      },
     ],
     cta: {
       headline: "Building an app with JWT authentication?",
@@ -148,10 +165,10 @@ export const TOOLS: Tool[] = [
     features: ["Text", "Image → URI", "Files", "URL-safe", "Auto-detect"],
     accentVar: "--amber",
     accentHex: "#FFB547",
-    metaTitle: "Base64 Encoder & Decoder — Free Online Tool | CODERCOPS Tools",
+    metaTitle: "Base64 Encoder & Decoder - Free Online Tool",
     metaDescription:
-      "Encode and decode Base64 instantly. Supports text, images, and files. URL-safe Base64, data URI generation, and file encoding. Free, runs in your browser, no upload.",
-    ogTitle: "Base64 Encoder & Decoder — CODERCOPS Tools",
+      "Free online Base64 encoder and decoder for text, images, and files. URL-safe Base64, data URIs, and magic-byte detection. Runs in your browser, no upload.",
+    ogTitle: "Base64 Encoder & Decoder - CODERCOPS Tools",
     ogDescription:
       "Encode and decode Base64 for text, images, and files — all in your browser.",
     heroBreadcrumb: "Text · Image · File · Decode",
@@ -180,6 +197,10 @@ export const TOOLS: Tool[] = [
         q: "Why is Base64 output larger than the input?",
         a: "Base64 represents every 3 input bytes as 4 output characters, so the output is roughly 4/3 of the input — about 33% larger. That overhead is the trade-off for ASCII-safe transport.",
       },
+      {
+        q: "Can I encode an image or PDF to Base64?",
+        a: "Yes. Drop or select any file and it is encoded to a Base64 string or a ready-to-use data URI. It works for images, PDFs, and other binary files, and every byte is processed in your browser.",
+      },
     ],
     cta: {
       headline: "Building an API or system that handles binary data?",
@@ -201,10 +222,10 @@ export const TOOLS: Tool[] = [
     features: ["Live preview", "PDF export", "Saved locally", "Deductions", "Auto-number"],
     accentVar: "--lime",
     accentHex: "#A6F36B",
-    metaTitle: "Invoice Generator — Free Online Invoice Maker with PDF | CODERCOPS Tools",
+    metaTitle: "Free Invoice Generator - Make & Download PDF",
     metaDescription:
-      "Create professional invoices and download them as PDF, free. Fill in your details, save invoices in your browser, and export a clean PDF. No login, no backend, runs entirely in your browser.",
-    ogTitle: "Invoice Generator — CODERCOPS Tools",
+      "Free invoice generator: create professional invoices and download a PDF. Live preview, reusable sender profile, and auto-numbering, saved in your browser.",
+    ogTitle: "Invoice Generator - CODERCOPS Tools",
     ogDescription:
       "Build invoices in your browser and download a crisp PDF. Saved locally, no account, no data leaves your tab.",
     heroBreadcrumb: "Builder · Saved locally · PDF",
@@ -228,6 +249,10 @@ export const TOOLS: Tool[] = [
       {
         q: "Can I reuse my details and edit past invoices?",
         a: "Your sender details are saved as a reusable profile that pre-fills every new invoice. Saved invoices can be edited, duplicated, or deleted, and numbers auto-increment from the highest one.",
+      },
+      {
+        q: "Can I add tax and discounts to an invoice?",
+        a: "Yes. Each line item takes a rate and quantity, and you can apply a tax rate and per-item deductions. The subtotal, tax, and total are calculated and rounded to the cent as you type.",
       },
     ],
     cta: {
