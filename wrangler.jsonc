@@ -21,9 +21,15 @@
     "enabled": true,
     "traces": { "enabled": true }
   },
-  // Production serves on workers.dev until the tools.codercops.com cutover,
-  // when the custom domain routes are added.
-  "workers_dev": true,
+  // tools.codercops.com is a route, not a custom domain, while its proxied CNAME still
+  // points at the frozen Vercel deployment: deleting the route sends traffic
+  // back there. www.tools.codercops.com is a custom domain only so it gets a certificate;
+  // a zone redirect rule 301s it to tools.codercops.com.
+  "routes": [
+    { "pattern": "tools.codercops.com/*", "zone_name": "codercops.com" },
+    { "pattern": "www.tools.codercops.com", "custom_domain": true }
+  ],
+  "workers_dev": false,
   "preview_urls": false,
   "env": {
     // Staging, built from `develop` by its own Workers Builds connection
