@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "toolbelt",
+  // Built by `opennextjs-cloudflare build` from the Next.js output.
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-24",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // Fetch cache in R2, background refresh through the queue, which calls back
+  // into this Worker.
+  "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "toolbelt-cache" }],
+  "durable_objects": {
+    "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "toolbelt" }],
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+  // Production serves on workers.dev until the tools.codercops.com cutover,
+  // when the custom domain routes are added.
+  "workers_dev": true,
+  "preview_urls": false,
+  "env": {
+    // Staging, built from `develop` by its own Workers Builds connection
+    // (deploy: `npx opennextjs-cloudflare deploy --env dev`). routes,
+    // workers_dev and preview_urls are set explicitly because an environment
+    // inherits them; bindings are not inherited, so they repeat here.
+    "dev": {
+      "name": "toolbelt-dev",
+      "routes": [{ "pattern": "dev.tools.codercops.com", "custom_domain": true }],
+      "workers_dev": false,
+      "preview_urls": false,
+      "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "toolbelt-dev-cache" }],
+      "durable_objects": {
+        "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }]
+      },
+      "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "toolbelt-dev" }]
+    }
+  }
+}
