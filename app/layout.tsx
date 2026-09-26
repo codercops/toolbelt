@@ -32,7 +32,7 @@ const plexSans = IBM_Plex_Sans({
 // flash. Reads the saved choice, then falls back to the OS preference.
 const THEME_INIT = `(function(){try{var t=localStorage.getItem("cc:theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}var d=document.documentElement;d.setAttribute("data-theme",t);d.style.colorScheme=t;}catch(e){}})();`;
 
-// Non-production deployments (the develop staging Worker) are marked noindex
+// Non-production deployments (the develop Worker) are marked noindex
 // so they never get crawled or compete with production.
 // Set per Worker as a Workers Builds build variable: "production" or "develop".
 const IS_NON_PROD =

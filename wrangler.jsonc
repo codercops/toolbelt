@@ -32,7 +32,7 @@
   "workers_dev": false,
   "preview_urls": false,
   "env": {
-    // Staging, built from `develop` by its own Workers Builds connection
+    // The develop environment, built from `develop` by its own Workers Builds connection
     // (deploy: `npx opennextjs-cloudflare deploy --env dev`). routes,
     // workers_dev and preview_urls are set explicitly because an environment
     // inherits them; bindings are not inherited, so they repeat here.

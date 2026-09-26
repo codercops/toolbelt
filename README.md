@@ -96,7 +96,7 @@ npm run test       # vitest unit tests (lib/)
 
 ## Deploy your own
 
-tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` staging Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop` for staging, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`) and `app/robots.ts` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
+tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`) and `app/robots.ts` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
 
 ## Add a tool
 
@@ -122,7 +122,7 @@ middleware.ts        per-request CSP nonce
 
 ## Branching and releases
 
-- `develop` is the default and integration branch; `production` deploys to tools.codercops.com. The `develop` branch deploys to the staging domain (dev.tools.codercops.com, behind Cloudflare Access).
+- `develop` is the default and integration branch; `production` deploys to tools.codercops.com. The `develop` branch deploys to the develop domain (dev.tools.codercops.com, behind Cloudflare Access).
 - Work on `feat/*` / `fix/*` / `chore/*` / `docs/*` off `develop`, PR into `develop` and squash-merge.
 - Release by merging a `develop` → `production` PR as a merge commit. That tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop`.
 
