@@ -48,7 +48,7 @@ toolbelt follows the standard CODERCOPS flow:
 - A release is a PR from `develop` into `production`, merged as a **merge commit** (not squash), so production keeps full history. Bump the `package.json` version in that PR, and add a `release:minor` or `release:major` label if it is not a patch.
 - Merging the release PR runs the Release workflow: it tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop` back up to `production`.
 
-Every push and PR to `develop` also deploys a preview (the develop branch has a staging domain); production deploys only from `production`.
+Every push to `develop` also deploys the staging Worker (dev.tools.codercops.com); production deploys only from `production`.
 
 ## Reporting bugs and requesting features
 

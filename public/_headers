@@ -1,0 +1,13 @@
+# Next.js fingerprints everything under /_next/static/, so those files never change.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The security headers from next.config.js, for files served straight from
+# static assets (next.config headers only reach responses Next renders).
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-DNS-Prefetch-Control: on
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
