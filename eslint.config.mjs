@@ -22,6 +22,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare build output, local wrangler state, generated OG fonts.
+    ".open-next/**",
+    ".wrangler/**",
+    "cloudflare-env.d.ts",
+    "generated/**",
   ]),
 ]);
 

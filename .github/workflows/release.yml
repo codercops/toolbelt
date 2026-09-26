@@ -73,13 +73,30 @@ jobs:
   smoke-test:
     needs: release
     runs-on: ubuntu-latest
+    env:
+      # The repo variable points at the workers.dev URL until the
+      # tools.codercops.com cutover, and at the real host after it.
+      BASE_URL: ${{ vars.SMOKE_BASE_URL || 'https://tools.codercops.com' }}
+      EXPECTED_SHA: ${{ github.event.pull_request.merge_commit_sha }}
     steps:
-      - name: Wait for Vercel deploy
-        run: sleep 60
+      - name: Wait for the Cloudflare deploy of this merge
+        run: |
+          # Workers Builds deploys production on its own. version.txt carries
+          # the commit it built, so poll until it matches (up to 15 minutes).
+          for i in $(seq 1 90); do
+            LIVE=$(curl -s --max-time 10 "$BASE_URL/version.txt" | tr -d '[:space:]')
+            if [ "$LIVE" = "$EXPECTED_SHA" ]; then
+              echo "Live on $LIVE"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$BASE_URL serves ${LIVE:-nothing}, expected $EXPECTED_SHA"
+          exit 1
 
       - name: Homepage reachable
         run: |
-          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://tools.codercops.com/)
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/")
           if [ "$STATUS" != "200" ]; then
             echo "::error::Homepage returned status $STATUS"
             exit 1
@@ -88,7 +105,7 @@ jobs:
 
       - name: Tool page reachable
         run: |
-          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://tools.codercops.com/json-formatter)
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/json-formatter")
           if [ "$STATUS" != "200" ]; then
             echo "::error::/json-formatter returned status $STATUS"
             exit 1
@@ -97,7 +114,7 @@ jobs:
 
       - name: Sitemap valid
         run: |
-          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://tools.codercops.com/sitemap.xml)
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/sitemap.xml")
           if [ "$STATUS" != "200" ]; then
             echo "::error::sitemap.xml returned status $STATUS"
             exit 1

@@ -1,6 +1,5 @@
-import { readFileSync } from "fs";
-import { join } from "path";
 import { ImageResponse } from "next/og";
+import { NOTO_SANS_BOLD, NOTO_SANS_REGULAR } from "@/generated/og-fonts";
 import type { Tool } from "./tools";
 
 // Shared social-card renderer. Every page's opengraph-image route derives its
@@ -12,15 +11,15 @@ export const OG_CONTENT_TYPE = "image/png";
 
 // The subset Noto Sans bundled for invoice PDFs (Latin + currency) is reused for
 // every card, so text is real, hinted glyphs rather than the satori fallback.
-// These routes are prerendered at build time, so reading from the working
-// directory is safe (and avoids the edge-only fetch(new URL(import.meta.url))).
+// The files are embedded at build time (scripts/og-assets.mjs) rather than read
+// from public/: the Cloudflare Worker can re-render these routes on a cache miss,
+// and it has no filesystem.
 let fonts: { name: string; data: Buffer; weight: 400 | 700; style: "normal" }[] | null = null;
 function ogFonts() {
   if (!fonts) {
-    const dir = join(process.cwd(), "public", "fonts");
     fonts = [
-      { name: "Noto Sans", data: readFileSync(join(dir, "NotoSans-Regular.ttf")), weight: 400, style: "normal" },
-      { name: "Noto Sans", data: readFileSync(join(dir, "NotoSans-Bold.ttf")), weight: 700, style: "normal" },
+      { name: "Noto Sans", data: Buffer.from(NOTO_SANS_REGULAR, "base64"), weight: 400, style: "normal" },
+      { name: "Noto Sans", data: Buffer.from(NOTO_SANS_BOLD, "base64"), weight: 700, style: "normal" },
     ];
   }
   return fonts;
