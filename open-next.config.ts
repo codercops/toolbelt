@@ -10,5 +10,10 @@ import doQueue from "@opennextjs/cloudflare/overrides/queue/do-queue";
 export default defineCloudflareConfig({
   incrementalCache: r2IncrementalCache,
   queue: doQueue,
-  enableCacheInterception: true,
+  // Off because of opennextjs-cloudflare#1334 (fix pending in #1348): with
+  // interception on, Next.js 16.3's segment prefetches for prerendered pages
+  // get the full page back, and the router re-requests them endlessly (signal's
+  // home page: about 15 requests a second per open tab). Pages still come from
+  // the cache, through the Next.js handler. Turn it back on once #1348 ships.
+  enableCacheInterception: false,
 });
