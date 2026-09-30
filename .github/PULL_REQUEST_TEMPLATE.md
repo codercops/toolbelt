@@ -6,12 +6,15 @@ Release PRs go `develop` → `production` and are merged as a merge commit
 
 ## What and why
 
-<!-- What does this change, and what problem does it solve? Link any related issue. -->
+<!-- What does this change, and what problem does it solve? -->
+
+Closes #
 
 ## Type of change
 
 - [ ] Bug fix
 - [ ] New tool or feature
+- [ ] Tests
 - [ ] Refactor or cleanup
 - [ ] Docs
 
@@ -21,6 +24,8 @@ Release PRs go `develop` → `production` and are merged as a merge commit
 - [ ] Logic changes live in `lib/` and have a test in `lib/__tests__/`
 - [ ] No analytics, trackers, or calls that send user data off-device
 - [ ] Works in both light and dark themes (if UI changed)
+- [ ] Inputs have labels and it works with the keyboard alone (if UI changed)
+- [ ] New tool: registry entry, `page.tsx`, client component, `opengraph-image.tsx`, and the bug report dropdown are all done
 
 ## Notes for reviewers
 
