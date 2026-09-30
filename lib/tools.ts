@@ -271,6 +271,32 @@ export function getTool(slug: string): Tool | undefined {
   return TOOLS.find((t) => t.slug === slug);
 }
 
+// Sibling tools for a tool page: same application category first, then the
+// rest of the registry in declaration order. Deterministic (no randomness),
+// never includes the current tool, and never reorders the registry — the same
+// slug always yields the same list. `tools` is injectable for tests.
+export function getRelatedTools(
+  currentSlug: string,
+  limit = 3,
+  tools: Tool[] = TOOLS
+): Tool[] {
+  const current = tools.find((t) => t.slug === currentSlug);
+  if (!current) return [];
+
+  const sameCategory: Tool[] = [];
+  const others: Tool[] = [];
+  for (const t of tools) {
+    if (t.slug === currentSlug) continue;
+    if (t.applicationCategory === current.applicationCategory) {
+      sameCategory.push(t);
+    } else {
+      others.push(t);
+    }
+  }
+
+  return [...sameCategory, ...others].slice(0, limit);
+}
+
 export const SITE_URL = "https://tools.codercops.com";
 
 // The open-source repo. GITHUB_REPO is the "owner/name" slug used for the API.
