@@ -56,22 +56,36 @@ export function decodeJwt(token: string): DecodeResult {
   } catch {
     return { ok: false, error: "Could not decode payload — may be corrupted" };
   }
+  let parsedHeader: unknown;
   try {
-    header = JSON.parse(headerText);
+    parsedHeader = JSON.parse(headerText);
   } catch {
     return {
       ok: false,
       error: "Decoded header successfully but result is not valid JSON",
     };
   }
+  // RFC 7519: the JOSE header is a JSON object. JSON.parse also accepts
+  // null, arrays and primitives, which would make every `header.alg`
+  // reader throw later on.
+  if (typeof parsedHeader !== "object" || parsedHeader === null || Array.isArray(parsedHeader)) {
+    return { ok: false, error: "Header is not a JSON object" };
+  }
+  header = parsedHeader as Record<string, unknown>;
+  let parsedPayload: unknown;
   try {
-    payload = JSON.parse(payloadText);
+    parsedPayload = JSON.parse(payloadText);
   } catch {
     return {
       ok: false,
       error: "Decoded payload successfully but result is not valid JSON",
     };
   }
+  // RFC 7519: the claims set is a JSON object too.
+  if (typeof parsedPayload !== "object" || parsedPayload === null || Array.isArray(parsedPayload)) {
+    return { ok: false, error: "Payload is not a JSON object" };
+  }
+  payload = parsedPayload as Record<string, unknown>;
   return {
     ok: true,
     value: {

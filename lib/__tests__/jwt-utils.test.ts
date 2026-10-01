@@ -5,6 +5,7 @@ import {
   verifyJwt,
   computeHealth,
   securityAudit,
+  uint8ToBase64Url,
   SAMPLE_JWT,
   type DecodedJwt,
 } from "../jwt-utils";
@@ -22,6 +23,53 @@ describe("decodeJwt", () => {
   it("rejects a token without three parts", () => {
     const r = decodeJwt("abc.def");
     expect(r.ok).toBe(false);
+  });
+
+  // RFC 7519: the JOSE header and the claims set are both JSON objects.
+  // JSON.parse happily accepts null, arrays and primitives, so decodeJwt has
+  // to reject those shapes itself — otherwise every downstream reader that does
+  // `header.alg` / `payload.exp` throws a TypeError on the client.
+  describe("non-object header or payload", () => {
+    const part = (s: string) => uint8ToBase64Url(new TextEncoder().encode(s));
+    const token = (header: string, payload: string) => `${part(header)}.${part(payload)}.c2ln`;
+
+    it("rejects a null header", () => {
+      const r = decodeJwt(token("null", '{"alg":"HS256"}'));
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error).toContain("Header is not a JSON object");
+    });
+
+    it("rejects an array header", () => {
+      const r = decodeJwt(token("[]", '{"alg":"HS256"}'));
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error).toContain("Header is not a JSON object");
+    });
+
+    it("rejects a null payload", () => {
+      const r = decodeJwt(token('{"alg":"HS256"}', "null"));
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error).toContain("Payload is not a JSON object");
+    });
+
+    it("rejects an array payload", () => {
+      const r = decodeJwt(token('{"alg":"HS256"}', "[]"));
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error).toContain("Payload is not a JSON object");
+    });
+
+    it("rejects a primitive payload", () => {
+      const r = decodeJwt(token('{"alg":"HS256"}', "123"));
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error).toContain("Payload is not a JSON object");
+    });
+
+    it("rejects the issue's bnVsbA.e30.x reproduction token", () => {
+      expect(decodeJwt("bnVsbA.e30.x").ok).toBe(false);
+    });
+
+    it("still decodes the sample token", () => {
+      expect(decodeJwt(SAMPLE_JWT).ok).toBe(true);
+    });
   });
 });
 
