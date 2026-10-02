@@ -69,7 +69,7 @@ CODERCOPS builds production backends and full-stack apps. These are the small ut
 
 ## Stack
 
-- Next.js 14 (App Router) and TypeScript
+- Next.js 16 (App Router), React 19 and TypeScript
 - Tailwind CSS with a small CSS-variable design system (light and dark themes)
 - WebCrypto for JWT signing and verification
 - jsPDF (dynamically imported) for invoice PDFs
