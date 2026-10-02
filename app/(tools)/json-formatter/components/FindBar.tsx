@@ -63,6 +63,7 @@ export function FindBar({ text, onClose, onScrollTo }: FindBarProps) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={onKey}
+        aria-label="Find in input"
         placeholder="Find in input..."
         className="w-40 sm:w-56 bg-transparent text-[12.5px] text-[var(--fg)] outline-none font-mono"
       />

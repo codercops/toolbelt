@@ -385,6 +385,7 @@ export function JsonFormatterClient() {
                   setInput(e.target.value);
                   if (error) setError(null);
                 }}
+                aria-label="JSON input"
                 placeholder={`Paste JSON here...\n\nTip: drop a .json file anywhere on the page, or paste a URL.`}
                 className="editor-input flex-1 px-4 py-3 bg-transparent"
                 spellCheck={false}

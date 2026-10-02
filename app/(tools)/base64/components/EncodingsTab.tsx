@@ -69,6 +69,7 @@ export function EncodingsTab() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           spellCheck={false}
+          aria-label="Text to encode"
           placeholder="Type or paste text to see it in multiple encodings..."
           className="editor-input flex-1 p-4"
           style={{ minHeight: 260 }}
