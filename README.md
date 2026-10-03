@@ -89,10 +89,12 @@ npm run dev        # http://localhost:3000
 Scripts:
 
 ```bash
-npm run build      # production build
-npm run start      # serve the production build
-npm run lint       # eslint
-npm run test       # vitest unit tests (lib/)
+npm run build           # production build
+npm run start           # serve the production build
+npm run lint            # eslint
+npm run test            # run the vitest unit tests once, then exit
+npm run test:watch      # run tests, then re-run automatically when files change
+npm run preview         # build the app and serve the Cloudflare Worker locally
 ```
 
 Note: Type-checking a fresh clone will fail if `generated/og-fonts.ts` doesn't exist. It gets generated with `npm run dev` and `npm run build` (via the `predev` / `prebuild` scripts), so run either one first.
