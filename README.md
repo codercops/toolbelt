@@ -69,7 +69,8 @@ CODERCOPS builds production backends and full-stack apps. These are the small ut
 
 ## Stack
 
-- Next.js 14 (App Router) and TypeScript
+- Next.js 16 (App Router) and TypeScript
+- React 19
 - Tailwind CSS with a small CSS-variable design system (light and dark themes)
 - WebCrypto for JWT signing and verification
 - jsPDF (dynamically imported) for invoice PDFs
@@ -88,15 +89,19 @@ npm run dev        # http://localhost:3000
 Scripts:
 
 ```bash
-npm run build      # production build
-npm run start      # serve the production build
-npm run lint       # eslint
-npm run test       # vitest unit tests (lib/)
+npm run build           # production build
+npm run start           # serve the production build
+npm run lint            # eslint
+npm run test            # run the vitest unit tests once, then exit
+npm run test:watch      # run tests, then re-run automatically when files change
+npm run preview         # build the app and serve the Cloudflare Worker locally
 ```
+
+Note: Type-checking a fresh clone will fail if `generated/og-fonts.ts` doesn't exist. It gets generated with `npm run dev` and `npm run build` (via the `predev` / `prebuild` scripts), so run either one first.
 
 ## Deploy your own
 
-tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`) and `app/robots.ts` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
+tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`), `lib/og.tsx:198,212`, `lib/invoice-pdf.ts:315` and `routes` in `wrangler.jsonc` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
 
 ## Add a tool
 
