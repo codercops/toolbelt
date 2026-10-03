@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { toolJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/jsonLd";
-import type { Tool } from "@/lib/tools";
+import { getRelatedTools, type Tool } from "@/lib/tools";
 import { CtaBanner } from "./CtaBanner";
 import { Faq } from "./Faq";
 
@@ -23,6 +23,7 @@ export function ToolPageLayout({
   const [before, after] = splitOnce(tool.heroHeading, tool.heroDim);
   // Keep both literals in source so Tailwind generates them.
   const faqCols = tool.faqs.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
+  const related = getRelatedTools(tool.slug);
 
   return (
     <>
@@ -88,6 +89,31 @@ export function ToolPageLayout({
               <Faq key={f.q} q={f.q} a={f.a} />
             ))}
           </div>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-8">
+          <h2 className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-5">
+            &#47;&#47; Related tools
+          </h2>
+          <nav aria-label="Related tools">
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {related.map((t) => (
+                <li key={t.slug} className="card p-5">
+                  <Link
+                    href={t.path}
+                    className="font-display text-[15px] font-semibold text-[var(--fg)] hover:text-[var(--cyan)] focus-visible:outline-none focus-visible:text-[var(--cyan)] transition-colors"
+                  >
+                    {t.title}
+                  </Link>
+                  <p className="mt-1.5 text-[13.5px] text-[var(--fg-muted)] leading-relaxed line-clamp-2">
+                    {t.cardDescription}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </section>
       )}
 
