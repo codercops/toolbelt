@@ -97,7 +97,7 @@ npm run test       # vitest unit tests (lib/)
 
 ## Deploy your own
 
-tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`) and `app/robots.ts` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
+tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`), `lib/og.tsx:198,212`, `lib/invoice-pdf.ts:315` and `routes` in `wrangler.jsonc` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
 
 ## Add a tool
 
