@@ -609,7 +609,7 @@ export function escapeForCode(raw: string, lang: EscapeLang): string {
       // Escape backticks and template literal expressions for safety in template strings
       return "`" + minified.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${") + "`";
     case "python":
-      return "'''" + minified.replace(/'''/g, "'\\''") + "'''";
+      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'''/g, "'\\''") + "'''";
     case "go":
       return "`" + minified.replace(/`/g, "` + \"`\" + `") + "`";
     case "rust":
