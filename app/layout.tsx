@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "CODERCOPS Tools",
-    url: "https://tools.codercops.com",
+    url: SITE_URL,
     locale: "en_US",
     title: "CODERCOPS Tools — Developer Utilities",
     description:
