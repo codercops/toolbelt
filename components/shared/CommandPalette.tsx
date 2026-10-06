@@ -60,6 +60,9 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     setIsOpen(true);
   }, []);
   const close = useCallback(() => setIsOpen(false), []);
+  // Stable context value: tools re-register commands in an effect, and a new
+  // object here would re-render them on every register, looping forever.
+  const ctxValue = useMemo(() => ({ open, close, register }), [open, close, register]);
 
   // Global shortcut
   useEffect(() => {
@@ -163,7 +166,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   void pathname; // ensure rerender on route change
 
   return (
-    <Ctx.Provider value={{ open, close, register }}>
+    <Ctx.Provider value={ctxValue}>
       {children}
       {isOpen && (
         <div
