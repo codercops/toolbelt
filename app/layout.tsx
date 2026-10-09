@@ -1,33 +1,15 @@
 import { SITE_URL } from "@/lib/tools";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { JetBrains_Mono, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+// Fonts are self-hosted from app/_fonts (see scripts/fetch-fonts.mjs), so the
+// build never fetches from Google Fonts.
+import { jetbrainsMono, plexMono, plexSans } from "./_fonts/fonts";
+import "./_fonts/fonts.css";
 import "./globals.css";
 import { Header } from "@/components/shared/Header";
 import { ToastProvider } from "@/components/shared/Toast";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { CommandPaletteProvider } from "@/components/shared/CommandPalette";
-
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-jetbrains",
-  weight: ["400", "500", "600", "700"],
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-plex-mono",
-  weight: ["400", "500", "600", "700"],
-});
-
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-plex-sans",
-  weight: ["300", "400", "500", "600", "700"],
-});
 
 // Runs synchronously before first paint so the correct theme is applied with no
 // flash. Reads the saved choice, then falls back to the OS preference.
@@ -81,7 +63,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${jetbrains.variable} ${plexMono.variable} ${plexSans.variable}`}
+      className={`${jetbrainsMono.variable} ${plexMono.variable} ${plexSans.variable}`}
       data-theme="dark"
     >
       <head>
