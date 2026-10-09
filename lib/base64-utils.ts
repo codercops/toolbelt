@@ -175,19 +175,29 @@ export type LangTarget =
   | "shell"
   | "sql";
 
+// Backslashes are escaped first: doing it after the newline pass would turn the
+// `\n` we just wrote into `\\n`, which reads back as a literal backslash + "n".
+function escapeForQuotedString(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r");
+}
+
 export function toLanguageLiteral(value: string, lang: LangTarget): string {
   switch (lang) {
     case "javascript":
     case "typescript":
-      return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+      return `"${escapeForQuotedString(value)}"`;
     case "python":
-      return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+      return `"${escapeForQuotedString(value)}"`;
     case "go":
-      return '"' + value.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+      return '"' + escapeForQuotedString(value) + '"';
     case "rust":
-      return '"' + value.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+      return '"' + escapeForQuotedString(value) + '"';
     case "java":
-      return '"' + value.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+      return '"' + escapeForQuotedString(value) + '"';
     case "shell":
       return "'" + value.replace(/'/g, "'\\''") + "'";
     case "sql":
