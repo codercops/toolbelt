@@ -147,6 +147,7 @@ export function ConversionPanel({ input }: { input: string }) {
                   value={schemaText}
                   onChange={(e) => setSchemaText(e.target.value)}
                   spellCheck={false}
+                  aria-label="JSON Schema to validate against"
                   placeholder="Paste a JSON Schema here..."
                   className="editor-input w-full px-3 py-2 text-[12.5px]"
                   style={{ minHeight: 200 }}
@@ -205,6 +206,7 @@ export function ConversionPanel({ input }: { input: string }) {
                   value={jsonPathExpr}
                   onChange={(e) => setJsonPathExpr(e.target.value)}
                   className="flex-1 bg-transparent font-mono text-[13px] text-[var(--fg)] outline-none"
+                  aria-label="JSONPath expression"
                   placeholder="$..email · $.store.book[*].author · $.users[?(@.active==true)]"
                   spellCheck={false}
                 />

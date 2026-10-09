@@ -248,6 +248,7 @@ export function TextTab() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onPaste={handlePaste}
+            aria-label={direction === "encode" ? "Text to encode" : "Base64 to decode"}
             placeholder={
               direction === "encode"
                 ? "Type or paste text to encode..."

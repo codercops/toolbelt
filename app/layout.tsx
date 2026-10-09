@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/tools";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { JetBrains_Mono, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
@@ -39,7 +40,7 @@ const IS_NON_PROD =
   Boolean(process.env.NEXT_PUBLIC_DEPLOY_ENV) && process.env.NEXT_PUBLIC_DEPLOY_ENV !== "production";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tools.codercops.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "CODERCOPS Tools — Developer Utilities",
     template: "%s",
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "CODERCOPS Tools",
-    url: "https://tools.codercops.com",
+    url: SITE_URL,
     locale: "en_US",
     title: "CODERCOPS Tools — Developer Utilities",
     description:

@@ -97,6 +97,12 @@ export const JWT_TEMPLATES: JwtTemplate[] = [
   },
 ];
 
+// Single quotes so the shell takes the token and URL literally: no `$(...)`
+// or backtick expansion, and `&` in a query string doesn't background curl.
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
 export function curlWithToken(token: string, endpoint = "https://api.example.com/me"): string {
-  return `curl -H "Authorization: Bearer ${token}" \\\n  ${endpoint}`;
+  return `curl -H ${shellQuote(`Authorization: Bearer ${token.trim()}`)} \\\n  ${shellQuote(endpoint.trim())}`;
 }

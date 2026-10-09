@@ -64,6 +64,14 @@ describe("escapeForCode rust", () => {
     expect(out).toBe('r#"{"a":1}"#');
   });
 });
+describe("escapeForCode python", () => {
+  it("preserves backslashes in JSON", () => {
+    const input = '{"path":"C:\\\\temp"}';
+    const out = escapeForCode(input, "python");
+
+    expect(out).toBe("'''{\"path\":\"C:\\\\\\\\temp\"}'''");
+  });
+});
 
 describe("parseJson5Compat indentation", () => {
   it("does not mangle double spaces inside string values at 4-space indent", () => {

@@ -52,13 +52,17 @@ export function DiffPanel({ leftInput }: DiffPanelProps) {
           </pre>
         </div>
         <div className="p-3">
-          <div className="font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-2">
+          <div
+            id="diff-right-label"
+            className="font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-2"
+          >
             Right (paste to compare)
           </div>
           <textarea
             value={right}
             onChange={(e) => setRight(e.target.value)}
             spellCheck={false}
+            aria-labelledby="diff-right-label"
             placeholder="Paste a second JSON to compare with the left side..."
             className="editor-input w-full text-[12px]"
             style={{ minHeight: 120 }}

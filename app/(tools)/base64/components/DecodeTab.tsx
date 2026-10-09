@@ -90,6 +90,7 @@ export function DecodeTab() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           spellCheck={false}
+          aria-label="Base64 to decode"
           placeholder="Paste a base64 string (or a data: URI) to decode..."
           className="editor-input flex-1 p-4"
           style={{ minHeight: 320 }}

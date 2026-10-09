@@ -43,6 +43,9 @@ export function JsonFormatterClient() {
   const [json5, setJson5] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  const urlDialogRef = useRef<HTMLDivElement>(null);
+  const fetchTriggerRef = useRef<HTMLButtonElement>(null);
   const { push } = useToast();
   const history = useHistory("json-formatter", 15);
 
@@ -170,6 +173,50 @@ export function JsonFormatterClient() {
       setUrlLoading(false);
     }
   }, [urlInput, indent, push]);
+
+  // URL dialog: focus the field on open, restore focus to the trigger on close.
+  useEffect(() => {
+    if (!urlDialog) return;
+    urlInputRef.current?.focus();
+    const trigger = fetchTriggerRef.current;
+    return () => trigger?.focus();
+  }, [urlDialog]);
+
+  // URL dialog: Escape closes it.
+  useEffect(() => {
+    if (!urlDialog) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setUrlDialog(false);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [urlDialog]);
+
+  // URL dialog: keep Tab inside the modal.
+  function onUrlDialogKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== "Tab") return;
+    const dialog = urlDialogRef.current;
+    if (!dialog) return;
+    const focusables = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === dialog)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   // Drag & drop .json
   useEffect(() => {
@@ -363,6 +410,7 @@ export function JsonFormatterClient() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    ref={fetchTriggerRef}
                     className="btn btn-ghost text-[12px]"
                     onClick={() => setUrlDialog(true)}
                   >
@@ -385,6 +433,7 @@ export function JsonFormatterClient() {
                   setInput(e.target.value);
                   if (error) setError(null);
                 }}
+                aria-label="JSON input"
                 placeholder={`Paste JSON here...\n\nTip: drop a .json file anywhere on the page, or paste a URL.`}
                 className="editor-input flex-1 px-4 py-3 bg-transparent"
                 spellCheck={false}
@@ -431,26 +480,37 @@ export function JsonFormatterClient() {
           onClick={() => setUrlDialog(false)}
         >
           <div
+            ref={urlDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="json-fetch-dialog-title"
             className="card-raise w-full max-w-md p-5 animate-slide-down"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={onUrlDialogKeyDown}
           >
-            <h3 className="font-display text-lg font-semibold text-[var(--fg)]">
+            <h3
+              id="json-fetch-dialog-title"
+              className="font-display text-lg font-semibold text-[var(--fg)]"
+            >
               Fetch JSON from URL
             </h3>
             <p className="mt-1 text-[13px] text-[var(--fg-muted)]">
               The URL must return JSON and allow CORS.
             </p>
             <input
+              ref={urlInputRef}
               type="url"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleFetchUrl()}
-              autoFocus
+              aria-label="URL to fetch JSON from"
               placeholder="https://jsonplaceholder.typicode.com/todos/1"
               className="mt-4 w-full font-mono text-[13px] px-3 py-2 rounded-md border border-[var(--hairline)] bg-[var(--bg-soft)] text-[var(--fg)] focus:border-[var(--cyan)] outline-none"
             />
             {urlError && (
-              <p className="mt-2 text-[12.5px] text-[var(--rose)]">{urlError}</p>
+              <p role="alert" className="mt-2 text-[12.5px] text-[var(--rose)]">
+                {urlError}
+              </p>
             )}
             <div className="mt-5 flex items-center justify-end gap-2">
               <button className="btn" onClick={() => setUrlDialog(false)}>

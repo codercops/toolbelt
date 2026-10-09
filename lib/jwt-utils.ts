@@ -42,6 +42,11 @@ export function decodeJwt(token: string): DecodeResult {
     };
   }
   const [h, p, s] = parts;
+  // The signature is base64url as well. Header and payload get checked when
+  // they're decoded below; the signature never is, so check it here.
+  if (!/^[A-Za-z0-9_-]*={0,2}$/.test(s)) {
+    return { ok: false, error: "Invalid JWT: the signature isn't base64url" };
+  }
   let headerText: string | null = null;
   let payloadText: string | null = null;
   let header: Record<string, unknown> = {};
@@ -56,22 +61,36 @@ export function decodeJwt(token: string): DecodeResult {
   } catch {
     return { ok: false, error: "Could not decode payload — may be corrupted" };
   }
+  let parsedHeader: unknown;
   try {
-    header = JSON.parse(headerText);
+    parsedHeader = JSON.parse(headerText);
   } catch {
     return {
       ok: false,
       error: "Decoded header successfully but result is not valid JSON",
     };
   }
+  // RFC 7519: the JOSE header is a JSON object. JSON.parse also accepts
+  // null, arrays and primitives, which would make every `header.alg`
+  // reader throw later on.
+  if (typeof parsedHeader !== "object" || parsedHeader === null || Array.isArray(parsedHeader)) {
+    return { ok: false, error: "Header is not a JSON object" };
+  }
+  header = parsedHeader as Record<string, unknown>;
+  let parsedPayload: unknown;
   try {
-    payload = JSON.parse(payloadText);
+    parsedPayload = JSON.parse(payloadText);
   } catch {
     return {
       ok: false,
       error: "Decoded payload successfully but result is not valid JSON",
     };
   }
+  // RFC 7519: the claims set is a JSON object too.
+  if (typeof parsedPayload !== "object" || parsedPayload === null || Array.isArray(parsedPayload)) {
+    return { ok: false, error: "Payload is not a JSON object" };
+  }
+  payload = parsedPayload as Record<string, unknown>;
   return {
     ok: true,
     value: {
@@ -383,6 +402,8 @@ export async function fetchJwks(url: string): Promise<JwksFetchResult> {
   }
 }
 
+const JWKS_KTY: Record<string, string> = { RS: "RSA", PS: "RSA", ES: "EC" };
+
 export async function verifyWithJwks(
   token: string,
   keys: JwksKey[]
@@ -398,17 +419,32 @@ export async function verifyWithJwks(
   const alg = header.alg as SupportedAlg | undefined;
   const kid = header.kid as string | undefined;
   if (!alg) return { ok: false, error: "Header missing alg" };
-  const candidates = keys.filter((k) => (kid ? k.kid === kid : true));
-  if (candidates.length === 0) return { ok: false, error: kid ? `No JWK with kid="${kid}"` : "No keys in JWKS" };
+  // A JWKS publishes public keys, so only asymmetric algorithms can be
+  // checked against it. With HS* the public JWK text would become the HMAC
+  // secret, and anyone can sign with that.
+  const kty = typeof alg === "string" ? JWKS_KTY[alg.slice(0, 2)] : undefined;
+  if (!kty || !(alg in ALG_TO_HASH)) {
+    return { ok: false, error: `${String(alg)} tokens can't be verified with a JWKS` };
+  }
+  const byKid = keys.filter((k) => (kid ? k.kid === kid : true));
+  if (byKid.length === 0) return { ok: false, error: kid ? `No JWK with kid="${kid}"` : "No keys in JWKS" };
+  const candidates = byKid.filter(
+    (k) => k.kty === kty && (!k.alg || k.alg === alg) && (!k.use || k.use === "sig")
+  );
+  if (candidates.length === 0) return { ok: false, error: `No ${kty} signing key in the JWKS matches ${alg}` };
+  // Keep trying after a key that imports but doesn't verify: without a kid,
+  // the signing key can be any of them.
+  let checked: VerifyResult | null = null;
   for (const jwk of candidates) {
     try {
       const r = await verifyJwt(token, JSON.stringify(jwk), alg);
-      if (r.ok) return r;
+      if (r.ok && r.valid) return r;
+      if (r.ok) checked = r;
     } catch {
       /* try next */
     }
   }
-  return { ok: false, error: "None of the candidate keys verified" };
+  return checked ?? { ok: false, error: "None of the candidate keys verified" };
 }
 
 /* ---- Security audit ---- */
