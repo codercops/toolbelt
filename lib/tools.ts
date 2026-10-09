@@ -265,6 +265,47 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+    {
+    slug: "number-base-converter",
+    path: "/number-base-converter",
+    title: "Number Base Converter",
+    tagline: "Numbers",
+    cardDescription: "Convert integers between binary, octal, decimal, and hex bases including signed two's complement evaluation.",
+    features: ["Binary", "Octal", "Decimal", "Hex", "Two's complement"],
+    accentVar: "--cyan",
+    accentHex: "#06b6d4",
+    metaTitle: "Number Base Converter - Free Online Tool",
+    metaDescription: "Free online integer base converter. Convert between binary, octal, decimal, and hex bases with dynamic bit-width signed two's complement evaluation.",
+    ogTitle: "Number Base Converter - CODERCOPS Tools",
+    ogDescription: "Convert integers between binary, octal, decimal, and hex bases natively with browser-based BigInt accuracy.",
+    heroBreadcrumb: "Binary · Octal · Decimal · Hex",
+    heroHeading: "Number Base Converter",
+    heroDim: "&",
+    heroDescription: "Convert numeric formats instantly across bases 2 through 36 and evaluate signed binary bit widths locally in your browser.",
+    jsonLdName: "Number Base Converter",
+    jsonLdDescription: "Free client-side tool to parse, format, and translate custom numeric number bases without precision loss.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "Does this tool support massive numeric sizes?",
+        a: "Yes. All computations leverage native JavaScript BigInt infrastructure, meaning it retains perfect digit accuracy even for values exceeding standard 2^53 limits."
+      },
+      {
+        q: "What is Two's Complement mode?",
+        a: "It is a mathematical operations method used in hardware systems to represent signed negative numbers in binary vectors. This utility calculates representation for standard 8, 16, 32, and 64-bit boundaries."
+      }
+    ],
+    cta: {
+      headline: "Building apps with hardware or bitwise components?",
+      sub: "CODERCOPS develops pristine backend systems, embedded network tooling, and custom full-stack solutions for businesses.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get a free quote",
+      secondaryHref: CTA_CONTACT
+    },
+    sitemapPriority: 0.9
+  },
+
 ];
 
 export function getTool(slug: string): Tool | undefined {
