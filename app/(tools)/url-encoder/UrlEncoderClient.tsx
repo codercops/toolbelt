@@ -18,7 +18,8 @@ export function UrlEncoderClient() {
   const { output, error } = useMemo((): { output: string; error: string | null } => {
     if (!input) return { output: "", error: null };
     if (direction === "encode") {
-      return { output: encodeUrl(input, mode), error: null };
+      const r = encodeUrl(input, mode);
+      return r.ok ? { output: r.value, error: null } : { output: "", error: r.error };
     }
     const r = decodeUrl(input, { plusAsSpace });
     return r.ok ? { output: r.value, error: null } : { output: "", error: r.error };
