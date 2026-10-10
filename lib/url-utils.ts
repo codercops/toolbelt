@@ -1,7 +1,15 @@
 export type UrlEncodeMode = "component" | "uri";
 
-export function encodeUrl(text: string, mode: UrlEncodeMode): string {
-  return mode === "component" ? encodeURIComponent(text) : encodeURI(text);
+export function encodeUrl(
+  text: string,
+  mode: UrlEncodeMode
+): { ok: true; value: string } | { ok: false; error: string } {
+  try {
+    return { ok: true, value: mode === "component" ? encodeURIComponent(text) : encodeURI(text) };
+  } catch {
+    // Both encoders throw on a lone surrogate, e.g. half of an emoji.
+    return { ok: false, error: "Text contains a broken character (half of an emoji?) — check for text cut mid-character" };
+  }
 }
 
 export interface DecodeUrlOptions {
