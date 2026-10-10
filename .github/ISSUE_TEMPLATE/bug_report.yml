@@ -14,6 +14,7 @@ body:
         - JSON formatter
         - JWT decoder
         - Base64
+        - URL encoder/decoder
         - Invoice generator
         - Shell (theme, command palette, header)
         - Other / not sure
