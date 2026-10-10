@@ -265,6 +265,7 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+  
     {
     slug: "number-base-converter",
     path: "/number-base-converter",
@@ -304,6 +305,60 @@ export const TOOLS: Tool[] = [
       secondaryHref: CTA_CONTACT
     },
     sitemapPriority: 0.9
+  },
+
+
+  {
+    slug: "url-encoder",
+    path: "/url-encoder",
+    title: "URL Encoder & Decoder",
+    tagline: "Encoding",
+    cardDescription:
+      "Percent-encode or decode a URL, a query value, or form data. See every query param broken out, with duplicates kept in order.",
+    features: ["Encode", "Decode", "Component or full URL", "Query params", "Plus as space"],
+    accentVar: "--cyan",
+    accentHex: "#00E5C7",
+    metaTitle: "URL Encoder & Decoder - Free Online Tool",
+    metaDescription:
+      "Free online URL encoder and decoder. Percent-encode query values, decode a messy redirect URL, and see every query param broken out. Runs in your browser.",
+    ogTitle: "URL Encoder & Decoder - CODERCOPS Tools",
+    ogDescription: "Encode and decode URLs and query values, with a full query param breakdown.",
+    heroBreadcrumb: "Encode · Decode · Query params",
+    heroHeading: "URL Encoder & Decoder",
+    heroDim: "&",
+    heroDescription:
+      "Percent-encode a query value or decode a messy redirect URL, with a breakdown of every query param, all in your browser with zero uploads.",
+    jsonLdName: "URL Encoder & Decoder",
+    jsonLdDescription:
+      "Free online URL encoder and decoder with component and full-URL modes, plus-as-space support, and a query param breakdown.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "What's the difference between Component and Full URL encoding?",
+        a: "Component mode (encodeURIComponent) escapes every reserved character, including /, ?, =, and &, so it's safe for a single value inside a query string. Full URL mode (encodeURI) leaves those structural characters alone, since it expects a complete URL, not just one piece of it.",
+      },
+      {
+        q: "Why does decoding sometimes fail?",
+        a: "A percent-encoded string can contain an incomplete or invalid sequence, like %E0 cut off before its second byte. Decoding reports this as an error instead of crashing, so you can see exactly what's wrong with the input.",
+      },
+      {
+        q: "What does \"Treat + as space\" do?",
+        a: "Form data encoded as application/x-www-form-urlencoded uses + for spaces instead of %20. Turn this on when decoding a query string or form submission, off when decoding a path that happens to contain a literal plus sign.",
+      },
+      {
+        q: "Does my data get uploaded anywhere?",
+        a: "No. All encoding, decoding, and URL parsing runs entirely in your browser. Nothing you paste here is sent anywhere.",
+      },
+    ],
+    cta: {
+      headline: "Building an app that juggles URLs and query params?",
+      sub: "CODERCOPS builds production-grade backends, REST APIs, and full-stack applications for startups and businesses.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get a free quote",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
   },
 
 ];

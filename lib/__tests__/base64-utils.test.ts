@@ -13,6 +13,7 @@ import {
   getMimeFromMagicBytes,
   splitLines,
   toLanguageLiteral,
+  bytesToBase64,
 } from "../base64-utils";
 
 describe("text round-trip", () => {
@@ -146,6 +147,58 @@ describe("formatting helpers", () => {
   it("doubles every single quote in SQL literals", () => {
     expect(toLanguageLiteral("it's 'ready'", "sql")).toBe("'it''s ''ready'''");
     expect(toLanguageLiteral("", "sql")).toBe("''");
+  });
+});
+
+describe("toLanguageLiteral escaping", () => {
+  const doubleQuoted = ["javascript", "typescript", "python", "go", "rust", "java"] as const;
+
+  it.each(doubleQuoted)("escapes line breaks in %s literals", (lang) => {
+    const value = "line one\nline two\r\n";
+    const literal = toLanguageLiteral(value, lang);
+    expect(literal).toBe('"line one\\nline two\\r\\n"');
+    expect(literal).not.toContain("\n");
+    expect(literal).not.toContain("\r");
+  });
+
+  it.each(doubleQuoted)("escapes backslashes before line breaks in %s literals", (lang) => {
+    // A literal backslash followed by "n" must stay `\\n`, not turn into a newline.
+    expect(toLanguageLiteral("a\\nb", lang)).toBe('"a\\\\nb"');
+    expect(toLanguageLiteral("a\\\nb", lang)).toBe('"a\\\\\\nb"');
+  });
+
+  it.each(doubleQuoted)("wraps a chunked payload in one %s line", (lang) => {
+    const encoded = bytesToBase64(new TextEncoder().encode("x".repeat(80)), {
+      urlSafe: false,
+      padding: true,
+    });
+    const chunked = splitLines(encoded, 76);
+    expect(chunked).toContain("\n");
+    expect(toLanguageLiteral(chunked, lang)).toBe(
+      `"${chunked.replace(/\n/g, "\\n")}"`
+    );
+  });
+
+  it("evaluates a chunked payload back to the original string in JavaScript", () => {
+    const encoded = bytesToBase64(new TextEncoder().encode("x".repeat(80)), {
+      urlSafe: false,
+      padding: true,
+    });
+    const chunked = splitLines(encoded, 76);
+    expect(eval(toLanguageLiteral(chunked, "javascript"))).toBe(chunked);
+  });
+
+  it("round-trips arbitrary text through eval for JavaScript", () => {
+    const value = 'back\\slash "quoted" line1\nline2\r\nend';
+    expect(eval(toLanguageLiteral(value, "javascript"))).toBe(value);
+  });
+
+  it("leaves shell and SQL output unchanged, line breaks included", () => {
+    const value = "line one\nline two";
+    expect(toLanguageLiteral(value, "shell")).toBe("'line one\nline two'");
+    expect(toLanguageLiteral(value, "sql")).toBe("'line one\nline two'");
+    expect(toLanguageLiteral("it's 'ready'", "shell")).toBe("'it'\\''s '\\''ready'\\'''");
+    expect(toLanguageLiteral("it's 'ready'", "sql")).toBe("'it''s ''ready'''");
   });
 });
 

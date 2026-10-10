@@ -37,7 +37,8 @@
     "prebuild": "node scripts/og-assets.mjs && node scripts/write-version.mjs",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "fonts": "node scripts/fetch-fonts.mjs"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
@@ -64,5 +65,9 @@
     "typescript": "^5",
     "vitest": "^4.1.11",
     "wrangler": "^4.147.0"
+  },
+  "overrides": {
+    "postcss-selector-parser": "^7.1.6",
+    "sharp": "^0.35.5"
   }
 }
