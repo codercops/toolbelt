@@ -62,8 +62,8 @@ export function parseInteger(input: string, base?: number): bigint {
 export function formatInteger(value: bigint, base: number, options?: { uppercase?: boolean; groupSize?: number }): string {
     if (base < 2 || base > 36) throw new Error("Base must be between 2 and 36");
     
-    let isNegative = value < 0n;
-    let absValue = isNegative ? -value : value;
+    const isNegative = value < 0n;
+    const absValue = isNegative ? -value : value;
     
     let str = absValue.toString(base);
     if (options?.uppercase) {
@@ -93,9 +93,9 @@ export function toTwosComplement(value: bigint, bits: number): string {
         throw new Error(`Value out of range for signed ${bits}-bit width`);
     }
 
-    let mask = (1n << BigInt(bits)) - 1n;
-    let twosComp = value & mask;
-    let binaryStr = twosComp.toString(2);
+    const mask = (1n << BigInt(bits)) - 1n;
+    const twosComp = value & mask;
+    const binaryStr = twosComp.toString(2);
     
     return binaryStr.padStart(bits, '0');
 }
