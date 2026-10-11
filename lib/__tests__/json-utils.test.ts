@@ -92,3 +92,26 @@ describe("diffLines large-input guard", () => {
     expect(rows.some((r) => r.type === "add")).toBe(true);
   });
 });
+
+describe("toYAML quotes strings YAML would read as other types", () => {
+  it.each([
+    [".5", '".5"'],
+    ["+1", '"+1"'],
+    ["0x1F", '"0x1F"'],
+    ["0o17", '"0o17"'],
+    [".inf", '".inf"'],
+    [".NaN", '".NaN"'],
+    ["2026-04-15", '"2026-04-15"'],
+    ["2026-04-15T10:00:00Z", '"2026-04-15T10:00:00Z"'],
+  ])("quotes %s", (input, expected) => {
+    const out = toYAML(JSON.stringify({ a: input }));
+    expect(out.ok).toBe(true);
+    if (out.ok) expect(out.value).toBe(`a: ${expected}\n`);
+  });
+
+  it.each(["1.4.0", "v2", "hello"])("leaves %s unquoted", (input) => {
+    const out = toYAML(JSON.stringify({ a: input }));
+    expect(out.ok).toBe(true);
+    if (out.ok) expect(out.value).toBe(`a: ${input}\n`);
+  });
+});
