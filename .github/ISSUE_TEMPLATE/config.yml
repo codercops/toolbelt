@@ -6,3 +6,6 @@ contact_links:
   - name: CODERCOPS
     url: https://www.codercops.com
     about: Learn about the team behind toolbelt or get in touch about a project.
+  - name: Ask a question on Discord
+    url: https://discord.gg/mpGdJyjaRQ
+    about: Chat with the maintainers and other contributors. Issue claims still happen on GitHub.

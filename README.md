@@ -5,6 +5,7 @@
 [![CI](https://github.com/codercops/toolbelt/actions/workflows/ci.yml/badge.svg)](https://github.com/codercops/toolbelt/actions/workflows/ci.yml)
 [![GitHub stars](https://img.shields.io/github/stars/codercops/toolbelt?labelColor=0A0B0F&color=9E7BFF&logo=github)](https://github.com/codercops/toolbelt/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/codercops/toolbelt?labelColor=0A0B0F&color=8A93A8)](https://github.com/codercops/toolbelt/commits)
+[![Discord](https://img.shields.io/badge/chat-Discord-5865F2.svg?labelColor=0A0B0F&logo=discord&logoColor=white)](https://discord.gg/mpGdJyjaRQ)
 [![Made by CODERCOPS](https://img.shields.io/badge/by-CODERCOPS-9E7BFF.svg?labelColor=0A0B0F)](https://www.codercops.com)
 
 A developer's toolbelt: fast, privacy-first browser tools. Everything runs client-side, so there is no login, no upload, and no data leaves your tab. Live at **[tools.codercops.com](https://tools.codercops.com)**.
@@ -135,7 +136,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full flow.
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) and the [Code of Conduct](./CODE_OF_CONDUCT.md). In short: keep logic in `lib/`, add a test, and make sure `npm run lint && npm run test && npm run build` passes. If a tool proves useful, a star helps other developers find it.
+Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) and the [Code of Conduct](./CODE_OF_CONDUCT.md). Questions? Come chat on our [Discord](https://discord.gg/mpGdJyjaRQ). In short: keep logic in `lib/`, add a test, and make sure `npm run lint && npm run test && npm run build` passes. If a tool proves useful, a star helps other developers find it.
 
 ## Security
 
