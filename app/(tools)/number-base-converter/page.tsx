@@ -49,8 +49,8 @@ export default function NumberBaseConverter() {
         hex: hexStr,
         twosComplement: twosStr,
       });
-    } catch (err: any) {
-      setError(err.message || "Invalid input vector mapping");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid input vector mapping");
     }
   }, [inputValue, inputBase, bitWidth]);
 
