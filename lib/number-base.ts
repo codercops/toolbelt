@@ -1,6 +1,8 @@
 // Core conversion engine using BigInt to handle infinite accuracy numbers
-export function parseInteger(input: string, base?: number): bigint {
-    let cleanInput = input.trim().replace(/\s+/g, '');
+export function parseInteger(input: string, base: number): bigint {
+    // Strip out all underscore separator tokens safely before calculations run
+    const cleanInput = input.replace(/_/g, "");
+
     if (!cleanInput) throw new Error("Input is empty");
 
     let detectedBase = base;
