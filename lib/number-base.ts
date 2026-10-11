@@ -1,11 +1,20 @@
 // Core conversion engine using BigInt to handle infinite accuracy numbers
 export function parseInteger(input: string, base: number): bigint {
     // Strip out all underscore separator tokens safely before calculations run
-    const cleanInput = input.replace(/_/g, "");
-
+    let cleanInput = input.replace(/_/g, "").trim();
     if (!cleanInput) throw new Error("Input is empty");
 
+    // Extract and track negative or positive signs before checking prefixes
+    let isNegative = false;
+    if (cleanInput.startsWith("-")) {
+        isNegative = true;
+        cleanInput = cleanInput.slice(1);
+    } else if (cleanInput.startsWith("+")) {
+        cleanInput = cleanInput.slice(1);
+    }
+
     let detectedBase = base;
+
     
     // Automatically detect standard prefixes if base isn't explicitly set
     if (!base) {
@@ -31,15 +40,7 @@ export function parseInteger(input: string, base: number): bigint {
     if (detectedBase! < 2 || detectedBase! > 36) {
         throw new Error("Base must be between 2 and 36");
     }
-
-    // Handle sign indicators safely
-    let isNegative = false;
-    if (cleanInput.startsWith('-')) {
-        isNegative = true;
-        cleanInput = cleanInput.slice(1);
-    } else if (cleanInput.startsWith('+')) {
-        cleanInput = cleanInput.slice(1);
-    }
+        if (!cleanInput) throw new Error("Input contains no digits");
 
     if (!cleanInput) throw new Error("Missing digits after sign/prefix");
 
