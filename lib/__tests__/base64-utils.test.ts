@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { gzipSync } from "node:zlib";
 import {
   encodeText,
   decodeText,
+  decodeUtf8Bytes,
   detectBase64,
   bytesToBase32,
   bytesToBase58,
@@ -14,6 +16,8 @@ import {
   splitLines,
   toLanguageLiteral,
   bytesToBase64,
+  base64ToBytes,
+  gunzipBytes,
 } from "../base64-utils";
 
 describe("text round-trip", () => {
@@ -29,6 +33,63 @@ describe("text round-trip", () => {
     expect(enc).not.toContain("+");
     expect(enc).not.toContain("/");
     expect(enc).not.toContain("=");
+  });
+
+  it.each([
+    { name: "binary data", bytes: [0xff, 0xfe, 0xfd] },
+    { name: "a truncated multibyte sequence", bytes: [0xe2, 0x82] },
+  ])("rejects $name with file decoding guidance", ({ bytes }) => {
+    const encoded = bytesToBase64(new Uint8Array(bytes));
+    expect(decodeText(encoded)).toEqual({
+      ok: false,
+      error: expect.stringMatching(/not valid UTF-8.*Base64 → File/),
+    });
+  });
+
+  it("preserves a replacement character that was actually encoded as UTF-8", () => {
+    const text = "a\uFFFDz";
+    expect(decodeText(encodeText(text, { urlSafe: false, padding: true }))).toEqual({
+      ok: true,
+      value: text,
+    });
+  });
+
+  it("decodes empty text", () => {
+    expect(decodeText("")).toEqual({ ok: true, value: "" });
+  });
+
+  it("preserves errors for invalid Base64 syntax", () => {
+    const result = base64ToBytes("!");
+    expect(result.ok).toBe(false);
+    expect(decodeText("!")).toEqual(result);
+  });
+
+  it("still decodes binary data as bytes for the file tab", () => {
+    const bytes = new Uint8Array([0xff, 0xfe, 0xfd]);
+    expect(base64ToBytes(bytesToBase64(bytes))).toEqual({ ok: true, value: bytes });
+  });
+});
+
+describe("gzip text decoding", () => {
+  it.each([
+    {
+      name: "Unicode text",
+      bytes: new TextEncoder().encode("héllo · 世界 · 🚀"),
+      expected: { ok: true, value: "héllo · 世界 · 🚀" },
+    },
+    {
+      name: "invalid UTF-8",
+      bytes: new Uint8Array([0xff, 0xfe, 0xfd]),
+      expected: { ok: false, error: expect.stringMatching(/not valid UTF-8.*Base64 → File/) },
+    },
+  ])("validates $name after decompression", async ({ bytes, expected }) => {
+    const encoded = bytesToBase64(gzipSync(bytes));
+    const decoded = base64ToBytes(encoded);
+    if (!decoded.ok) throw new Error(decoded.error);
+    const decompressed = await gunzipBytes(decoded.value);
+    expect(decompressed).not.toBeNull();
+    if (!decompressed) throw new Error("Expected gzip decompression to succeed");
+    expect(decodeUtf8Bytes(decompressed)).toEqual(expected);
   });
 });
 

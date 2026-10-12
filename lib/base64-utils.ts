@@ -11,10 +11,14 @@ export function encodeText(text: string, opts: EncodeOptions): string {
 export function decodeText(s: string): { ok: true; value: string } | { ok: false; error: string } {
   const r = base64ToBytes(s);
   if (!r.ok) return r;
+  return decodeUtf8Bytes(r.value);
+}
+
+export function decodeUtf8Bytes(bytes: Uint8Array): { ok: true; value: string } | { ok: false; error: string } {
   try {
-    return { ok: true, value: new TextDecoder("utf-8", { fatal: false }).decode(r.value) };
+    return { ok: true, value: new TextDecoder("utf-8", { fatal: true }).decode(bytes) };
   } catch {
-    return { ok: false, error: "Decoded successfully but result is not valid UTF-8 text" };
+    return { ok: false, error: "Decoded successfully but result is not valid UTF-8 text. Use the Base64 → File tab for binary data." };
   }
 }
 

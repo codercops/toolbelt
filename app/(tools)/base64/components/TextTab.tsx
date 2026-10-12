@@ -5,6 +5,7 @@ import { ArrowLeftRight, AlertCircle, Info, FileCode, Scissors, Archive } from "
 import {
   base64ToBytes,
   bytesToBase64,
+  decodeUtf8Bytes,
   detectBase64,
   formatBytes,
   gunzipBytes,
@@ -78,12 +79,12 @@ export function TextTab() {
             return;
           }
         }
-        try {
-          const text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
-          setOutput(text);
+        const decoded = decodeUtf8Bytes(bytes);
+        if (decoded.ok) {
+          setOutput(decoded.value);
           setError(null);
-        } catch (e) {
-          setError(e instanceof Error ? e.message : "Decode failed");
+        } else {
+          setError(decoded.error);
           setOutput("");
         }
       }
