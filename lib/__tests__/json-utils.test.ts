@@ -144,6 +144,19 @@ describe("toTypeScript array items", () => {
     expect(first.ok && first.value).toContain("comments: Comment[];");
   });
 
+  it("does not reuse the Root alias name for a nested object in a top-level array", () => {
+    const ts = toTypeScript('[{"root":{"x":1}}]');
+    expect(ts.ok && ts.value).toBe(
+      "export type Root = RootItem[];\n\nexport interface Root2 {\n  x: number;\n}\n\nexport interface RootItem {\n  root: Root2;\n}",
+    );
+  });
+
+  it("does not reuse the Root alias name for a deeper nested key in a top-level array", () => {
+    const ts = toTypeScript('[{"a":{"root":{"x":1}}}]');
+    expect(ts.ok && ts.value).toContain("export interface Root2 {\n  x: number;\n}");
+    expect(ts.ok && ts.value).toContain("export interface A {\n  root: Root2;\n}");
+  });
+
   it("turns keys with different types into a union", () => {
     const ts = toTypeScript('[{"id":1},{"id":"x"}]');
     expect(ts.ok && ts.value).toContain("id: number | string;");
