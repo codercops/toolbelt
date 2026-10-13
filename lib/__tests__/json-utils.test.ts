@@ -148,4 +148,11 @@ describe("toTypeScript array items", () => {
     const ts = toTypeScript('[{"id":1},{"id":"x"}]');
     expect(ts.ok && ts.value).toContain("id: number | string;");
   });
+
+  it("gives a nested key named like the root a free interface name", () => {
+    const ts = toTypeScript('[{"root":{"x":1}}]');
+    expect(ts.ok && ts.value).toBe(
+      "export type Root = RootItem[];\n\nexport interface Root2 {\n  x: number;\n}\n\nexport interface RootItem {\n  root: Root2;\n}",
+    );
+  });
 });
