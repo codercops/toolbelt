@@ -22,6 +22,8 @@
   --violet: #9E7BFF;
   --sky: #5AB5FF;
   --lime: #A6F36B;
+  --green: #3FDD6B;
+  --fuchsia: #F26DF0;
 }
 
 [data-theme="light"] {
@@ -43,6 +45,8 @@
   --violet: #6D49D4;
   --sky: #1F70C7;
   --lime: #3C8F1E;
+  --green: #15773A;
+  --fuchsia: #A8249F;
 }
 
 [data-theme="light"] .tok-key { color: #1F70C7; }

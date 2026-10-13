@@ -96,7 +96,7 @@ npm run lint && npm run test && npm run build
 ## Adding a tool
 
 1. Add a typed entry at the end of the `TOOLS` array in `lib/tools.ts`, filling every field of the `Tool` interface.
-   - Pick `accentVar` from the theme variables in `app/globals.css` (`--cyan`, `--amber`, `--rose`, `--violet`, `--sky`, `--lime`) and set `accentHex` to that variable's dark-theme value.
+   - Pick `accentVar` from the accent variables in `app/globals.css` (`--cyan`, `--amber`, `--violet`, `--sky`, `--lime`, `--green`, `--fuchsia`) and set `accentHex` to that variable's dark-theme value. Take one that no tool uses yet. If they're all taken, reuse the one the fewest tools have. Don't use `--rose`: it's the color of error messages.
    - `heroDim` must be `""` or part of `heroHeading`.
    - Write 3 or 4 FAQs. Keep `metaTitle` under 60 characters and `metaDescription` around 150 to 160.
    - Keep `features` and `ogDescription` to plain Latin text; the social card font has no arrows or symbols.

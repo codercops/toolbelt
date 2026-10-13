@@ -31,6 +31,8 @@ const config: Config = {
           violet: "#9E7BFF",
           sky: "#5AB5FF",
           lime: "#A6F36B",
+          green: "#3FDD6B",
+          fuchsia: "#F26DF0",
         },
       },
       fontFamily: {
