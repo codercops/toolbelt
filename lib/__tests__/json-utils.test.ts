@@ -115,3 +115,30 @@ describe("toYAML quotes strings YAML would read as other types", () => {
     if (out.ok) expect(out.value).toBe(`a: ${input}\n`);
   });
 });
+
+describe("toTypeScript array items", () => {
+  it("merges array items into one interface with optional keys", () => {
+    const ts = toTypeScript('{"users":[{"id":1},{"id":2,"name":"x"}]}');
+    expect(ts.ok && ts.value).toBe(
+      "export interface User {\n  id: number;\n  name?: string;\n}\n\nexport interface Root {\n  users: User[];\n}",
+    );
+  });
+
+  it("merges nested objects inside array items", () => {
+    const ts = toTypeScript('{"items":[{"a":{"x":1}},{"a":{"y":2}}]}');
+    expect(ts.ok && ts.value).toBe(
+      "export interface A {\n  x?: number;\n  y?: number;\n}\n\nexport interface Item {\n  a: A;\n}\n\nexport interface Root {\n  items: Item[];\n}",
+    );
+  });
+
+  it("merges arrays of objects inside array items", () => {
+    const ts = toTypeScript('{"users":[{"tags":[{"n":1}]},{"tags":[{"m":"x"}]}]}');
+    expect(ts.ok && ts.value).toContain("export interface Tag {\n  n?: number;\n  m?: string;\n}");
+    expect(ts.ok && ts.value).not.toContain("Tag2");
+  });
+
+  it("turns keys with different types into a union", () => {
+    const ts = toTypeScript('[{"id":1},{"id":"x"}]');
+    expect(ts.ok && ts.value).toContain("id: number | string;");
+  });
+});

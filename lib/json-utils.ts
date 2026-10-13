@@ -185,37 +185,39 @@ function normalize(t: TsType): unknown {
 }
 
 function mergeTypes(types: TsType[]): TsType {
-  const unique: TsType[] = [];
-  for (const t of types) if (!unique.some((u) => typesEqual(u, t))) unique.push(t);
-  if (unique.length === 1) return unique[0];
-  // Merge objects if all unique are objects
-  if (unique.every((u) => u.kind === "object")) {
-    const merged = mergeObjects(unique as Extract<TsType, { kind: "object" }>[]);
-    return merged;
+  const flat = types.flatMap((t) => (t.kind === "union" ? t.of : [t]));
+  const objects = flat.filter((t) => t.kind === "object") as Extract<TsType, { kind: "object" }>[];
+  const arrays = flat.filter((t) => t.kind === "array") as Extract<TsType, { kind: "array" }>[];
+  const merged: TsType[] = [];
+  for (const t of flat) {
+    if (t === objects[0]) merged.push(objects.length > 1 ? mergeObjects(objects) : t);
+    else if (t === arrays[0]) merged.push(arrays.length > 1 ? { kind: "array", of: mergeTypes(arrays.map((x) => x.of)) } : t);
+    else if (t.kind !== "object" && t.kind !== "array" && !merged.some((u) => typesEqual(u, t))) merged.push(t);
   }
-  return { kind: "union", of: unique };
+  return merged.length === 1 ? merged[0] : { kind: "union", of: merged };
 }
 
 function mergeObjects(objs: Extract<TsType, { kind: "object" }>[]): TsType {
-  const keyMap = new Map<string, { types: TsType[]; seenIn: number }>();
+  const keyMap = new Map<string, { types: TsType[]; seenIn: number; optional: boolean }>();
   objs.forEach((o) => {
     o.fields.forEach((f) => {
-      const entry = keyMap.get(f.key) ?? { types: [], seenIn: 0 };
+      const entry = keyMap.get(f.key) ?? { types: [], seenIn: 0, optional: false };
       entry.types.push(f.type);
       entry.seenIn++;
+      entry.optional ||= f.optional;
       keyMap.set(f.key, entry);
     });
   });
   const total = objs.length;
-  const fields = Array.from(keyMap.entries()).map(([key, { types, seenIn }]) => ({
+  const fields = Array.from(keyMap.entries()).map(([key, { types, seenIn, optional }]) => ({
     key,
     type: mergeTypes(types),
-    optional: seenIn < total,
+    optional: optional || seenIn < total,
   }));
   return { kind: "object", name: objs[0].name, fields };
 }
 
-function inferType(value: unknown, hint: string, interfaces: Map<string, Extract<TsType, { kind: "object" }>>): TsType {
+function inferType(value: unknown, hint: string): TsType {
   if (value === null) return { kind: "primitive", name: "null" };
   if (isLosslessNumber(value)) return { kind: "primitive", name: "number" };
   if (typeof value === "string") return { kind: "primitive", name: "string" };
@@ -224,21 +226,33 @@ function inferType(value: unknown, hint: string, interfaces: Map<string, Extract
   if (Array.isArray(value)) {
     if (value.length === 0) return { kind: "array", of: { kind: "primitive", name: "unknown" } };
     const itemHint = singularize(pascalCase(hint));
-    const itemTypes = value.map((v) => inferType(v, itemHint, interfaces));
+    const itemTypes = value.map((v) => inferType(v, itemHint));
     return { kind: "array", of: mergeTypes(itemTypes) };
   }
   if (typeof value === "object") {
-    const name = uniqueInterfaceName(pascalCase(hint), interfaces);
     const fields = Object.entries(value as Record<string, unknown>).map(([k, v]) => ({
       key: k,
-      type: inferType(v, k, interfaces),
+      type: inferType(v, k),
       optional: v === null || v === undefined,
     }));
-    const obj: Extract<TsType, { kind: "object" }> = { kind: "object", name, fields };
-    interfaces.set(name, obj);
-    return obj;
+    return { kind: "object", name: pascalCase(hint), fields };
   }
   return { kind: "primitive", name: "unknown" };
+}
+
+// Interfaces are named and collected only after array items are merged, so
+// each merged item type becomes one interface instead of one per item.
+function collectInterfaces(t: TsType, interfaces: Map<string, Extract<TsType, { kind: "object" }>>): void {
+  if (t.kind === "array") return collectInterfaces(t.of, interfaces);
+  if (t.kind === "union") return t.of.forEach((u) => collectInterfaces(u, interfaces));
+  if (t.kind !== "object" || interfaces.get(t.name) === t) return;
+  // Claim the name before the fields so a parent keeps it over a same-named child,
+  // then re-insert so children are still rendered before their parent.
+  t.name = uniqueInterfaceName(t.name, interfaces);
+  interfaces.set(t.name, t);
+  t.fields.forEach((f) => collectInterfaces(f.type, interfaces));
+  interfaces.delete(t.name);
+  interfaces.set(t.name, t);
 }
 
 function uniqueInterfaceName(base: string, interfaces: Map<string, unknown>): string {
@@ -270,7 +284,8 @@ export function toTypeScript(raw: string, rootName = "Root"): Result<string> {
   if (!v.ok) return v;
   const parsed = llParse(raw);
   const interfaces = new Map<string, Extract<TsType, { kind: "object" }>>();
-  const rootType = inferType(parsed, rootName, interfaces);
+  const rootType = inferType(parsed, rootName);
+  collectInterfaces(rootType, interfaces);
 
   // Collect and dedupe interfaces — simple approach: render each once in insertion order
   const out: string[] = [];
