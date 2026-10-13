@@ -194,7 +194,10 @@ function mergeTypes(types: TsType[]): TsType {
     else if (t === arrays[0]) merged.push(arrays.length > 1 ? { kind: "array", of: mergeTypes(arrays.map((x) => x.of)) } : t);
     else if (t.kind !== "object" && t.kind !== "array" && !merged.some((u) => typesEqual(u, t))) merged.push(t);
   }
-  return merged.length === 1 ? merged[0] : { kind: "union", of: merged };
+  // `unknown` only comes from empty arrays, so another type next to it is the real one.
+  const known = merged.filter((t) => !(t.kind === "primitive" && t.name === "unknown"));
+  const result = known.length > 0 ? known : merged;
+  return result.length === 1 ? result[0] : { kind: "union", of: result };
 }
 
 function mergeObjects(objs: Extract<TsType, { kind: "object" }>[]): TsType {

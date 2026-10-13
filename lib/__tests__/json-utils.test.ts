@@ -137,6 +137,13 @@ describe("toTypeScript array items", () => {
     expect(ts.ok && ts.value).not.toContain("Tag2");
   });
 
+  it("keeps the element type when some items have an empty array", () => {
+    const last = toTypeScript('{"users":[{"id":1,"tags":["a"]},{"id":2,"tags":[]}]}');
+    expect(last.ok && last.value).toContain("tags: string[];");
+    const first = toTypeScript('{"posts":[{"comments":[]},{"comments":[{"by":"x"}]}]}');
+    expect(first.ok && first.value).toContain("comments: Comment[];");
+  });
+
   it("turns keys with different types into a union", () => {
     const ts = toTypeScript('[{"id":1},{"id":"x"}]');
     expect(ts.ok && ts.value).toContain("id: number | string;");
