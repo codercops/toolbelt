@@ -117,6 +117,19 @@ describe("toYAML quotes strings YAML would read as other types", () => {
   });
 });
 
+describe("toYAML empty array items", () => {
+  it.each([
+    ["[{}]", "- {}\n"],
+    ["[[]]", "- []\n"],
+    ['{"items":[{},{"a":1}]}', "items:\n  - {}\n  - a: 1\n"],
+    ["[[1,2]]", "-\n  - 1\n  - 2\n"],
+    ['[{"a":{"b":1}}]', "- a:\n    b: 1\n"],
+  ])("converts %s", (input, expected) => {
+    const out = toYAML(input);
+    expect(out.ok && out.value).toBe(expected);
+  });
+});
+
 describe("toTypeScript array items", () => {
   it("merges array items into one interface with optional keys", () => {
     const ts = toTypeScript('{"users":[{"id":1},{"id":2,"name":"x"}]}');

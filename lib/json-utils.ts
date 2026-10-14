@@ -348,6 +348,7 @@ function yamlValue(value: unknown, indent: number): string {
       .map((item) => {
         if (isContainer(item)) {
           const rendered = yamlValue(item, indent + 1);
+          if (rendered === "[]" || rendered === "{}") return `${pad}- ${rendered}`;
           if (Array.isArray(item)) {
             return `${pad}-\n${rendered}`;
           }
