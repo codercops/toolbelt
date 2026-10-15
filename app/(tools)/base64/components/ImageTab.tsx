@@ -21,6 +21,7 @@ export function ImageTab() {
   const [info, setInfo] = useState<ImageInfo | null>(null);
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pickerRef = useRef<HTMLButtonElement>(null);
   const { push } = useToast();
 
   async function handleFile(file: File) {
@@ -76,14 +77,20 @@ export function ImageTab() {
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          onClick={() => fileRef.current?.click()}
           className={cn(
-            "cursor-pointer rounded-lg border border-dashed transition-all p-6 text-center",
+            "relative cursor-pointer rounded-lg border border-dashed transition-all p-6 text-center",
             dragging
               ? "border-[var(--cyan)] bg-[rgba(0,229,199,0.05)]"
               : "border-[var(--hairline-strong)] bg-[var(--bg-soft)] hover:border-[var(--hairline-strong)]"
           )}
         >
+          <button
+            ref={pickerRef}
+            type="button"
+            aria-label="Choose an image"
+            className="absolute inset-0 rounded-lg focus-visible:outline-[var(--cyan)]"
+            onClick={() => fileRef.current?.click()}
+          />
           <input
             ref={fileRef}
             type="file"
@@ -92,7 +99,7 @@ export function ImageTab() {
             onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
           />
           {info ? (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in pointer-events-none">
               <div className="mx-auto mb-3 overflow-hidden rounded-md border border-[var(--hairline)] bg-black/30 inline-block">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -109,12 +116,20 @@ export function ImageTab() {
               <div className="mt-1 font-mono text-[11px] text-[var(--fg-muted)]">
                 {info.mime} · {formatBytes(info.size)} · {info.width}×{info.height}
               </div>
-              <button className="btn mt-3" onClick={(e) => { e.stopPropagation(); setInfo(null); }}>
+              <button
+                type="button"
+                className="btn mt-3 relative z-10 pointer-events-auto"
+                onClick={() => {
+                  setInfo(null);
+                  if (fileRef.current) fileRef.current.value = "";
+                  pickerRef.current?.focus();
+                }}
+              >
                 Replace image
               </button>
             </div>
           ) : (
-            <div>
+            <div className="pointer-events-none">
               <Upload className="w-6 h-6 mx-auto text-[var(--fg-dim)] mb-2" />
               <div className="text-[14px] text-[var(--fg)]">
                 Drop an image here

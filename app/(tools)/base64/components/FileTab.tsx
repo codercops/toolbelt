@@ -21,6 +21,7 @@ export function FileTab() {
   const [dragging, setDragging] = useState(false);
   const [batch, setBatch] = useState<FileInfo[] | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pickerRef = useRef<HTMLButtonElement>(null);
   const batchRef = useRef<HTMLInputElement>(null);
   const { push } = useToast();
 
@@ -91,14 +92,20 @@ export function FileTab() {
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          onClick={() => fileRef.current?.click()}
           className={cn(
-            "cursor-pointer rounded-lg border border-dashed transition-all p-6 text-center",
+            "relative cursor-pointer rounded-lg border border-dashed transition-all p-6 text-center",
             dragging
               ? "border-[var(--cyan)] bg-[rgba(0,229,199,0.05)]"
               : "border-[var(--hairline-strong)] bg-[var(--bg-soft)] hover:border-[var(--hairline-strong)]"
           )}
         >
+          <button
+            ref={pickerRef}
+            type="button"
+            aria-label="Choose a file to encode"
+            className="absolute inset-0 rounded-lg focus-visible:outline-[var(--cyan)]"
+            onClick={() => fileRef.current?.click()}
+          />
           <input
             ref={fileRef}
             type="file"
@@ -115,24 +122,26 @@ export function FileTab() {
             }}
           />
           {info ? (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in pointer-events-none">
               <FileIcon className="w-8 h-8 mx-auto text-[var(--cyan)] mb-2" />
               <div className="font-mono text-[13px] text-[var(--fg)] break-all">{info.name}</div>
               <div className="font-mono text-[11px] text-[var(--fg-muted)] mt-1">
                 {info.mime} · {formatBytes(info.size)}
               </div>
               <button
-                className="btn mt-3"
-                onClick={(e) => {
-                  e.stopPropagation();
+                type="button"
+                className="btn mt-3 relative z-10 pointer-events-auto"
+                onClick={() => {
                   setInfo(null);
+                  if (fileRef.current) fileRef.current.value = "";
+                  pickerRef.current?.focus();
                 }}
               >
                 Replace file
               </button>
             </div>
           ) : (
-            <div>
+            <div className="pointer-events-none">
               <Upload className="w-6 h-6 mx-auto text-[var(--fg-dim)] mb-2" />
               <div className="text-[14px] text-[var(--fg)]">Drop any file here</div>
               <div className="mt-1 text-[12px] text-[var(--fg-muted)]">
