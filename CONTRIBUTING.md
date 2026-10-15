@@ -103,7 +103,7 @@ npm run lint && npm run test && npm run build
    - Write 3 or 4 FAQs. Keep `metaTitle` under 60 characters and `metaDescription` around 150 to 160.
    - Keep `features` and `ogDescription` to plain Latin text; the social card font has no arrows or symbols.
 2. Create `app/(tools)/<slug>/page.tsx`, a `<Name>Client.tsx` client component, and `opengraph-image.tsx`. Copying `page.tsx` and `opengraph-image.tsx` from `app/(tools)/base64/` and changing the slug is the easiest start.
-3. Put pure logic in `lib/<name>.ts` with tests in `lib/__tests__/<name>.test.ts`. Use relative imports in tests; vitest has no `@/` alias.
+3. Put pure logic in `lib/<name>.ts` with tests in `lib/__tests__/<name>.test.ts`. Tests can import with `@/` like the app does.
 4. Add the tool to the "Which tool?" dropdown in `.github/ISSUE_TEMPLATE/bug_report.yml`.
 
 The home page, metadata, JSON-LD, sitemap, manifest and command palette pick the new tool up from the registry automatically. Several people may be adding tools at the same time, so rebase on `develop` before asking for review.
