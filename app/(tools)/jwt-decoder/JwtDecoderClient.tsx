@@ -339,7 +339,7 @@ export function JwtDecoderClient() {
 
           <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-8">
             <HistoryPanel
-              storageKey="jwt-decoder"
+              history={history}
               title="Recent tokens"
               onSelect={(v) => setToken(v)}
               formatLabel={(item) => item.label ?? redact(item.value)}

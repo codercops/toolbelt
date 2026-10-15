@@ -459,7 +459,7 @@ export function JsonFormatterClient() {
 
         <div className="mt-4">
           <HistoryPanel
-            storageKey="json-formatter"
+            history={history}
             onSelect={(v) => {
               setInput(v);
               const r = format(v, indent);
