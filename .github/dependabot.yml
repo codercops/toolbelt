@@ -6,6 +6,15 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
+      # Next and the OpenNext adapter have to move together. next 16.4.0 on its own
+      # (#169) broke every page until @opennextjs/cloudflare 1.20.12 (v0.7.0).
+      # Dependabot puts a dependency in the first group it matches, so this one
+      # has to stay above dev-dependencies to take eslint-config-next.
+      next:
+        patterns:
+          - "next"
+          - "@opennextjs/cloudflare"
+          - "eslint-config-next"
       dev-dependencies:
         dependency-type: development
     ignore:
