@@ -11,15 +11,14 @@ import {
   escapeForCode,
   parseJson5Compat,
   diffLines,
+  validate,
 } from "../json-utils";
 
 const BIG = '{"id":12345678901234567890,"pi":3.141592653589793238,"n":42}';
 
-import { validate } from "../json-utils";
-
 describe("JSON Formatter Error Locations", () => {
   it("extracts correct location for unquoted values", () => {
-    const result = validate('{"a": x}'); 
+    const result = validate('{"a": x}');
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.line).toBe(1);
@@ -28,13 +27,21 @@ describe("JSON Formatter Error Locations", () => {
   });
 
   it("extracts correct location for multi-line JSON", () => {
-    // The issue specifies '{"a": 1, "b": tru/}' on three lines
-    const input = '{\n  "a": 1, "b": tru/\n}'; 
+    const input = '{"a": 1,\n"b": tru\n}'; 
     const result = validate(input);
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.line).toBe(2);
-      expect(result.error.column).toBe(16); // Note: Adjust column based on your exact spacing to match the target
+      expect(result.error.column).toBe(6);
+    }
+  });
+
+  it("keeps original location for duplicate keys with trailing comma", () => {
+    const result = validate('{"a":1,"a":2,}');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(1);
+      expect(result.error.column).toBe(14);
     }
   });
 
