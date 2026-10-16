@@ -18,6 +18,7 @@ body:
         - Invoice generator
         - Color converter & contrast checker
         - Shell (theme, command palette, header)
+        - Unix timestamp converter
         - Other / not sure
     validations:
       required: true
