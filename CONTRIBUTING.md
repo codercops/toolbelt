@@ -80,6 +80,8 @@ Before opening a pull request, make sure this passes:
 npm run lint && npm run test && npm run build
 ```
 
+CI also builds the Cloudflare Worker and requests every page from it in local workerd. If that step fails while `npm run build` passes locally, run `npm run preview` and open the page the CI log names; the error shows up in the terminal.
+
 ## How the code is organized
 
 - Pure logic lives in `lib/` (parsing, crypto, PDF, conversions). It has no React and no DOM, so it is easy to test. Put new logic here, not inside components.
@@ -114,7 +116,7 @@ toolbelt follows the standard CODERCOPS flow:
 
 - `develop` is the default and integration branch; `production` is the deployed branch (tools.codercops.com). Never commit directly to either.
 - Start every change on a branch off `develop`: `feat/*`, `fix/*`, `chore/*`, or `docs/*`.
-- Open a PR into `develop` and **squash and merge** it (one squashed commit per feature). Use conventional commit titles (`feat:`, `fix:`, `chore:`, `docs:`). CI (lint, tests, build) must be green.
+- Open a PR into `develop` and **squash and merge** it (one squashed commit per feature). Use conventional commit titles (`feat:`, `fix:`, `chore:`, `docs:`). CI (lint, tests, build, and the page check on the built Worker) must be green.
 - A release is a PR from `develop` into `production`, merged as a **merge commit** (not squash), so production keeps full history. Bump the `package.json` version in that PR, and add a `release:minor` or `release:major` label if it is not a patch.
 - Merging the release PR runs the Release workflow: it tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop` back up to `production`.
 

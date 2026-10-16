@@ -18,4 +18,50 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test
-      - run: npm run build
+      # Builds the Worker the same way Workers Builds does. This runs `npm run build`
+      # (next build) first, so there is no separate build step.
+      - run: npx opennextjs-cloudflare build
+      # A green next build doesn't mean the Worker runs. v0.7.0 built fine and then
+      # threw on every request, so start the built Worker in local workerd and
+      # request every page in the sitemap, the og:image each page links to and a
+      # missing page.
+      - name: Request every page from the built Worker
+        env:
+          WRANGLER_SEND_METRICS: "false"
+        run: |
+          npx wrangler dev --ip 127.0.0.1 --port 8787 > wrangler.log 2>&1 &
+          base=http://127.0.0.1:8787
+          for i in $(seq 90); do
+            curl -s -o /dev/null "$base/robots.txt" && break
+            sleep 1
+          done
+          pages=$(curl -s "$base/sitemap.xml" | grep -o '<loc>[^<]*' | sed -E 's|<loc>https?://[^/]+||')
+          fail=0
+          if [ -z "$pages" ]; then
+            echo "sitemap.xml has no pages"
+            fail=1
+          fi
+          check() {
+            code=$(curl -s -o body.out -w '%{http_code}' "$base$1" || true)
+            echo "$code $1"
+            if [ "$code" != "$2" ]; then fail=1; fi
+          }
+          for p in $pages; do
+            check "$p" 200
+            img=$(grep -o 'property="og:image" content="[^"]*' body.out | head -1 | sed -E 's|.*content="https?://[^/]+||; s|&amp;|\&|g')
+            if [ -n "$img" ]; then
+              check "$img" 200
+            else
+              echo "no og:image on $p"
+              fail=1
+            fi
+          done
+          check /sitemap.xml 200
+          check /robots.txt 200
+          check /no-such-page 404
+          if grep -q 'wrangler:error' wrangler.log; then fail=1; fi
+          if [ "$fail" != 0 ]; then
+            echo "The built Worker failed. Wrangler output:"
+            cat wrangler.log
+            exit 1
+          fi
