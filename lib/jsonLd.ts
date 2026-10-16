@@ -8,6 +8,10 @@ import { SITE_URL, TOOLS, type Tool } from "./tools";
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 
+// The initial public release. dateModified is the build date (BUILD_DATE is
+// set in next.config.js), not the request date, since pages render per request.
+const SITE_PUBLISHED = "2026-07-08";
+
 // The publisher is CODERCOPS (the agency). Keyed by an @id on this domain so the
 // WebSite node can reference it. sameAs lists only identities we can honestly
 // claim — the agency site is `url`; the GitHub org is the verified profile.
@@ -31,6 +35,8 @@ export function toolJsonLd(tool: Tool) {
     operatingSystem: "Any (Browser)",
     description: tool.jsonLdDescription,
     url: `${SITE_URL}${tool.path}`,
+    inLanguage: "en",
+    isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     publisher: { "@type": "Organization", name: "CODERCOPS", url: "https://www.codercops.com" },
   };
@@ -81,6 +87,8 @@ export function homeJsonLd() {
         name: "CODERCOPS Tools",
         description: "Free, fast, privacy-first developer tools that run entirely in your browser.",
         publisher: { "@id": ORG_ID },
+        datePublished: SITE_PUBLISHED,
+        dateModified: process.env.BUILD_DATE ?? SITE_PUBLISHED,
       },
       {
         "@type": "ItemList",

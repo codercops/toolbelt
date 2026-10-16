@@ -16,6 +16,8 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  // Inlined at build time for the WebSite JSON-LD dateModified.
+  env: { BUILD_DATE: new Date().toISOString().slice(0, 10) },
   async headers() {
     return [
       {

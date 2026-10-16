@@ -57,6 +57,10 @@ describe("tool registry", () => {
       expect(toolJsonLd(tool).url).toBe(`${SITE_URL}${tool.path}`);
     });
 
+    it("marks tool JSON-LD as English and free", () => {
+      expect(toolJsonLd(tool)).toMatchObject({ inLanguage: "en", isAccessibleForFree: true });
+    });
+
     it("omits item from the final breadcrumb", () => {
       expect(breadcrumbJsonLd(tool).itemListElement.at(-1)).not.toHaveProperty("item");
     });
@@ -82,5 +86,11 @@ describe("homepage JSON-LD", () => {
         url: `${SITE_URL}${tool.path}`,
       })),
     });
+  });
+
+  it("dates the WebSite node", () => {
+    const website = homeJsonLd()["@graph"].find((node) => node["@type"] === "WebSite");
+    expect(website).toMatchObject({ datePublished: "2026-07-08" });
+    expect(website).toHaveProperty("dateModified", expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
   });
 });
