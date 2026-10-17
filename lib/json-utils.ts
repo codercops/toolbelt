@@ -35,11 +35,9 @@ function parseSyntaxError(raw: string, err: unknown): JsonError {
   const msg = err instanceof Error ? err.message : String(err);
   const posMatch = msg.match(/position (\d+)/i);
   const lineMatch = msg.match(/line (\d+) column (\d+)/i);
-  
   let line = 1;
   let column = 1;
   let position = 0;
-
   if (posMatch) {
     position = parseInt(posMatch[1], 10);
     const lc = computeLineCol(raw, position);
