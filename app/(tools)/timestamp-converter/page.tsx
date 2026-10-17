@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { TimestampConverterClient } from "./TimestampConverterClient";
 import { ToolPageLayout } from "@/components/shared/ToolPageLayout";
 import { generateToolMetadata } from "@/lib/toolMetadata";

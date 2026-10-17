@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/shared/CopyButton";
@@ -25,14 +25,20 @@ function Field({ label, value, copyValue }: { label: string; value: string; copy
 }
 
 export function TimestampConverterClient() {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
   const [epochInput, setEpochInput] = useState("1700000000");
   const [unit, setUnit] = useState<"auto" | TimestampUnit>("auto");
   const [dateInput, setDateInput] = useState("2024-02-29T00:00:00Z");
 
   useEffect(() => {
+    const initialTimer = window.setTimeout(() => {
+      setNow(Date.now());
+    }, 0);
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(timer);
+    };
   }, []);
 
   const detectedUnit = useMemo(() => detectUnit(epochInput), [epochInput]);
@@ -42,9 +48,9 @@ export function TimestampConverterClient() {
   );
   const dateResult = useMemo(() => toEpoch(dateInput), [dateInput]);
 
-  const liveSeconds = Math.floor(now / 1000).toString();
-  const liveMilliseconds = now.toString();
-  const liveIso = new Date(now).toISOString();
+  const liveSeconds = now === null ? "—" : Math.floor(now / 1000).toString();
+  const liveMilliseconds = now === null ? "—" : now.toString();
+  const liveIso = now === null ? "—" : new Date(now).toISOString();
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6">
@@ -87,14 +93,14 @@ export function TimestampConverterClient() {
             </div>
           </div>
           {!epochResult.ok ? (
-            <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-500">{epochResult.error}</p>
+            <p role="alert" className="rounded-xl border border-[var(--rose)]/30 bg-[var(--rose)]/5 p-3 text-sm text-[var(--rose)]">{epochResult.error}</p>
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-[var(--fg-muted)]">Interpreted as {UNIT_OPTIONS.find((option) => option.value === epochResult.unitUsed)?.label}</p>
               <Field label="UTC" value={epochResult.utc} copyValue={epochResult.utc} />
-              <Field label="Local time" value={formatTimestamp(epochResult.milliseconds / 1000)} copyValue={new Date(epochResult.milliseconds).toLocaleString()} />
+              <Field label="Local time" value={now === null ? "—" : formatTimestamp(epochResult.milliseconds / 1000)} copyValue={now === null ? undefined : formatTimestamp(epochResult.milliseconds / 1000)} />
               <Field label="ISO 8601" value={epochResult.iso} copyValue={epochResult.iso} />
-              <Field label="Relative time" value={relativeTime(epochResult.milliseconds / 1000, now)} />
+              <Field label="Relative time" value={now === null ? "—" : relativeTime(epochResult.milliseconds / 1000, now)} />
             </div>
           )}
         </section>
@@ -108,7 +114,7 @@ export function TimestampConverterClient() {
           <label className="block text-sm font-medium text-[var(--fg)]" htmlFor="date-input">Date or ISO 8601</label>
           <input id="date-input" value={dateInput} onChange={(e) => setDateInput(e.target.value)} spellCheck={false} placeholder="2024-02-29T00:00:00Z" className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--bg)] px-3 py-3 font-mono text-sm text-[var(--fg)] outline-none focus:border-[var(--green)]" />
           {!dateResult.ok ? (
-            <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-500">{dateResult.error}</p>
+            <p role="alert" className="rounded-xl border border-[var(--rose)]/30 bg-[var(--rose)]/5 p-3 text-sm text-[var(--rose)]">{dateResult.error}</p>
           ) : (
             <div className="space-y-3">
               <Field label="Unix seconds" value={String(dateResult.seconds)} copyValue={String(dateResult.seconds)} />

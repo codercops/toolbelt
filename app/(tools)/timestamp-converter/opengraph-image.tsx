@@ -1,4 +1,4 @@
-﻿import { getTool } from "@/lib/tools";
+import { getTool } from "@/lib/tools";
 import { renderToolOgImage, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/og";
 
 const tool = getTool("timestamp-converter")!;
