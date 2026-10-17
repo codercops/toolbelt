@@ -35,9 +35,11 @@ function parseSyntaxError(raw: string, err: unknown): JsonError {
   const msg = err instanceof Error ? err.message : String(err);
   const posMatch = msg.match(/position (\d+)/i);
   const lineMatch = msg.match(/line (\d+) column (\d+)/i);
+
   let line = 1;
   let column = 1;
   let position = 0;
+
   if (posMatch) {
     position = parseInt(posMatch[1], 10);
     const lc = computeLineCol(raw, position);
@@ -46,12 +48,10 @@ function parseSyntaxError(raw: string, err: unknown): JsonError {
   } else if (lineMatch) {
     line = parseInt(lineMatch[1], 10);
     column = parseInt(lineMatch[2], 10);
-  } 
-  else{
-    try{
+  } else {
+    try {
       llParse(raw);
-    }
-    catch(llError) {
+    } catch (llError) {
       if (llError instanceof Error) {
         const llPosMatch = llError.message.match(/position (\d+)/i);
         if (llPosMatch) {
@@ -63,10 +63,10 @@ function parseSyntaxError(raw: string, err: unknown): JsonError {
       }
     }
   }
-    
+
   const suggestion = suggestFix(raw);
   return { message: msg.replace(/in JSON.*$/, "").trim() || "Invalid JSON", line, column, position, suggestion };
-  } 
+}
  
 export function validate(raw: string): Result<true> {
   if (!raw.trim()) {
