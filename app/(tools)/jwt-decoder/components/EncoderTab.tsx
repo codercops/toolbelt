@@ -140,6 +140,7 @@ export function EncoderTab() {
             </div>
           </div>
           <textarea
+            aria-label="JWT payload"
             value={payload}
             onChange={(e) => setPayload(e.target.value)}
             spellCheck={false}
@@ -159,6 +160,7 @@ export function EncoderTab() {
           </div>
           {isHmac ? (
             <input
+              aria-label="HMAC secret"
               value={keyMaterial}
               onChange={(e) => setKeyMaterial(e.target.value)}
               spellCheck={false}
@@ -167,6 +169,7 @@ export function EncoderTab() {
             />
           ) : (
             <textarea
+              aria-label="Private key or JWK"
               value={keyMaterial}
               onChange={(e) => setKeyMaterial(e.target.value)}
               spellCheck={false}

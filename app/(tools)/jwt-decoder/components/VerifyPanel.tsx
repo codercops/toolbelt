@@ -136,6 +136,7 @@ export function VerifyPanel({ token, alg }: VerifyPanelProps) {
             {isHmac ? (
               <input
                 type="text"
+                aria-label="Shared HMAC secret"
                 value={secret}
                 onChange={(e) => setSecret(e.target.value)}
                 spellCheck={false}
@@ -144,6 +145,7 @@ export function VerifyPanel({ token, alg }: VerifyPanelProps) {
               />
             ) : (
               <textarea
+                aria-label="Public key or JWK to verify"
                 value={secret}
                 onChange={(e) => setSecret(e.target.value)}
                 spellCheck={false}
@@ -165,6 +167,7 @@ export function VerifyPanel({ token, alg }: VerifyPanelProps) {
             <div className="flex gap-2">
               <input
                 type="url"
+                aria-label="JWKS URL"
                 value={jwksUrl}
                 onChange={(e) => setJwksUrl(e.target.value)}
                 placeholder="https://your-auth-provider/.well-known/jwks.json"

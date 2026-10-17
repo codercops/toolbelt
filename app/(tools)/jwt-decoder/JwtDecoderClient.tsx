@@ -37,8 +37,12 @@ import { cn } from "@/lib/cn";
 
 type TabId = "decode" | "encode";
 
+const TAB_IDS: TabId[] = ["decode", "encode"];
+
 export function JwtDecoderClient() {
   const [tab, setTab] = useState<TabId>("decode");
+  const tablistRef = useRef<HTMLDivElement>(null);
+
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [decoded, setDecoded] = useState<DecodedJwt | null>(null);
@@ -97,6 +101,18 @@ export function JwtDecoderClient() {
       push("Could not copy link", "error");
     }
   }, [token, push]);
+  function onTabKeyDown(e: React.KeyboardEvent, index: number) {
+    let next = index;
+    if (e.key === "ArrowRight") next = (index + 1) % TAB_IDS.length;
+    else if (e.key === "ArrowLeft") next = (index - 1 + TAB_IDS.length) % TAB_IDS.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = TAB_IDS.length - 1;
+    else return;
+    e.preventDefault();
+    setTab(TAB_IDS[next]!);
+    const btns = tablistRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+    btns?.[next]?.focus();
+  }
 
   const downloadJson = useCallback(() => {
     if (!decoded) return;
@@ -141,12 +157,29 @@ export function JwtDecoderClient() {
   return (
     <>
       <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-5">
-        <div className="inline-flex p-1 rounded-lg border border-[var(--hairline)] bg-[var(--bg-card)]">
-          <TabButton active={tab === "decode"} onClick={() => setTab("decode")}>
+        <div
+          ref={tablistRef}
+          role="tablist"
+          aria-label="JWT decoder mode"
+          className="inline-flex p-1 rounded-lg border border-[var(--hairline)] bg-[var(--bg-card)]"
+        >
+          <TabButton
+            id="jwt-tab-decode"
+            ariaControls="jwt-panel-decode"
+            active={tab === "decode"}
+            onClick={() => setTab("decode")}
+            onKeyDown={(e) => onTabKeyDown(e, 0)}
+          >
             <Lock className="w-3.5 h-3.5" />
             Decode
           </TabButton>
-          <TabButton active={tab === "encode"} onClick={() => setTab("encode")}>
+          <TabButton
+            id="jwt-tab-encode"
+            ariaControls="jwt-panel-encode"
+            active={tab === "encode"}
+            onClick={() => setTab("encode")}
+            onKeyDown={(e) => onTabKeyDown(e, 1)}
+          >
             <KeyRound className="w-3.5 h-3.5" />
             Encode
           </TabButton>
@@ -155,7 +188,12 @@ export function JwtDecoderClient() {
 
       {tab === "decode" && (
         <>
-          <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-5">
+          <section
+            role="tabpanel"
+            id="jwt-panel-decode"
+            aria-labelledby="jwt-tab-decode"
+            className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-5"
+          >
             <div className="card overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--hairline)] bg-[var(--bg-raise)]">
                 <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)] flex items-center gap-2">
@@ -215,6 +253,7 @@ export function JwtDecoderClient() {
                 </pre>
                 <textarea
                   ref={inputRef}
+                  aria-label="Encoded JWT"
                   value={token}
                   onChange={(e) => setToken(e.target.value.replace(/\s/g, ""))}
                   spellCheck={false}
@@ -250,8 +289,14 @@ export function JwtDecoderClient() {
                 </div>
                 <div className="p-3 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <label className="font-mono text-[11px] text-[var(--fg-dim)] shrink-0">Endpoint</label>
+                    <label
+                      htmlFor="jwt-curl-endpoint"
+                      className="font-mono text-[11px] text-[var(--fg-dim)] shrink-0"
+                    >
+                      Endpoint
+                    </label>
                     <input
+                      id="jwt-curl-endpoint"
                       value={curlEndpoint}
                       onChange={(e) => setCurlEndpoint(e.target.value)}
                       className="flex-1 px-3 py-1.5 rounded-md border border-[var(--hairline)] bg-[var(--bg-soft)] text-[var(--fg)] font-mono text-[12.5px]"
@@ -283,7 +328,10 @@ export function JwtDecoderClient() {
 
           {error && (
             <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-5">
-              <div className="rounded-lg border border-[rgba(255,77,109,0.3)] bg-[rgba(255,77,109,0.06)] px-4 py-3 flex items-start gap-3 animate-fade-in">
+              <div
+                role="alert"
+                className="rounded-lg border border-[rgba(255,77,109,0.3)] bg-[rgba(255,77,109,0.06)] px-4 py-3 flex items-start gap-3 animate-fade-in"
+              >
                 <AlertCircle className="w-4 h-4 text-[var(--rose)] mt-0.5" />
                 <div>
                   <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--rose)]">
@@ -365,7 +413,12 @@ export function JwtDecoderClient() {
       )}
 
       {tab === "encode" && (
-        <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-10">
+        <section
+          role="tabpanel"
+          id="jwt-panel-encode"
+          aria-labelledby="jwt-tab-encode"
+          className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-10"
+        >
           <EncoderTab />
         </section>
       )}
@@ -382,18 +435,30 @@ function redact(token: string): string {
 }
 
 function TabButton({
+  id,
+  ariaControls,
   active,
   children,
   onClick,
+  onKeyDown,
 }: {
+  id: string;
+  ariaControls: string;
   active: boolean;
   children: React.ReactNode;
   onClick: () => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
 }) {
   return (
     <button
       type="button"
+      id={id}
+      role="tab"
+      aria-selected={active}
+      aria-controls={ariaControls}
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
+      onKeyDown={onKeyDown}
       className={cn(
         "inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-mono transition-all",
         active
@@ -447,6 +512,8 @@ function SignatureCard({
         </div>
         <button
           onClick={onToggle}
+          aria-expanded={open}
+          aria-controls="jwt-verification-explained"
           className="mt-2 flex items-center gap-1 font-mono text-[11px] tracking-[0.2em] uppercase text-[var(--fg-dim)] hover:text-[var(--fg)]"
         >
           <ChevronDown className={cn("w-3 h-3 transition-transform", open && "rotate-180")} />
