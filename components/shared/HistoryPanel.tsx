@@ -13,7 +13,15 @@ export interface HistoryItem {
   label?: string;
 }
 
-export function useHistory(key: string, max = 20) {
+export interface HistoryApi {
+  items: HistoryItem[];
+  push: (value: string, label?: string) => void;
+  pin: (id: string) => void;
+  remove: (id: string) => void;
+  clear: () => void;
+}
+
+export function useHistory(key: string, max = 20): HistoryApi {
   const [items, setItems] = useLocalStorage<HistoryItem[]>(`cc:history:${key}`, []);
 
   function push(value: string, label?: string) {
@@ -55,14 +63,14 @@ export function useHistory(key: string, max = 20) {
 }
 
 interface HistoryPanelProps {
-  storageKey: string;
+  history: HistoryApi;
   onSelect: (value: string) => void;
   title?: string;
   formatLabel?: (item: HistoryItem) => string;
 }
 
-export function HistoryPanel({ storageKey, onSelect, title = "History", formatLabel }: HistoryPanelProps) {
-  const { items, pin, remove, clear } = useHistory(storageKey);
+export function HistoryPanel({ history, onSelect, title = "History", formatLabel }: HistoryPanelProps) {
+  const { items, pin, remove, clear } = history;
 
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => {
