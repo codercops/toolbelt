@@ -27,7 +27,7 @@ describe("JSON Formatter Error Locations", () => {
   });
 
   it("extracts correct location for multi-line JSON", () => {
-    const input = '{"a": 1,\n"b": tru\n}'; 
+    const input = '{"a": 1,\n"b": tru\n}';
     const result = validate(input);
     expect(result.ok).toBe(false);
     if (!result.ok) {
