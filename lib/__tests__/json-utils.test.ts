@@ -11,9 +11,67 @@ import {
   escapeForCode,
   parseJson5Compat,
   diffLines,
+  validate,
 } from "../json-utils";
 
 const BIG = '{"id":12345678901234567890,"pi":3.141592653589793238,"n":42}';
+
+describe("JSON Formatter Error Locations", () => {
+  it("extracts correct location for unquoted values", () => {
+    const result = validate('{"a": x}');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(1);
+      expect(result.error.column).toBe(7);
+    }
+  });
+
+  it("extracts correct location for multi-line JSON", () => {
+    const input = '{"a": 1,\n"b": tru\n}';
+    const result = validate(input);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(2);
+      expect(result.error.column).toBe(6);
+    }
+  });
+
+  it("keeps original location for duplicate keys with trailing comma", () => {
+    const result = validate('{"a":1,"a":2,}');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(1);
+      expect(result.error.column).toBe(14);
+    }
+  });
+
+  it("extracts correct location for unexpected end of input", () => {
+    const result = validate('{"a": ');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(1);
+      expect(result.error.column).toBe(7);
+    }
+  });
+
+  it("extracts correct location for undefined in array", () => {
+    const result = validate('[1, 2, undefined]');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(1);
+      expect(result.error.column).toBe(8);
+    }
+  });
+
+  it("keeps existing correct locations intact", () => {
+    const result = validate('{"a":1,}');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.line).toBe(1);
+      expect(result.error.column).toBe(8);
+    }
+  });
+});
 
 describe("lossless numbers", () => {
   it("preserves large integers and long decimals when formatting", () => {
