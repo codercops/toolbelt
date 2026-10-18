@@ -1,6 +1,6 @@
 // Single source of truth for the tool set. The home grid, per-tool metadata,
 // JSON-LD, hero, FAQ, CTA, sitemap, web manifest, and command palette all derive
-// from this array ΓÇö adding a tool means adding one entry here (plus its route).
+// from this array — adding a tool means adding one entry here (plus its route).
 
 export interface ToolFaq {
   q: string;
@@ -59,7 +59,7 @@ export const TOOLS: Tool[] = [
     title: "JSON Formatter & Validator",
     tagline: "Formatter",
     cardDescription:
-      "Format, validate, minify. Syntax-highlighted output with collapsible tree view, plus JSON ΓåÆ CSV / TypeScript / YAML conversion.",
+      "Format, validate, minify. Syntax-highlighted output with collapsible tree view, plus JSON → CSV / TypeScript / YAML conversion.",
     features: ["Beautify", "Validate", "Tree view", "TypeScript", "CSV", "YAML"],
     accentVar: "--sky",
     accentHex: "#5AB5FF",
@@ -73,7 +73,7 @@ export const TOOLS: Tool[] = [
     heroHeading: "JSON Formatter & Validator",
     heroDim: "&",
     heroDescription:
-      "Paste your JSON below to format, validate, and convert it ΓÇö all in your browser, nothing is uploaded.",
+      "Paste your JSON below to format, validate, and convert it — all in your browser, nothing is uploaded.",
     jsonLdName: "JSON Formatter & Validator",
     jsonLdDescription:
       "Free online JSON formatter, validator, and minifier with syntax highlighting and JSON-to-TypeScript/CSV/YAML conversion.",
@@ -118,23 +118,23 @@ export const TOOLS: Tool[] = [
     ogTitle: "JWT Decoder & Verifier - CODERCOPS Tools",
     ogDescription:
       "Decode JWT tokens in-browser. Humanized claims, expiry status, built-in HS256 encoder.",
-    heroBreadcrumb: "Decoder ┬╖ Inspector ┬╖ Encoder",
+    heroBreadcrumb: "Decoder · Inspector · Encoder",
     heroHeading: "JWT Decoder & Inspector",
     heroDim: "&",
     heroDescription:
-      "Paste any JWT token to instantly decode its header, payload, and claims ΓÇö everything runs in your browser.",
+      "Paste any JWT token to instantly decode its header, payload, and claims — everything runs in your browser.",
     jsonLdName: "JWT Decoder & Inspector",
     jsonLdDescription:
-      "Decode and inspect JWT tokens, view humanized claims, check expiry, and generate signed HS256/384/512 tokens ΓÇö all in your browser.",
+      "Decode and inspect JWT tokens, view humanized claims, check expiry, and generate signed HS256/384/512 tokens — all in your browser.",
     applicationCategory: "DeveloperApplication",
     faqs: [
       {
         q: "What is a JWT?",
-        a: "A JSON Web Token is a compact, URL-safe format for asserting claims between parties. It has three parts ΓÇö header, payload, signature ΓÇö separated by dots and encoded with base64url.",
+        a: "A JSON Web Token is a compact, URL-safe format for asserting claims between parties. It has three parts — header, payload, signature — separated by dots and encoded with base64url.",
       },
       {
         q: "Is it safe to paste my JWT here?",
-        a: "Yes ΓÇö all decoding happens locally in your browser. Nothing is sent to our servers, logged, or stored. That said, avoid pasting production access tokens into any online tool if you can help it.",
+        a: "Yes — all decoding happens locally in your browser. Nothing is sent to our servers, logged, or stored. That said, avoid pasting production access tokens into any online tool if you can help it.",
       },
       {
         q: "Can this tool verify JWT signatures?",
@@ -147,7 +147,7 @@ export const TOOLS: Tool[] = [
     ],
     cta: {
       headline: "Building an app with JWT authentication?",
-      sub: "CODERCOPS implements secure auth systems ΓÇö OAuth2, JWT, SSO, and custom identity solutions ΓÇö for startups and enterprise apps.",
+      sub: "CODERCOPS implements secure auth systems — OAuth2, JWT, SSO, and custom identity solutions — for startups and enterprise apps.",
       primaryLabel: "See our projects",
       primaryHref: CTA_PROJECTS,
       secondaryLabel: "Let's build together",
@@ -161,8 +161,8 @@ export const TOOLS: Tool[] = [
     title: "Base64 Encoder & Decoder",
     tagline: "Encoding",
     cardDescription:
-      "Text, images, files ΓÇö encode to Base64 or decode back. URL-safe variant, data URIs, and magic-byte file detection.",
-    features: ["Text", "Image ΓåÆ URI", "Files", "URL-safe", "Auto-detect"],
+      "Text, images, files — encode to Base64 or decode back. URL-safe variant, data URIs, and magic-byte file detection.",
+    features: ["Text", "Image → URI", "Files", "URL-safe", "Auto-detect"],
     accentVar: "--amber",
     accentHex: "#FFB547",
     metaTitle: "Base64 Encoder & Decoder - Free Online Tool",
@@ -170,12 +170,12 @@ export const TOOLS: Tool[] = [
       "Free online Base64 encoder and decoder for text, images, and files. URL-safe Base64, data URIs, and magic-byte detection. Runs in your browser, no upload.",
     ogTitle: "Base64 Encoder & Decoder - CODERCOPS Tools",
     ogDescription:
-      "Encode and decode Base64 for text, images, and files ΓÇö all in your browser.",
-    heroBreadcrumb: "Text ┬╖ Image ┬╖ File ┬╖ Decode",
+      "Encode and decode Base64 for text, images, and files — all in your browser.",
+    heroBreadcrumb: "Text · Image · File · Decode",
     heroHeading: "Base64 Encoder & Decoder",
     heroDim: "&",
     heroDescription:
-      "Encode text, images, and files to Base64 ΓÇö or decode any Base64 string ΓÇö all in your browser with zero uploads.",
+      "Encode text, images, and files to Base64 — or decode any Base64 string — all in your browser with zero uploads.",
     jsonLdName: "Base64 Encoder & Decoder",
     jsonLdDescription:
       "Free online Base64 encoder and decoder for text, images, and files, with URL-safe variant and magic-byte detection.",
@@ -195,7 +195,7 @@ export const TOOLS: Tool[] = [
       },
       {
         q: "Why is Base64 output larger than the input?",
-        a: "Base64 represents every 3 input bytes as 4 output characters, so the output is roughly 4/3 of the input ΓÇö about 33% larger. That overhead is the trade-off for ASCII-safe transport.",
+        a: "Base64 represents every 3 input bytes as 4 output characters, so the output is roughly 4/3 of the input — about 33% larger. That overhead is the trade-off for ASCII-safe transport.",
       },
       {
         q: "Can I encode an image or PDF to Base64?",
@@ -218,7 +218,7 @@ export const TOOLS: Tool[] = [
     title: "Invoice Generator",
     tagline: "Billing",
     cardDescription:
-      "Fill in your details, preview live, and download a crisp invoice PDF. Saves invoices in your browser ΓÇö reusable sender profile, deductions, and auto-numbering.",
+      "Fill in your details, preview live, and download a crisp invoice PDF. Saves invoices in your browser — reusable sender profile, deductions, and auto-numbering.",
     features: ["Live preview", "PDF export", "Saved locally", "Deductions", "Auto-number"],
     accentVar: "--lime",
     accentHex: "#A6F36B",
@@ -228,14 +228,14 @@ export const TOOLS: Tool[] = [
     ogTitle: "Invoice Generator - CODERCOPS Tools",
     ogDescription:
       "Build invoices in your browser and download a crisp PDF. Saved locally, no account, no data leaves your tab.",
-    heroBreadcrumb: "Builder ┬╖ Saved locally ┬╖ PDF",
+    heroBreadcrumb: "Builder · Saved locally · PDF",
     heroHeading: "Invoice Generator",
     heroDim: "Generator",
     heroDescription:
-      "Fill in your details, watch the live preview, and download a clean invoice PDF. Everything is saved in your browser ΓÇö no account, no server, no data leaves your tab.",
+      "Fill in your details, watch the live preview, and download a clean invoice PDF. Everything is saved in your browser — no account, no server, no data leaves your tab.",
     jsonLdName: "Invoice Generator",
     jsonLdDescription:
-      "Create, save, and download professional invoices as PDF. Reusable sender profile, line items with deductions, tax, and auto-incrementing invoice numbers ΓÇö all stored locally in your browser.",
+      "Create, save, and download professional invoices as PDF. Reusable sender profile, line items with deductions, tax, and auto-incrementing invoice numbers — all stored locally in your browser.",
     applicationCategory: "BusinessApplication",
     faqs: [
       {
@@ -257,7 +257,7 @@ export const TOOLS: Tool[] = [
     ],
     cta: {
       headline: "Need billing baked into your product?",
-      sub: "CODERCOPS builds invoicing, payments, and subscription systems ΓÇö Stripe, tax handling, PDF generation, and dashboards ΓÇö for startups and enterprises.",
+      sub: "CODERCOPS builds invoicing, payments, and subscription systems — Stripe, tax handling, PDF generation, and dashboards — for startups and enterprises.",
       primaryLabel: "See our projects",
       primaryHref: CTA_PROJECTS,
       secondaryLabel: "Let's build together",
@@ -280,7 +280,7 @@ export const TOOLS: Tool[] = [
       "Free online URL encoder and decoder. Percent-encode query values, decode a messy redirect URL, and see every query param broken out. Runs in your browser.",
     ogTitle: "URL Encoder & Decoder - CODERCOPS Tools",
     ogDescription: "Encode and decode URLs and query values, with a full query param breakdown.",
-    heroBreadcrumb: "Encode ┬╖ Decode ┬╖ Query params",
+    heroBreadcrumb: "Encode · Decode · Query params",
     heroHeading: "URL Encoder & Decoder",
     heroDim: "&",
     heroDescription:
@@ -318,6 +318,59 @@ export const TOOLS: Tool[] = [
     sitemapPriority: 0.9,
   },
   {
+    slug: "timestamp-converter",
+    path: "/timestamp-converter",
+    title: "Unix Timestamp Converter",
+    tagline: "Time",
+    cardDescription:
+      "Convert Unix timestamps and dates with automatic unit detection, UTC, local time, ISO 8601, and relative time.",
+    features: ["Epoch to date", "Date to epoch", "Seconds or ms", "ISO 8601", "Relative time"],
+    accentVar: "--green",
+    accentHex: "#3FDD6B",
+    metaTitle: "Unix Timestamp Converter - Free Online Tool",
+    metaDescription:
+      "Convert Unix timestamps to readable dates and dates to epoch time. Detect seconds or milliseconds, view UTC and local time, and copy ISO 8601 output.",
+    ogTitle: "Unix Timestamp Converter - CODERCOPS Tools",
+    ogDescription:
+      "Convert Unix timestamps and dates. Detect seconds or milliseconds, inspect UTC and local time, and copy ISO 8601 output.",
+    heroBreadcrumb: "Time",
+    heroHeading: "Unix Timestamp Converter",
+    heroDim: "",
+    heroDescription:
+      "Convert epoch timestamps to readable dates or dates to Unix time. All conversions run locally in your browser.",
+    jsonLdName: "Unix Timestamp Converter",
+    jsonLdDescription:
+      "Free online Unix timestamp converter for epoch-to-date and date-to-epoch conversions, with automatic unit detection and ISO 8601 output.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "What is a Unix timestamp?",
+        a: "A Unix timestamp measures elapsed time from 1970-01-01 00:00:00 UTC. It is commonly represented in seconds or milliseconds.",
+      },
+      {
+        q: "How can I tell seconds from milliseconds?",
+        a: "This tool estimates the unit from the number's magnitude. You can also select seconds, milliseconds, microseconds, or nanoseconds manually.",
+      },
+      {
+        q: "Are my timestamps sent to a server?",
+        a: "No. Conversion happens locally in your browser. The values you enter are not uploaded by this tool.",
+      },
+      {
+        q: "Which date formats are supported?",
+        a: "ISO 8601 timestamps and date strings understood by your browser are supported. For unambiguous results, include a timezone such as Z or an explicit UTC offset.",
+      },
+    ],
+    cta: {
+      headline: "Building tools that handle dates and APIs?",
+      sub: "CODERCOPS builds production-grade backends, REST APIs, and full-stack applications for startups and businesses.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get a free quote",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
+  {
     slug: "color-converter",
     path: "/color-converter",
     title: "Color Converter & Contrast Checker",
@@ -333,11 +386,11 @@ export const TOOLS: Tool[] = [
     ogTitle: "Color Converter & Contrast Checker - CODERCOPS Tools",
     ogDescription:
       "Convert between HEX, RGB, and HSL with alpha channel support, live swatch, and WCAG contrast ratios.",
-    heroBreadcrumb: "Convert ┬╖ Preview ┬╖ Contrast",
+    heroBreadcrumb: "Convert · Preview · Contrast",
     heroHeading: "Color Converter & Contrast Checker",
     heroDim: "&",
     heroDescription:
-      "Convert colors between HEX, RGB, and HSL formats and check WCAG accessibility contrast ratios in real time ΓÇö 100% in your browser.",
+      "Convert colors between HEX, RGB, and HSL formats and check WCAG accessibility contrast ratios in real time — 100% in your browser.",
     jsonLdName: "Color Converter & Contrast Checker",
     jsonLdDescription:
       "Free online color converter and contrast checker supporting HEX, RGB, HSL, alpha channel, and WCAG AA/AAA contrast ratios.",
@@ -370,54 +423,6 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
-  {
-    slug: "timestamp-converter",
-    path: "/timestamp-converter",
-    title: "Unix Timestamp Converter",
-    tagline: "Time",
-    cardDescription: "Convert Unix timestamps and dates with automatic unit detection, UTC, local time, ISO 8601, and relative time.",
-    features: ["Epoch to date", "Date to epoch", "Seconds or ms", "ISO 8601", "Relative time"],
-    accentVar: "--green",
-    accentHex: "#3FDD6B",
-    metaTitle: "Unix Timestamp Converter - Free Online Tool",
-    metaDescription: "Convert Unix timestamps to readable dates and dates to epoch time. Detect seconds or milliseconds, view UTC and local time, and copy ISO 8601 output.",
-    ogTitle: "Unix Timestamp Converter - CODERCOPS Tools",
-    ogDescription: "Convert Unix timestamps and dates. Detect seconds or milliseconds, inspect UTC and local time, and copy ISO 8601 output.",
-    heroBreadcrumb: "Time",
-    heroHeading: "Unix Timestamp Converter",
-    heroDim: "",
-    heroDescription: "Convert epoch timestamps to readable dates or dates to Unix time. All conversions run locally in your browser.",
-    jsonLdName: "Unix Timestamp Converter",
-    jsonLdDescription: "Free online Unix timestamp converter for epoch-to-date and date-to-epoch conversions, with automatic unit detection and ISO 8601 output.",
-    applicationCategory: "DeveloperApplication",
-    faqs: [
-      {
-        q: "What is a Unix timestamp?",
-        a: "A Unix timestamp measures elapsed time from 1970-01-01 00:00:00 UTC. It is commonly represented in seconds or milliseconds.",
-      },
-      {
-        q: "How can I tell seconds from milliseconds?",
-        a: "This tool estimates the unit from the number's magnitude. You can also select seconds, milliseconds, microseconds, or nanoseconds manually.",
-      },
-      {
-        q: "Are my timestamps sent to a server?",
-        a: "No. Conversion happens locally in your browser. The values you enter are not uploaded by this tool.",
-      },
-      {
-        q: "Which date formats are supported?",
-        a: "ISO 8601 timestamps and date strings understood by your browser are supported. For unambiguous results, include a timezone such as Z or an explicit UTC offset.",
-      },
-    ],
-    cta: {
-      headline: "Building tools that handle dates and APIs?",
-      sub: "CODERCOPS builds production-grade backends, REST APIs, and full-stack applications for startups and businesses.",
-      primaryLabel: "View our work",
-      primaryHref: CTA_PROJECTS,
-      secondaryLabel: "Get a free quote",
-      secondaryHref: CTA_CONTACT,
-    },
-    sitemapPriority: 0.9,
-  },
 ];
 
 export function getTool(slug: string): Tool | undefined {
@@ -426,7 +431,7 @@ export function getTool(slug: string): Tool | undefined {
 
 // Sibling tools for a tool page: same application category first, then the
 // rest of the registry in declaration order. Deterministic (no randomness),
-// never includes the current tool, and never reorders the registry ΓÇö the same
+// never includes the current tool, and never reorders the registry — the same
 // slug always yields the same list. `tools` is injectable for tests.
 export function getRelatedTools(
   currentSlug: string,
