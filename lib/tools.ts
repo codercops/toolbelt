@@ -423,6 +423,55 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+  {
+    slug: "case-converter",
+    path: "/case-converter",
+    title: "Text Case Converter",
+    tagline: "Text",
+    cardDescription:
+      "Convert text between camelCase, snake_case, kebab-case, and 7 more naming conventions. Handles acronyms, digits, and multi-line input.",
+    features: ["camelCase", "snake_case", "kebab-case", "CONSTANT_CASE", "Title Case"],
+    accentVar: "--lime",
+    accentHex: "#A6F36B",
+    metaTitle: "Text Case Converter - Free Online Tool",
+    metaDescription:
+      "Free online text case converter. Convert between camelCase, snake_case, kebab-case, CONSTANT_CASE and 6 more styles instantly in your browser. No signup.",
+    ogTitle: "Text Case Converter - CODERCOPS Tools",
+    ogDescription:
+      "Convert text between camelCase, snake_case, kebab-case, CONSTANT_CASE and more. Free, instant, and private.",
+    heroBreadcrumb: "Text",
+    heroHeading: "Text Case Converter",
+    heroDim: "Converter",
+    heroDescription:
+      "Paste text once and get it in every common naming convention — camelCase, snake_case, kebab-case, and more. Everything runs in your browser.",
+    jsonLdName: "Text Case Converter",
+    jsonLdDescription:
+      "Free online text case converter supporting camelCase, PascalCase, snake_case, CONSTANT_CASE, kebab-case, dot.case, Title Case, and more.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "Is my text uploaded anywhere?",
+        a: "No. All conversion runs locally in your browser. The text you paste never leaves your tab, is never sent to a server, and is never logged.",
+      },
+      {
+        q: "How does it split words?",
+        a: "It breaks on spaces, underscores, dashes, dots, and slashes, detects camelCase and PascalCase boundaries, keeps acronyms like XMLHttpRequest as single words, and understands non-ASCII letters.",
+      },
+      {
+        q: "Which cases are supported?",
+        a: "Ten styles: camelCase, PascalCase, snake_case, CONSTANT_CASE, kebab-case, dot.case, Title Case, Sentence case, lowercase, and UPPERCASE. Multi-line input is converted line by line.",
+      },
+    ],
+    cta: {
+      headline: "Renaming things across a whole codebase?",
+      sub: "CODERCOPS builds production-grade backends, REST APIs, and full-stack applications for startups and businesses.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get a free quote",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {
