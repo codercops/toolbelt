@@ -37,7 +37,6 @@ export function CaseConverterClient() {
           onChange={(e) => setInput(e.target.value)}
           placeholder={"user_id\nXMLHttpRequest\n  Hello   World "}
           spellCheck={false}
-          aria-label="Text to convert"
           className="editor-input flex-1 p-4"
           style={{ minHeight: 180 }}
         />
@@ -47,7 +46,7 @@ export function CaseConverterClient() {
         {outputs.map((o) => (
           <div key={o.id} className="card overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)]">
-              <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
+              <span className="font-mono text-[10.5px] tracking-[0.22em] text-[var(--fg-dim)]">
                 {o.label}
               </span>
               <CopyButton value={o.value} disabled={!o.value} className="py-1" />
@@ -55,7 +54,6 @@ export function CaseConverterClient() {
             <pre
               className="flex-1 p-4 font-mono text-[13px] leading-[1.7] whitespace-pre-wrap break-all overflow-auto text-[var(--fg)]"
               style={{ minHeight: 64 }}
-              aria-label={`${o.label} output`}
             >
               {o.value || (
                 <span className="text-[var(--fg-muted)]">
