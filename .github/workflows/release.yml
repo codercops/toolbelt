@@ -74,12 +74,25 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     env:
-      # The repo variable points at the workers.dev URL until the
-      # tools.codercops.com cutover, and at the real host after it.
+      # Set the SMOKE_BASE_URL repo variable to check another host.
       BASE_URL: ${{ vars.SMOKE_BASE_URL || 'https://tools.codercops.com' }}
       EXPECTED_SHA: ${{ github.event.pull_request.merge_commit_sha }}
     steps:
+      # Bot Fight Mode on codercops.com answers GitHub's runners with a
+      # Cloudflare challenge (403 with cf-mitigated: challenge) instead of the
+      # site, and production has no workers.dev address to check instead. Then
+      # the checks below can't see the deploy, so they're skipped with a notice
+      # and the live site gets checked by hand.
+      - name: Check whether Cloudflare challenges this runner
+        run: |
+          read -r STATUS MITIGATED < <(curl -s -o /dev/null -w "%{http_code} %header{cf-mitigated}\n" --max-time 15 "$BASE_URL/version.txt")
+          if [ "$STATUS" = "403" ] && [ "$MITIGATED" = "challenge" ]; then
+            echo "::notice::Cloudflare challenged this runner on $BASE_URL, so the deploy wasn't checked from here. Check the live site by hand."
+            echo "CHALLENGED=1" >> "$GITHUB_ENV"
+          fi
+
       - name: Wait for the Cloudflare deploy of this merge
+        if: env.CHALLENGED != '1'
         run: |
           # Workers Builds deploys production on its own. version.txt carries
           # the commit it built, so poll until it matches (up to 15 minutes).
@@ -95,6 +108,7 @@ jobs:
           exit 1
 
       - name: Homepage reachable
+        if: env.CHALLENGED != '1'
         run: |
           STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/")
           if [ "$STATUS" != "200" ]; then
@@ -104,6 +118,7 @@ jobs:
           echo "Homepage check passed"
 
       - name: Tool page reachable
+        if: env.CHALLENGED != '1'
         run: |
           STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/json-formatter")
           if [ "$STATUS" != "200" ]; then
@@ -113,6 +128,7 @@ jobs:
           echo "Tool page check passed"
 
       - name: Sitemap valid
+        if: env.CHALLENGED != '1'
         run: |
           STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/sitemap.xml")
           if [ "$STATUS" != "200" ]; then
