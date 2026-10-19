@@ -520,7 +520,10 @@ function SignatureCard({
           How verification works
         </button>
         {open && (
-          <div className="mt-3 text-[12.5px] text-[var(--fg-muted)] leading-relaxed space-y-2 animate-fade-in">
+          <div
+            id="jwt-verification-explained"
+            className="mt-3 text-[12.5px] text-[var(--fg-muted)] leading-relaxed space-y-2 animate-fade-in"
+          >
             <p>Verification proves the token was signed by a party who knows the secret (or private key):</p>
             <ol className="list-decimal pl-5 space-y-1">
               <li>Split the token into <span className="font-mono text-[var(--fg)]">header.payload.signature</span>.</li>
