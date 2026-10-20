@@ -177,6 +177,58 @@ describe("toXML", () => {
     expect(result.value).toContain("  <tag>x</tag>\n  <tag>y</tag>");
   });
 
+  it("keeps invalid XML key names distinguishable instead of collapsing them to item", () => {
+    const result = toXML(
+      '{"bad key":1,"1x":2,"@type":"Person","$ref":"#/a","café":3,"a:b":4}',
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain(
+      [
+        "  <bad_key>1</bad_key>",
+        "  <_1x>2</_1x>",
+        "  <_type>Person</_type>",
+        "  <_ref>#/a</_ref>",
+        "  <caf_>3</caf_>",
+        "  <a_b>4</a_b>",
+      ].join("\n"),
+    );
+  });
+
+  it("leaves valid XML key names unchanged", () => {
+    const result = toXML('{"first-name":1,"user.id":2,"_id":3,"items":4}');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain(
+      [
+        "  <first-name>1</first-name>",
+        "  <user.id>2</user.id>",
+        "  <_id>3</_id>",
+        "  <items>4</items>",
+      ].join("\n"),
+    );
+  });
+
+  it("keeps the sanitized array key when its value is an array", () => {
+    const result = toXML('{"my tags":["a","b"]}');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("  <my_tag>a</my_tag>\n  <my_tag>b</my_tag>");
+    expect(result.value).not.toContain("<itemItem>");
+  });
+
+  it("sanitizes a custom root tag", () => {
+    const result = toXML('{"a":1}', "bad root");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("<bad_root>");
+    expect(result.value).toContain("</bad_root>");
+  });
+
   it("wraps a top-level array of arrays, each sub-array in its own element", () => {
     const result = toXML("[[1,2],[3]]");
     expect(result.ok).toBe(true);
