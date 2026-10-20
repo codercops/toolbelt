@@ -5,7 +5,7 @@ import { FindHighlight } from "../../app/(tools)/json-formatter/components/FindH
 import { selectFindMatch } from "../../app/(tools)/json-formatter/components/find-selection";
 
 function makeEditor(value: string) {
-  return { value, focus: vi.fn(), setSelectionRange: vi.fn(), scrollTop: 0 };
+  return { value, focus: vi.fn(), matches: vi.fn().mockReturnValue(false), setSelectionRange: vi.fn(), scrollTop: 0 };
 }
 
 describe("JSON find selection", () => {
@@ -27,6 +27,37 @@ describe("JSON find selection", () => {
     selectFindMatch(editor, 6, 11);
 
     expect(editor.focus).not.toHaveBeenCalled();
+  });
+
+  it("preserves the editor's selection and scroll position while it has focus", () => {
+    const value = 'ab  "email": "hello@example.com"';
+    const editor = makeEditor(value);
+    editor.matches.mockReturnValue(true);
+    editor.scrollTop = 100;
+    const start = value.indexOf("email");
+
+    selectFindMatch(editor, start, start + 5);
+
+    expect(editor.matches).toHaveBeenCalledWith(":focus");
+    expect(editor.setSelectionRange).not.toHaveBeenCalled();
+    expect(editor.scrollTop).toBe(100);
+    expect(editor.value).toBe(value);
+    expect(editor.focus).not.toHaveBeenCalled();
+  });
+
+  it("resumes match selection after focus leaves the editor", () => {
+    const editor = makeEditor("one\ntwo\nthree\nfour\nfive\nemail");
+    const start = editor.value.indexOf("email");
+    editor.matches.mockReturnValue(true);
+    editor.scrollTop = 100;
+    selectFindMatch(editor, start, start + 5);
+    expect(editor.setSelectionRange).not.toHaveBeenCalled();
+
+    editor.matches.mockReturnValue(false);
+    selectFindMatch(editor, start, start + 5);
+
+    expect(editor.setSelectionRange).toHaveBeenCalledExactlyOnceWith(start, start + 5);
+    expect(editor.scrollTop).toBeCloseTo(2 * 21.45);
   });
 
   it("scrolls to the match with the existing line context", () => {

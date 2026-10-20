@@ -1,4 +1,4 @@
-type FindEditor = Pick<HTMLTextAreaElement, "value" | "setSelectionRange" | "scrollTop">;
+type FindEditor = Pick<HTMLTextAreaElement, "value" | "setSelectionRange" | "scrollTop" | "matches">;
 
 export interface FindMatch {
   start: number;
@@ -6,6 +6,8 @@ export interface FindMatch {
 }
 
 export function selectFindMatch(editor: FindEditor, start: number, end: number) {
+  // Updating matches while editing must not move the caret or replace user text.
+  if (editor.matches(":focus")) return;
   editor.setSelectionRange(start, end);
   // Keep a few lines of context above the selected match.
   const before = editor.value.slice(0, start).split("\n").length;
