@@ -408,3 +408,25 @@ describe("toTypeScript array items", () => {
     }
   });
 });
+
+describe("duplicate keys", () => {
+  const DUP = '{"a": 1, "a": 2}';
+
+  it("validate() rejects a duplicate key", () => {
+    const result = validate(DUP);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain("Duplicate key");
+    }
+  });
+
+  it("conversions surface a duplicate-key error instead of throwing", () => {
+    const results = [toCSV(DUP), toTypeScript(DUP), toYAML(DUP), toXML(DUP), sortKeys(DUP)];
+    for (const result of results) {
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.message).toContain("Duplicate key");
+      }
+    }
+  });
+});

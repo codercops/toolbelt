@@ -77,10 +77,18 @@ export function validate(raw: string): Result<true> {
   }
   try {
     JSON.parse(raw);
-    return { ok: true, value: true };
   } catch (e) {
     return { ok: false, error: parseSyntaxError(raw, e) };
   }
+  // `JSON.parse` silently keeps the last value of a duplicate key, but the
+  // lossless parser every conversion relies on rejects it. Detect it here so
+  // the conversions surface a friendly error instead of crashing the tool.
+  try {
+    llParse(raw);
+  } catch (e) {
+    return { ok: false, error: parseSyntaxError(raw, e) };
+  }
+  return { ok: true, value: true };
 }
 
 export function format(raw: string, indent: 2 | 4 = 2): Result<string> {
