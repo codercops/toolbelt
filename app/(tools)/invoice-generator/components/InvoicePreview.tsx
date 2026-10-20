@@ -7,6 +7,8 @@ import {
   formatMoneyWithCode,
   lineAmount,
   type Invoice,
+  roundTo,
+  currencyMinorDigits,
 } from "@/lib/invoice-types";
 
 interface InvoicePreviewProps {
@@ -102,7 +104,7 @@ export function InvoicePreview({ invoice }: InvoicePreviewProps) {
                   {item.qty}
                 </td>
                 <td className="text-right py-3 pl-2 align-top tabular-nums whitespace-nowrap text-[#111827]">
-                  {formatMoney(lineAmount(item), currency)}
+                  {formatMoney(roundTo(lineAmount(item), currencyMinorDigits(currency)), currency)}
                 </td>
               </tr>
             ))}

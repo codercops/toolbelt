@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Trash2, GripVertical } from "lucide-react";
-import { formatMoney, lineAmount, newLineItem, type LineItem } from "@/lib/invoice-types";
+import { formatMoney, lineAmount, newLineItem, type LineItem, roundTo, currencyMinorDigits } from "@/lib/invoice-types";
 import { NumberInput } from "./NumberInput";
 
 interface LineItemsEditorProps {
@@ -79,7 +79,7 @@ export function LineItemsEditor({ items, currency, onChange }: LineItemsEditorPr
           />
 
           <div className="px-2.5 py-2 text-right text-[13px] tabular-nums text-[var(--fg-muted)] font-mono whitespace-nowrap overflow-hidden text-ellipsis">
-            {formatMoney(lineAmount(item), currency)}
+            {formatMoney(roundTo(lineAmount(item), currencyMinorDigits(currency)), currency)}
           </div>
 
           <button

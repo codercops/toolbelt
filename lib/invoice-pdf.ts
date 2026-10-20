@@ -10,6 +10,8 @@ import {
   invoiceFileName,
   lineAmount,
   type Invoice,
+  roundTo, 
+  currencyMinorDigits,
 } from "./invoice-types";
 
 // Letter page, points. Points make font sizing and layout math intuitive.
@@ -216,7 +218,7 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
     doc.text(descLines, DESC_LEFT, y);
     doc.text(formatMoney(item.rate, currency), COL_RATE, y, { align: "right" });
     doc.text(String(item.qty), COL_QTY, y, { align: "right" });
-    doc.text(formatMoney(lineAmount(item), currency), COL_AMOUNT, y, { align: "right" });
+    doc.text(formatMoney(roundTo(lineAmount(item), currencyMinorDigits(currency)), currency),COL_AMOUNT,y,{ align: "right" });
 
     const rowH = Math.max(descLines.length * 14, 16);
     y += rowH + 12;

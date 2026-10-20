@@ -82,7 +82,14 @@ export function currencyMinorDigits(currency: string): number {
 export function roundTo(value: number, digits: number): number {
   if (!Number.isFinite(value)) return 0;
   const f = Math.pow(10, digits);
-  return Math.round((value + Number.EPSILON) * f) / f;
+  const sign = value < 0 ? -1 : 1;
+  
+  // Multiply first, then use toPrecision(15) to fix inherent JS float errors
+  const scaled = Math.abs(value) * f;
+  const preciseScaled = Number(scaled.toPrecision(15));
+  
+  // Round half away from zero and restore the original sign
+  return (Math.round(preciseScaled) / f) * sign;
 }
 
 export function computeTotals(
