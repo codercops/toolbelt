@@ -2,11 +2,12 @@
 
 import { ChevronUp, ChevronDown, X, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import type { FindMatch } from "./find-selection";
 
 interface FindBarProps {
   text: string;
   onClose: () => void;
-  onScrollTo: (position: number) => void;
+  onScrollTo: (match: FindMatch | null) => void;
 }
 
 export function FindBar({ text, onClose, onScrollTo }: FindBarProps) {
@@ -29,19 +30,23 @@ export function FindBar({ text, onClose, onScrollTo }: FindBarProps) {
     return positions;
   }, [text, query, caseSensitive]);
 
-  useEffect(() => setIdx(0), [query, caseSensitive]);
+  const activeIdx = idx < matches.length ? idx : 0;
 
   useEffect(() => {
-    if (matches[idx] !== undefined) onScrollTo(matches[idx]);
-  }, [idx, matches, onScrollTo]);
+    if (matches[activeIdx] !== undefined) {
+      onScrollTo({ start: matches[activeIdx], end: matches[activeIdx] + query.length });
+    } else {
+      onScrollTo(null);
+    }
+  }, [activeIdx, matches, query.length, onScrollTo]);
 
   function next() {
     if (matches.length === 0) return;
-    setIdx((i) => (i + 1) % matches.length);
+    setIdx((activeIdx + 1) % matches.length);
   }
   function prev() {
     if (matches.length === 0) return;
-    setIdx((i) => (i - 1 + matches.length) % matches.length);
+    setIdx((activeIdx - 1 + matches.length) % matches.length);
   }
 
   function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -49,29 +54,40 @@ export function FindBar({ text, onClose, onScrollTo }: FindBarProps) {
       e.preventDefault();
       if (e.shiftKey) prev();
       else next();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      onClose();
     }
   }
 
   return (
-    <div className="absolute top-2 right-2 z-20 flex items-center gap-1 px-2 py-1.5 rounded-md border border-[var(--hairline-strong)] bg-[var(--bg-raise)] shadow-lg animate-slide-down">
+    <div
+      className="absolute top-2 right-2 z-20 flex items-center gap-1 px-2 py-1.5 rounded-md border border-[var(--hairline-strong)] bg-[var(--bg-raise)] shadow-lg animate-slide-down"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+    >
       <Search className="w-3.5 h-3.5 text-[var(--fg-muted)]" />
       <input
         autoFocus
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setIdx(0);
+        }}
         onKeyDown={onKey}
         aria-label="Find in input"
         placeholder="Find in input..."
         className="w-40 sm:w-56 bg-transparent text-[12.5px] text-[var(--fg)] outline-none font-mono"
       />
       <span className="font-mono text-[11px] text-[var(--fg-dim)] min-w-[50px] text-right">
-        {matches.length === 0 ? "0" : `${idx + 1}/${matches.length}`}
+        {matches.length === 0 ? "0" : `${activeIdx + 1}/${matches.length}`}
       </span>
       <button
-        onClick={() => setCaseSensitive((v) => !v)}
+        onClick={() => {
+          setCaseSensitive((v) => !v);
+          setIdx(0);
+        }}
         className="px-1.5 text-[11px] font-mono rounded"
         style={{
           color: caseSensitive ? "var(--cyan)" : "var(--fg-dim)",

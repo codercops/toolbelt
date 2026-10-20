@@ -6,6 +6,8 @@ import { Toolbar } from "./components/Toolbar";
 import { OutputPanel } from "./components/OutputPanel";
 import { ConversionPanel } from "./components/ConversionPanel";
 import { FindBar } from "./components/FindBar";
+import { FindHighlight } from "./components/FindHighlight";
+import { selectFindMatch, type FindMatch } from "./components/find-selection";
 import { DiffPanel } from "./components/DiffPanel";
 import { StatsBar } from "./components/StatsBar";
 import {
@@ -42,6 +44,7 @@ export function JsonFormatterClient() {
   const [diffOpen, setDiffOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
+  const [findMatch, setFindMatch] = useState<FindMatch | null>(null);
   const [json5, setJson5] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -308,16 +311,18 @@ export function JsonFormatterClient() {
   );
 
   // Scroll to find match
-  const findScrollTo = useCallback((pos: number) => {
+  const findScrollTo = useCallback((match: FindMatch | null) => {
+    setFindMatch(match);
     const el = inputRef.current;
-    if (!el) return;
-    el.focus();
-    el.setSelectionRange(pos, pos + 0);
-    // Compute approximate scroll: lines up to pos
-    const before = input.slice(0, pos).split("\n").length;
-    const lineHeight = 21.45;
-    el.scrollTop = Math.max(0, (before - 4) * lineHeight);
-  }, [input]);
+    if (!el || !match) return;
+    selectFindMatch(el, match.start, match.end);
+  }, []);
+
+  const closeFind = useCallback(() => {
+    setFindOpen(false);
+    setFindMatch(null);
+    inputRef.current?.focus();
+  }, []);
 
   return (
     <>
@@ -424,25 +429,28 @@ export function JsonFormatterClient() {
               {findOpen && (
                 <FindBar
                   text={input}
-                  onClose={() => setFindOpen(false)}
+                  onClose={closeFind}
                   onScrollTo={findScrollTo}
                 />
               )}
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  if (error) setError(null);
-                }}
-                aria-label="JSON input"
-                placeholder={`Paste JSON here...\n\nTip: drop a .json file anywhere on the page, or paste a URL.`}
-                className="editor-input flex-1 px-4 py-3 bg-transparent"
-                spellCheck={false}
-                autoCapitalize="off"
-                autoCorrect="off"
-                style={{ minHeight: 400 }}
-              />
+              <div className="relative flex flex-1">
+                {findOpen && <FindHighlight editorRef={inputRef} text={input} match={findMatch} />}
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  aria-label="JSON input"
+                  placeholder={`Paste JSON here...\n\nTip: drop a .json file anywhere on the page, or paste a URL.`}
+                  className="editor-input relative flex-1 px-4 py-3 bg-transparent"
+                  spellCheck={false}
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  style={{ minHeight: 400 }}
+                />
+              </div>
             </div>
           </div>
 
