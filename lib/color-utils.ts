@@ -468,6 +468,16 @@ export function contrastRatio(color1: RgbaColor, color2: RgbaColor): number {
 }
 
 /**
+ * Formats a contrast ratio for display with two decimals, truncated rather than rounded, so it
+ * never shows more contrast than the colors have: WCAG doesn't round, and 4.4993 must not read
+ * 4.50 next to a failed 4.5:1 check.
+ */
+export function formatContrastRatio(ratio: number): string {
+  // toPrecision drops float noise before truncating: 4.56 * 100 is 455.99999999999994.
+  return (Math.floor(Number((ratio * 100).toPrecision(12))) / 100).toFixed(2);
+}
+
+/**
  * Computes WCAG 2.1 AA and AAA compliance ratings for normal and large text.
  */
 export function wcagRating(ratio: number): WcagRatingResult {

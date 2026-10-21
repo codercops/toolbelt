@@ -17,6 +17,7 @@ import {
   toHslString,
   relativeLuminance,
   contrastRatio,
+  formatContrastRatio,
   wcagRating,
   type RgbaColor,
 } from "@/lib/color-utils";
@@ -29,10 +30,6 @@ import { cn } from "@/lib/cn";
 const isMac =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 const MOD = isMac ? "⌘" : "Ctrl";
-
-function formatRatio(ratio: number): string {
-  return ratio.toFixed(2);
-}
 
 function hex6(color: RgbaColor): string {
   const r = Math.round(Math.max(0, Math.min(255, color.r))).toString(16).padStart(2, "0");
@@ -598,7 +595,7 @@ export function ColorConverterClient() {
                     Contrast Ratio
                   </span>
                   <span className="font-mono text-2xl font-bold text-[var(--fg)]">
-                    {formatRatio(contrastResult.ratio)} : 1
+                    {formatContrastRatio(contrastResult.ratio)} : 1
                   </span>
                 </div>
 

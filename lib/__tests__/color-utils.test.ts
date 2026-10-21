@@ -6,6 +6,7 @@ import {
   toHslString,
   relativeLuminance,
   contrastRatio,
+  formatContrastRatio,
   wcagRating,
   rgbToHsl,
   hslToRgb,
@@ -189,6 +190,33 @@ describe("relativeLuminance & contrastRatio", () => {
     const ratio = contrastRatio(fg.value, bg.value);
     expect(ratio).toBeCloseTo(2.17, 2);
     expect(ratio).not.toBeCloseTo(3.98, 1);
+  });
+});
+
+describe("formatContrastRatio", () => {
+  it.each([
+    ["#FFFFFF", "#EB1717", "4.49"],
+    ["#EE0707", "#FFFFFF", "4.49"],
+    ["#575757", "#CCCCCC", "4.49"],
+    ["#959595", "#FFFFFF", "2.99"],
+    ["#176363", "#FFFFFF", "6.99"],
+    ["#FFFFFF", "#0A0B0F", "19.66"],
+  ])("truncates %s on %s to %s, so it never reads above a threshold the pair misses", (fg, bg, shown) => {
+    const text = parseColor(fg);
+    const surface = parseColor(bg);
+    expect(text.ok && surface.ok).toBe(true);
+    if (!text.ok || !surface.ok) return;
+    expect(formatContrastRatio(contrastRatio(text.value, surface.value))).toBe(shown);
+  });
+
+  it.each([
+    [21, "21.00"],
+    [1, "1.00"],
+    [4.5, "4.50"],
+    [4.56, "4.56"],
+    [4.499327326513352, "4.49"],
+  ])("formats %s as %s", (ratio, shown) => {
+    expect(formatContrastRatio(ratio)).toBe(shown);
   });
 });
 
