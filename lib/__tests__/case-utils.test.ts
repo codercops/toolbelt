@@ -66,4 +66,29 @@ describe("toCase", () => {
     expect(toCase("hello world", "sentence")).toBe("Hello world");
     expect(toCase("hello world", "lower")).toBe("hello world");
   });
+
+  it("drops punctuation in the identifier styles", () => {
+    expect(toCase("Hello, World!", "camel")).toBe("helloWorld");
+    expect(toCase("Hello, World!", "pascal")).toBe("HelloWorld");
+    expect(toCase("Hello, World!", "snake")).toBe("hello_world");
+    expect(toCase("Hello, World!", "constant")).toBe("HELLO_WORLD");
+    expect(toCase("Hello, World!", "kebab")).toBe("hello-world");
+    expect(toCase("Hello, World!", "dot")).toBe("hello.world");
+  });
+
+  it("removes apostrophes without splitting the word", () => {
+    expect(toCase("What's up?", "camel")).toBe("whatsUp");
+    expect(toCase("What's up?", "kebab")).toBe("whats-up");
+  });
+
+  it("keeps letters from other alphabets", () => {
+    expect(toCase("Café au lait", "camel")).toBe("caféAuLait");
+  });
+
+  it("keeps punctuation in the prose styles", () => {
+    expect(toCase("Hello, World!", "title")).toBe("Hello, World!");
+    expect(toCase("Hello, World!", "sentence")).toBe("Hello, world!");
+    expect(toCase("Hello, World!", "lower")).toBe("hello, world!");
+    expect(toCase("Hello, World!", "upper")).toBe("HELLO, WORLD!");
+  });
 });
