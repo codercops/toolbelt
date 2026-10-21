@@ -15,6 +15,12 @@ updates:
           - "next"
           - "@opennextjs/cloudflare"
           - "eslint-config-next"
+      # react-dom refuses to load next to a react of a different version, so a
+      # bump of one without the other fails the tests (#224 and #226).
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
       dev-dependencies:
         dependency-type: development
     ignore:
