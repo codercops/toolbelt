@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { tokenize } from "@/lib/json-utils";
-import { formatTimestamp, relativeTime, STANDARD_CLAIMS } from "@/lib/jwt-utils";
+import { formatTimestamp, isStandardClaim, relativeTime, STANDARD_CLAIMS } from "@/lib/jwt-utils";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { cn } from "@/lib/cn";
 
@@ -29,7 +29,7 @@ export function DecodedCard({
         ? Object.entries(data).map(([key, value]) => ({
             key,
             value,
-            standard: key in STANDARD_CLAIMS,
+            standard: isStandardClaim(key),
           }))
         : [],
     [data, isPayload]
@@ -112,7 +112,7 @@ function ClaimRow({
   value: unknown;
   standard: boolean;
 }) {
-  const label = STANDARD_CLAIMS[name];
+  const label = standard ? STANDARD_CLAIMS[name] : undefined;
   const description = useMemo(() => {
     if (!standard) return null;
     if (name === "exp" && typeof value === "number") {

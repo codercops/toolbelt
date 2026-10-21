@@ -5,6 +5,8 @@ import {
   verifyJwt,
   verifyWithJwks,
   computeHealth,
+  describeAlg,
+  isStandardClaim,
   securityAudit,
   uint8ToBase64Url,
   SAMPLE_JWT,
@@ -157,6 +159,44 @@ describe("computeHealth expiry ordering", () => {
   it("reports future when not expired but nbf is ahead", () => {
     const h = computeHealth(decoded({ exp: now / 1000 + 1000, nbf: now / 1000 + 100 }), now);
     expect(h.expiry.status).toBe("future");
+  });
+});
+
+describe("computeHealth with inherited property names", () => {
+  const decoded = (header: Record<string, unknown>, payload: Record<string, unknown>): DecodedJwt => ({
+    header,
+    payload,
+    signature: "sig",
+    raw: { header: "", payload: "", signature: "sig" },
+  });
+
+  it("counts __proto__ as a custom claim", () => {
+    // An object literal would not create an own "__proto__" key, so parse JSON.
+    const payload = JSON.parse('{"sub":"1","__proto__":{"a":1}}') as Record<string, unknown>;
+    const h = computeHealth(decoded({ alg: "HS256" }, payload));
+    expect(h.standardCount).toBe(1);
+    expect(h.customCount).toBe(1);
+  });
+
+  it("counts constructor as a custom claim", () => {
+    const h = computeHealth(decoded({ alg: "HS256" }, { constructor: "x" }));
+    expect(h.standardCount).toBe(0);
+    expect(h.customCount).toBe(1);
+  });
+
+  it.each(["__proto__", "constructor", "toString"])("reports an unknown algorithm for alg %s", (alg) => {
+    const h = computeHealth(decoded({ alg }, { sub: "1" }));
+    expect(h.algDesc).toBe("Unknown algorithm");
+  });
+});
+
+describe("isStandardClaim and describeAlg", () => {
+  it("only match names the maps define themselves", () => {
+    expect(isStandardClaim("sub")).toBe(true);
+    expect(isStandardClaim("__proto__")).toBe(false);
+    expect(isStandardClaim("constructor")).toBe(false);
+    expect(describeAlg("HS256")).toBe("HMAC using SHA-256");
+    expect(describeAlg("toString")).toBe("Unknown algorithm");
   });
 });
 

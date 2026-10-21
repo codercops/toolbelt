@@ -15,8 +15,8 @@ import {
   Terminal,
 } from "lucide-react";
 import {
-  ALG_DESCRIPTIONS,
   decodeJwt,
+  describeAlg,
   SAMPLE_JWT,
   securityAudit,
   type DecodedJwt,
@@ -126,7 +126,7 @@ export function JwtDecoderClient() {
   }, [decoded, push]);
 
   const alg = decoded?.header.alg;
-  const algDesc = typeof alg === "string" ? ALG_DESCRIPTIONS[alg] ?? "Unknown algorithm" : undefined;
+  const algDesc = typeof alg === "string" ? describeAlg(alg) : undefined;
   const findings = decoded ? securityAudit(decoded, false) : [];
   const parts = token.split(".");
   const partsValid = parts.length === 3;
