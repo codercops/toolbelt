@@ -690,7 +690,11 @@ export function escapeForCode(raw: string, lang: EscapeLang): string {
       // Escape backticks and template literal expressions for safety in template strings
       return "`" + minified.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${") + "`";
     case "python":
-      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'''/g, "'\\''") + "'''";
+      // Every single quote gets an escape, not only runs of three. Inside
+      // '''...''' a `\'` is always a plain quote, so a quote left unescaped by
+      // a run of five or more (the tail of the run next to the escaped quote of
+      // the previous pair) would still meet two others and close the string.
+      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'''";
     case "go":
       return "`" + minified.replace(/`/g, "` + \"`\" + `") + "`";
     case "rust":

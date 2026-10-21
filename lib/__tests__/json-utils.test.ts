@@ -257,6 +257,28 @@ describe("escapeForCode python", () => {
 
     expect(out).toBe("'''{\"path\":\"C:\\\\\\\\temp\"}'''");
   });
+
+  it("escapes a run of five single quotes without closing the string", () => {
+    // The tail of the run used to sit next to the closing delimiter and Python
+    // reported "SyntaxError: unterminated string literal".
+    const out = escapeForCode('{"a":"\'\'\'\'\'"}', "python");
+
+    expect(out).toBe("'''{\"a\":\"\\'\\'\\'\\'\\'\"}'''");
+  });
+
+  it("escapes a run of eight single quotes", () => {
+    const out = escapeForCode('{"a":"\'\'\'\'\'\'\'\'"}', "python");
+
+    expect(out).toBe("'''{\"a\":\"\\'\\'\\'\\'\\'\\'\\'\\'\"}'''");
+  });
+
+  it("escapes single quotes in raw text that is not valid JSON", () => {
+    // Not parseable, so the raw input is escaped; it ends in a quote, which
+    // used to land right against the closing delimiter.
+    const out = escapeForCode("it's'", "python");
+
+    expect(out).toBe("'''it\\'s\\''''");
+  });
 });
 
 describe("parseJson5Compat indentation", () => {
