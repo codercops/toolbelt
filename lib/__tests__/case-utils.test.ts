@@ -83,6 +83,9 @@ describe("toCase", () => {
 
   it("keeps letters from other alphabets", () => {
     expect(toCase("Café au lait", "camel")).toBe("caféAuLait");
+    expect(toCase("नमस्ते दुनिया", "camel")).toBe("नमस्तेदुनिया");
+    expect(toCase("नमस्ते दुनिया", "kebab")).toBe("नमस्ते-दुनिया");
+    expect(toCase("Cafe\u0301 au lait", "camel")).toBe("cafe\u0301AuLait");
   });
 
   it("keeps punctuation in the prose styles", () => {

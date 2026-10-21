@@ -54,7 +54,7 @@ const IDENTIFIER_STYLES = new Set<CaseStyle>(["camel", "pascal", "snake", "const
 function convertLine(line: string, style: CaseStyle): string {
   let words = splitWords(line);
   if (IDENTIFIER_STYLES.has(style)) {
-    words = words.map((w) => w.replace(/[^\p{L}\p{N}]/gu, "")).filter(Boolean);
+    words = words.map((w) => w.replace(/[^\p{L}\p{M}\p{N}]/gu, "")).filter(Boolean);
   }
   if (words.length === 0) return "";
   const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
