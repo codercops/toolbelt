@@ -107,11 +107,34 @@ export function fromEpoch(
   };
 }
 
+/**
+ * V8 accepts days up to 31 in any month and rolls them into the next
+ * month. When the input starts with YYYY-MM-DD, compare the typed day
+ * to that month's length so impossible dates stay errors.
+ */
+function hasImpossibleCalendarDay(dateString: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateString);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  if (month < 1 || month > 12 || day < 1) return true;
+
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return day > daysInMonth;
+}
+
 export function toEpoch(dateString: string): DateEpochResult {
   const trimmed = dateString.trim();
 
   if (!trimmed) {
     return { ok: false, error: "Enter a date or ISO 8601 timestamp." };
+  }
+
+  if (hasImpossibleCalendarDay(trimmed)) {
+    return { ok: false, error: "Enter a valid date or ISO 8601 timestamp." };
   }
 
   const milliseconds = Date.parse(trimmed);

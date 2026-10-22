@@ -86,6 +86,21 @@ describe("toEpoch", () => {
     expect(toEpoch("not a date").ok).toBe(false);
   });
 
+  it("rejects impossible calendar days that Date.parse would roll over", () => {
+    expect(toEpoch("2023-02-29").ok).toBe(false);
+    expect(toEpoch("2023-02-29T00:00:00Z").ok).toBe(false);
+    expect(toEpoch("2024-04-31").ok).toBe(false);
+    expect(toEpoch("2024-06-31T09:30:00Z").ok).toBe(false);
+  });
+
+  it("accepts a valid date whose offset lands on the next UTC day", () => {
+    const result = toEpoch("2023-02-28T23:00:00-05:00");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.seconds).toBe(1_677_643_200);
+    }
+  });
+
   it("rejects empty input", () => {
     expect(toEpoch("").ok).toBe(false);
   });
