@@ -211,10 +211,10 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
       y = 72;
       drawTableHead();
     }
-    const descLines = doc.splitTextToSize(item.description || "—", DESC_MAX_W) as string[];
     doc.setFont(FONT, "normal");
     doc.setFontSize(10.5);
     doc.setTextColor(...INK);
+    const descLines = doc.splitTextToSize(item.description || "—", DESC_MAX_W) as string[];
     doc.text(descLines, DESC_LEFT, y);
     doc.text(formatMoney(item.rate, currency), COL_RATE, y, { align: "right" });
     doc.text(String(item.qty), COL_QTY, y, { align: "right" });
