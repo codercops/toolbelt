@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface NumberInputProps {
   value: number;
@@ -18,15 +18,15 @@ interface NumberInputProps {
  */
 export function NumberInput({ value, onChange, className, ariaLabel, placeholder }: NumberInputProps) {
   const [text, setText] = useState(() => (Number.isFinite(value) ? String(value) : ""));
+  const lastValue = useRef(value);
 
-  // Resync the buffer when the value changes from the outside (e.g. Load example),
-  // but not while the buffer already represents that same number.
+  // Ignore echoes of our own updates so partial entries survive parent renders.
+  // Outside changes (e.g. Load example) still replace the buffer.
   useEffect(() => {
-    const parsed = parseFloat(text);
-    if (!(Number.isFinite(parsed) && parsed === value)) {
+    if (!Object.is(value, lastValue.current)) {
+      lastValue.current = value;
       setText(Number.isFinite(value) ? String(value) : "");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   return (
@@ -42,13 +42,16 @@ export function NumberInput({ value, onChange, className, ariaLabel, placeholder
         if (raw === "" || raw === "-" || /^-?\d*\.?\d*$/.test(raw)) {
           setText(raw);
           const n = parseFloat(raw);
-          onChange(Number.isFinite(n) ? n : 0);
+          const nextValue = Number.isFinite(n) ? n : 0;
+          lastValue.current = nextValue;
+          onChange(nextValue);
         }
       }}
       onBlur={() => {
         const n = parseFloat(text);
         const finalN = Number.isFinite(n) ? n : 0;
         setText(String(finalN));
+        lastValue.current = finalN;
         onChange(finalN);
       }}
     />
