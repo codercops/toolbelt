@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { ToastProvider } from "@/components/shared/Toast";
 import { TextTab } from "./TextTab";
@@ -70,5 +70,34 @@ describe("TextTab switches", () => {
     expect(urlSafe).toHaveAttribute("aria-pressed", "true");
     // The styling hook stays in step with the state.
     expect(urlSafe).toHaveAttribute("data-active", "true");
+  });
+
+  it("disables Swap and preserves invalid input when the shortcut runs", async () => {
+    renderTab();
+    fireEvent.click(screen.getByRole("button", { name: "Base64 → Text" }));
+    const input = screen.getByRole("textbox", { name: "Base64 to decode" });
+    fireEvent.change(input, { target: { value: "Hello world, how are you?" } });
+
+    expect(await screen.findByText(/Invalid base64/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Swap direction" })).toBeDisabled();
+
+    fireEvent.keyDown(input, { key: "s", ctrlKey: true, shiftKey: true });
+
+    expect(input).toHaveValue("Hello world, how are you?");
+    expect(screen.getByRole("button", { name: "Base64 → Text" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("swaps a valid conversion result", async () => {
+    renderTab();
+    fireEvent.change(screen.getByRole("textbox", { name: "Text to encode" }), {
+      target: { value: "Hello world" },
+    });
+
+    expect(await screen.findByText("SGVsbG8gd29ybGQ=")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Swap direction" }));
+
+    expect(screen.getByRole("button", { name: "Base64 → Text" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("textbox", { name: "Base64 to decode" })).toHaveValue("SGVsbG8gd29ybGQ=");
+    await waitFor(() => expect(screen.getByText("Hello world")).toBeInTheDocument());
   });
 });

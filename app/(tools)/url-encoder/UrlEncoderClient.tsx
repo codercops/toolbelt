@@ -55,6 +55,7 @@ export function UrlEncoderClient() {
   }
 
   function swap() {
+    if (error || !output) return;
     setDirection((d) => (d === "encode" ? "decode" : "encode"));
     setInput(output);
   }
@@ -66,7 +67,7 @@ export function UrlEncoderClient() {
       { id: "url:decode", section: "URL Encoder", title: "Decode tab", run: () => setDirection("decode") },
       { id: "url:swap", section: "URL Encoder", title: "Swap direction", run: swap },
     ],
-    [output]
+    [output, error]
   );
 
   return (
@@ -156,6 +157,7 @@ export function UrlEncoderClient() {
             <button
               type="button"
               onClick={swap}
+              disabled={Boolean(error) || !output}
               className="group w-11 h-11 rounded-full border border-[var(--hairline-strong)] bg-[var(--bg-raise)] flex items-center justify-center hover:border-[var(--cyan)] hover:shadow-[0_0_30px_-8px_rgba(0,229,199,0.6)] transition-all"
               title="Swap direction"
               aria-label="Swap direction"

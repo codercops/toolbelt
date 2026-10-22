@@ -1,12 +1,25 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { UrlEncoderClient } from "./UrlEncoderClient";
+
+const commandRegistry = vi.hoisted(() => ({
+  commands: [] as { id: string; run: () => void }[],
+}));
+
+vi.mock("@/components/shared/CommandPalette", () => ({
+  useRegisterCommands: (_scope: string, commands: { id: string; run: () => void }[]) => {
+    commandRegistry.commands = commands;
+  },
+}));
 
 const tab = (name: string) => screen.getByRole("tab", { name });
 
 describe("UrlEncoderClient tabs", () => {
   // Vitest globals are off, so Testing Library does not clean up on its own.
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    commandRegistry.commands = [];
+  });
 
   it("marks only the selected direction tab", () => {
     render(<UrlEncoderClient />);
@@ -49,5 +62,35 @@ describe("UrlEncoderClient tabs", () => {
     fireEvent.click(fullUrl);
     expect(component).toHaveAttribute("aria-pressed", "false");
     expect(fullUrl).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("disables Swap and preserves invalid input when the command runs", async () => {
+    render(<UrlEncoderClient />);
+    fireEvent.click(tab("Decode"));
+    const input = screen.getByRole("textbox", { name: "Percent-encoded text to decode" });
+    fireEvent.change(input, { target: { value: "Save 50% today" } });
+
+    expect(await screen.findByText(/Malformed percent-encoding/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Swap direction" })).toBeDisabled();
+
+    commandRegistry.commands.find((command) => command.id === "url:swap")?.run();
+
+    expect(input).toHaveValue("Save 50% today");
+    expect(tab("Decode")).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("swaps a valid conversion result", async () => {
+    render(<UrlEncoderClient />);
+    fireEvent.click(tab("Decode"));
+    fireEvent.change(screen.getByRole("textbox", { name: "Percent-encoded text to decode" }), {
+      target: { value: "Hello%20world" },
+    });
+
+    expect(await screen.findByText("Hello world")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Swap direction" }));
+
+    expect(tab("Encode")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("textbox", { name: "Text or URL to encode" })).toHaveValue("Hello world");
+    await waitFor(() => expect(screen.getByText("Hello%20world")).toBeInTheDocument());
   });
 });

@@ -110,6 +110,7 @@ export function TextTab() {
   }
 
   function swap() {
+    if (error || !output) return;
     setDirection((d) => (d === "encode" ? "decode" : "encode"));
     setInput(output);
     setOutput(input);
@@ -138,7 +139,7 @@ export function TextTab() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [direction, input, opts, urlSafe, padding]);
+  }, [direction, input, output, error, opts, urlSafe, padding, gzip, chunk]);
 
   const inputBytes = useMemo(() => new Blob([input]).size, [input]);
   const outputBytes = useMemo(() => new Blob([output]).size, [output]);
@@ -277,6 +278,7 @@ export function TextTab() {
           <button
             type="button"
             onClick={swap}
+            disabled={Boolean(error) || !output}
             className="group w-11 h-11 rounded-full border border-[var(--hairline-strong)] bg-[var(--bg-raise)] flex items-center justify-center hover:border-[var(--cyan)] hover:shadow-[0_0_30px_-8px_rgba(0,229,199,0.6)] transition-all"
             title={`Swap direction (${formatModShiftKey("S", isMac)})`}
             aria-label="Swap direction"
