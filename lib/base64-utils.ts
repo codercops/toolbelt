@@ -269,14 +269,17 @@ export function getMimeFromMagicBytes(bytes: Uint8Array): MagicMatch | null {
       /* not valid JSON */
     }
   }
-  // Heuristic for plain UTF-8 text
-  let textScore = 0;
-  for (let i = 0; i < Math.min(200, b.length); i++) {
-    const c = b[i];
-    if ((c >= 0x20 && c <= 0x7e) || c === 0x09 || c === 0x0a || c === 0x0d) textScore++;
-  }
-  if (textScore / Math.min(200, b.length) > 0.95) {
-    return { mime: "text/plain", extension: "txt", label: "Plain text (UTF-8)", isImage: false };
+  // Plain UTF-8 text (#249): the old printable-ASCII ratio over the first
+  // 200 bytes failed as soon as a few accented or non-Latin characters put
+  // their multibyte encodings above 0x7F. The bytes count as text when they
+  // decode as strict UTF-8 and carry no control characters other than tab,
+  // line feed and carriage return (NUL is valid UTF-8, so the ftyp and
+  // control-character cases keep giving null).
+  if (b.length > 0) {
+    const decoded = decodeUtf8Bytes(b);
+    if (decoded.ok && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(decoded.value)) {
+      return { mime: "text/plain", extension: "txt", label: "Plain text (UTF-8)", isImage: false };
+    }
   }
   return null;
 }

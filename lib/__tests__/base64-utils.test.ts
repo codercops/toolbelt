@@ -414,6 +414,48 @@ describe("magic bytes", () => {
     });
   });
 
+  describe("plain UTF-8 text detection (#249)", () => {
+    it.each([
+      ["Grüße aus München, schöne Straße."],
+      ["Voilà, à bientôt !"],
+      ["Привет, мир!"],
+      ["नमस्ते दुनिया"],
+      ["こんにちは世界。"],
+    ])("detects non-ASCII UTF-8 text (%s)", (text) => {
+      const m = getMimeFromMagicBytes(new TextEncoder().encode(text));
+      expect(m?.mime).toBe("text/plain");
+      expect(m?.label).toBe("Plain text (UTF-8)");
+    });
+
+    it("detects the issue's base64 of a German sentence", () => {
+      const r = base64ToBytes("R3LDvMOfZSBhdXMgTcO8bmNoZW4sIHNjaMO2bmUgU3RyYcOfZS4=");
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        const m = getMimeFromMagicBytes(r.value);
+        expect(m?.mime).toBe("text/plain");
+      }
+    });
+
+    it("still detects ASCII text", () => {
+      const m = getMimeFromMagicBytes(new TextEncoder().encode("Hello, plain ASCII text here."));
+      expect(m?.mime).toBe("text/plain");
+    });
+
+    it("keeps tab, line feed and carriage return as text", () => {
+      const m = getMimeFromMagicBytes(new TextEncoder().encode("line\nbreak\ttab\rcr"));
+      expect(m?.mime).toBe("text/plain");
+    });
+
+    it.each([
+      ["an invalid UTF-8 byte", new Uint8Array([0x61, 0xff, 0xfe, 0x62])],
+      ["a NUL byte inside text", new Uint8Array([0x61, 0x62, 0x63, 0x00, 0x64, 0x65, 0x66])],
+      ["an escape control character", new Uint8Array([0x61, 0x62, 0x1b, 0x5b, 0x41])],
+      ["no bytes at all", new Uint8Array(0)],
+    ])("refuses %s", (_name, bytes) => {
+      expect(getMimeFromMagicBytes(bytes)).toBeNull();
+    });
+  });
+
   describe("SVG prolog variations", () => {
     it("detects clean SVG root", () => {
       const bytes = new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg>');
