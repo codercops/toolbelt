@@ -51,6 +51,38 @@ export interface Guide {
 
 export const GUIDES: Guide[] = [
   {
+    slug: "convert-between-binary-decimal-hexadecimal",
+    path: "/guides/convert-between-binary-decimal-hexadecimal",
+    title: "How to Convert Between Binary, Decimal, and Hexadecimal",
+    tagline: "Number Bases Guide",
+    cardDescription: "Convert binary, decimal, and hexadecimal by hand, understand positional notation, and use JavaScript safely for very large integers.",
+    tags: ["Binary", "Hexadecimal", "JavaScript", "BigInt"],
+    accentVar: "--violet",
+    accentHex: "#9E7BFF",
+    metaTitle: "How to Convert Binary, Decimal, and Hexadecimal",
+    metaDescription: "Learn how to convert binary, decimal, and hexadecimal numbers by hand and in JavaScript, including negative values, parseInt, radix, and BigInt.",
+    ogTitle: "How to Convert Between Binary, Decimal, and Hexadecimal - CODERCOPS Guides",
+    ogDescription: "A practical guide to positional notation, hand conversion, hexadecimal bit groups, negative numbers, and exact JavaScript conversions.",
+    publishedAt: "2026-10-23",
+    updatedAt: "2026-10-23",
+    readingTime: "7 min read",
+    totalTime: "PT7M",
+    steps: [
+      { name: "Identify the source base", text: "Binary is base 2, decimal is base 10, and hexadecimal is base 16. A 0b, 0o, or 0x prefix can identify a value when the converter is set to auto-detect.", url: "#step-1" },
+      { name: "Expand the digits by place value", text: "Multiply each digit by the source base raised to its position, counting from zero at the rightmost digit, then add the results.", url: "#step-2" },
+      { name: "Convert the decimal value back by repeated division", text: "Divide by the destination base, record each remainder, and read the remainders from last to first. For binary and hexadecimal, grouping bits is often faster.", url: "#step-3" },
+      { name: "Check the result in the converter", text: "Enter the integer in the Number Base Converter and compare its binary, decimal, hexadecimal, and optional two’s-complement outputs.", url: "#step-4" },
+    ],
+    faqs: [
+      { q: "How do I convert binary 101101 to decimal?", a: "Expand the place values: 1×32 + 0×16 + 1×8 + 1×4 + 0×2 + 1×1 = 45. Therefore, 101101₂ = 45₁₀." },
+      { q: "Why is one hexadecimal digit four bits?", a: "Hexadecimal has 16 possible digits, and 16 equals 2⁴. Each hex digit therefore maps exactly to a four-bit group." },
+      { q: "Can JavaScript convert integers larger than 2^53 exactly?", a: "Use BigInt for integers beyond Number.MAX_SAFE_INTEGER. The Number Base Converter uses BigInt internally, so it preserves arbitrary-size integer digits instead of rounding them through Number." },
+      { q: "How are negative binary numbers represented?", a: "A minus sign is a mathematical negative value. In a fixed-width computer representation, two’s complement uses 2^width plus the negative value; the converter supports signed 8-, 16-, 32-, and 64-bit widths and reports values that do not fit." },
+    ],
+    relatedTools: ["number-base-converter"],
+    sitemapPriority: 0.8,
+  },
+  {
     slug: "url-encode-string",
     path: "/guides/url-encode-string",
     title: "How to URL Encode a String",
