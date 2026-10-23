@@ -88,18 +88,37 @@ describe("UuidGeneratorClient", () => {
     });
   });
 
-  it("inspects v7 timestamps, nil UUIDs, and malformed input", () => {
+  it("shows recognized variant names for standard and reserved UUIDs", () => {
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
+      target: { value: "018bcfe5-6800-7000-8000-000000000000" },
+    });
+    expect(screen.getByText("RFC 9562")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
+      target: { value: "00000000-0000-0000-0000-000000000000" },
+    });
+    expect(screen.getByText("Nil UUID (version 0)")).toBeInTheDocument();
+    expect(screen.getByText("NCS (reserved)")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
+      target: { value: "00000000-0000-4000-C000-000000000000" },
+    });
+    expect(screen.getByText("Microsoft (reserved)")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
+      target: { value: "00000000-0000-4000-E000-000000000000" },
+    });
+    expect(screen.getByText("Future (reserved)")).toBeInTheDocument();
+  });
+
+  it("inspects v7 timestamps and malformed input", () => {
     renderClient();
     fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
       target: { value: "018bcfe5-6800-7000-8000-000000000000" },
     });
     expect(screen.getByText("Version 7")).toBeInTheDocument();
     expect(screen.getByText(/1700000000000 ms/)).toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
-      target: { value: "00000000-0000-0000-0000-000000000000" },
-    });
-    expect(screen.getByText("Nil UUID (version 0)")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Inspect a UUID"), {
       target: { value: "invalid" },

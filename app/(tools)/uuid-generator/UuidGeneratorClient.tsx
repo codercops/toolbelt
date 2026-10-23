@@ -9,6 +9,12 @@ type UuidVersion = "v4" | "v7";
 const labelClass = "mb-1 block text-sm font-medium text-[var(--fg)]";
 const inputClass =
   "w-full rounded-xl border border-[var(--hairline)] bg-[var(--bg)] px-3 py-2.5 font-mono text-sm text-[var(--fg)]";
+const VARIANT_LABELS = {
+  ncs: "NCS (reserved)",
+  rfc: "RFC 9562",
+  microsoft: "Microsoft (reserved)",
+  future: "Future (reserved)",
+} as const;
 
 function InspectionResult({ result }: { result: UuidInspection }) {
   if (!result.ok) {
@@ -33,7 +39,7 @@ function InspectionResult({ result }: { result: UuidInspection }) {
       </div>
       <div className="rounded-xl border border-[var(--hairline)] bg-[var(--bg-soft)] p-3">
         <dt className="text-xs text-[var(--fg-muted)]">Variant</dt>
-        <dd className="mt-1 font-mono text-sm capitalize text-[var(--fg)]">{result.variant}</dd>
+        <dd className="mt-1 font-mono text-sm text-[var(--fg)]">{VARIANT_LABELS[result.variant]}</dd>
       </div>
       {result.timestampMs !== undefined && (
         <div className="rounded-xl border border-[var(--hairline)] bg-[var(--bg-soft)] p-3 sm:col-span-2">
