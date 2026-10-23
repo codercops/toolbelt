@@ -1,4 +1,4 @@
-# toolbelt
+﻿# toolbelt
 
 [![Live](https://img.shields.io/badge/live-tools.codercops.com-00E5C7?labelColor=0A0B0F&style=flat)](https://tools.codercops.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-00E5C7.svg?labelColor=0A0B0F)](./LICENSE)
@@ -18,9 +18,9 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
 
 <p align="center">
   <a href="https://tools.codercops.com"><b>Open the tools</b></a>
-  &nbsp;·&nbsp;
+  &nbsp;Â·&nbsp;
   <a href="https://github.com/codercops/toolbelt/stargazers"><b>Star the repo</b></a>
-  &nbsp;·&nbsp;
+  &nbsp;Â·&nbsp;
   <a href="./CONTRIBUTING.md"><b>Contribute</b></a>
 </p>
 
@@ -38,24 +38,41 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
 - [Security](#security)
 - [License](#license)
 
+
 ## Tools
 
 <table>
   <tr>
     <td width="50%">
-      <a href="https://tools.codercops.com/json-formatter"><img src="./.github/assets/og-json-formatter.png" alt="JSON Formatter and Validator"></a>
+      <a href="https://tools.codercops.com/json-formatter">
+        <img src="./.github/assets/og-json-formatter.png" alt="JSON Formatter and Validator">
+      </a>
     </td>
     <td width="50%">
-      <a href="https://tools.codercops.com/jwt-decoder"><img src="./.github/assets/og-jwt-decoder.png" alt="JWT Decoder and Inspector"></a>
+      <a href="https://tools.codercops.com/jwt-decoder">
+        <img src="./.github/assets/og-jwt-decoder.png" alt="JWT Decoder and Inspector">
+      </a>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <a href="https://tools.codercops.com/base64"><img src="./.github/assets/og-base64.png" alt="Base64 Encoder and Decoder"></a>
+      <a href="https://tools.codercops.com/base64">
+        <img src="./.github/assets/og-base64.png" alt="Base64 Encoder and Decoder">
+      </a>
     </td>
     <td width="50%">
-      <a href="https://tools.codercops.com/invoice-generator"><img src="./.github/assets/og-invoice-generator.png" alt="Invoice Generator"></a>
+      <a href="https://tools.codercops.com/invoice-generator">
+        <img src="./.github/assets/og-invoice-generator.png" alt="Invoice Generator">
+      </a>
     </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/url-encoder">
+        <img src="./.github/assets/og-url-encoder.png" alt="URL Encoder and Decoder">
+      </a>
+    </td>
+    <td width="50%"></td>
   </tr>
 </table>
 
@@ -63,7 +80,8 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
 - **[JWT decoder and inspector](https://tools.codercops.com/jwt-decoder).** Decode header, payload, and claims; verify HS/RS/PS/ES signatures via WebCrypto; security audit; HS256/384/512 encoder.
 - **[Base64 encoder and decoder](https://tools.codercops.com/base64).** Text, images, and files; URL-safe variant; data URIs; magic-byte detection; Base32/58/85 and hashes.
 - **[Invoice generator](https://tools.codercops.com/invoice-generator).** Live preview, vector PDF export with Unicode currency support, a reusable sender profile, all saved locally.
-- **[Color converter & contrast checker](https://tools.codercops.com/color-converter).** Convert between HEX, RGB, and HSL with alpha channel support, live swatch, and WCAG AA/AAA contrast ratios for normal and large text.
+- **[URL encoder and decoder](https://tools.codercops.com/url-encoder).** Encode and decode URL components or complete URLs, inspect query parameters, and handle plus signs as spaces — all in your browser.
+
 
 ## Why it exists
 
@@ -105,7 +123,7 @@ Note: Type-checking a fresh clone will fail if `generated/og-fonts.ts` doesn't e
 
 tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`), `lib/og.tsx:198,212`, `lib/invoice-pdf.ts:315` and `routes` in `wrangler.jsonc` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
 
-Verifying site ownership in Google Search Console and Bing Webmaster Tools is optional. Configure `GOOGLE_SITE_VERIFICATION` and/or `BING_SITE_VERIFICATION` as secrets on your Worker rather than plain-text environment variables (plain-text variables are removed on subsequent deploys because `keep_vars` is not enabled in `wrangler.jsonc`, whereas secrets persist across deploys, are available at runtime, and require no rebuild). Run `npx wrangler secret put GOOGLE_SITE_VERIFICATION` and `npx wrangler secret put BING_SITE_VERIFICATION` (pass `--env dev` for the development Worker). Alternatively, add both with type `Secret` under Cloudflare dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets. Each token renders its ownership meta tag (`google-site-verification`, and Bing's `msvalidate.01`) only when its secret is configured, so previews and forks that leave them unset render no verification tags at all.
+Verifying site ownership in Google Search Console and Bing Webmaster Tools is optional. Configure `GOOGLE_SITE_VERIFICATION` and/or `BING_SITE_VERIFICATION` as secrets on your Worker rather than plain-text environment variables (plain-text variables are removed on subsequent deploys because `keep_vars` is not enabled in `wrangler.jsonc`, whereas secrets persist across deploys, are available at runtime, and require no rebuild). Run `npx wrangler secret put GOOGLE_SITE_VERIFICATION` and `npx wrangler secret put BING_SITE_VERIFICATION` (pass `--env dev` for the development Worker). Alternatively, add both with type `Secret` under Cloudflare dashboard â†’ Workers & Pages â†’ your Worker â†’ Settings â†’ Variables and Secrets. Each token renders its ownership meta tag (`google-site-verification`, and Bing's `msvalidate.01`) only when its secret is configured, so previews and forks that leave them unset render no verification tags at all.
 
 ## Add a tool
 
@@ -143,7 +161,7 @@ middleware.ts        per-request CSP nonce
 
 - `develop` is the default and integration branch; `production` deploys to tools.codercops.com. The `develop` branch deploys to the develop domain (dev.tools.codercops.com, behind Cloudflare Access).
 - Work on `feat/*` / `fix/*` / `chore/*` / `docs/*` off `develop`, PR into `develop` and squash-merge.
-- Release by merging a `develop` → `production` PR as a merge commit. That tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop`.
+- Release by merging a `develop` â†’ `production` PR as a merge commit. That tags `vX.Y.Z`, publishes a GitHub Release, smoke-tests production, and fast-forwards `develop`.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full flow.
 
@@ -160,3 +178,4 @@ Found a vulnerability? Please report it privately per [SECURITY.md](./SECURITY.m
 MIT, see [LICENSE](./LICENSE). The bundled Noto Sans font subsets are under the SIL Open Font License 1.1 ([public/fonts/OFL.txt](public/fonts/OFL.txt)).
 
 The tool social cards in [`.github/assets/`](.github/assets) are generated from [`lib/og.tsx`](lib/og.tsx); regenerate them if a tool's name or copy changes.
+
