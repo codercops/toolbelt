@@ -93,4 +93,27 @@ describe("ShortcutsLegend", () => {
     expect(controls).toBeTruthy();
     expect(controls).toMatch(/^shortcuts-popup-/);
   });
+
+  it("labels the dialog with its heading", async () => {
+    render(<ShortcutsLegend shortcuts={shortcuts} />);
+    const button = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    fireEvent.click(button);
+
+    const dialog = await screen.findByRole("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+
+    const heading = document.getElementById(labelledBy!);
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveTextContent("Keyboard shortcuts");
+  });
+
+  it("keeps aria-controls in sync with the rendered popup id", async () => {
+    render(<ShortcutsLegend shortcuts={shortcuts} />);
+    const button = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    fireEvent.click(button);
+
+    const dialog = await screen.findByRole("dialog");
+    expect(button.getAttribute("aria-controls")).toBe(dialog.id);
+  });
 });

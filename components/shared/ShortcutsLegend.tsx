@@ -1,7 +1,7 @@
 "use client";
 
 import { Keyboard } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 export interface Shortcut {
   keys: string[];
@@ -12,7 +12,8 @@ export function ShortcutsLegend({ shortcuts }: { shortcuts: Shortcut[] }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const popupId = useRef(`shortcuts-popup-${Math.random().toString(36).slice(2)}`).current;
+  const popupId = `shortcuts-popup-${useId()}`;
+  const headingId = `${popupId}-heading`;
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -50,9 +51,13 @@ export function ShortcutsLegend({ shortcuts }: { shortcuts: Shortcut[] }) {
         <div
           id={popupId}
           role="dialog"
+          aria-labelledby={headingId}
           className="absolute right-0 top-full mt-2 w-72 card-raise p-3 z-30 animate-fade-in shadow-2xl"
         >
-          <div className="font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-2 px-1">
+          <div
+            id={headingId}
+            className="font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-2 px-1"
+          >
             Keyboard shortcuts
           </div>
           <ul className="space-y-1">
