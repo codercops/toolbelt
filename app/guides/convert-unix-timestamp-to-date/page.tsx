@@ -129,8 +129,8 @@ export default function UnixTimestampGuidePage() {
             <div className="text-[15px] text-[var(--fg-muted)] leading-relaxed space-y-4">
               <p>
                 A Unix timestamp (also called epoch time) counts whole seconds from
-                1970-01-01 00:00:00 UTC, an instant chosen as the starting point of
-                Unix history and known as the epoch. The value has no timezone attached:
+                1970-01-01 00:00:00 UTC, a fixed reference point
+                known as the epoch. The value has no timezone attached:
                 it is one absolute instant, so the same number means the same moment in
                 every timezone. Instants before the epoch are negative, and instants after
                 it are positive and grow by one each second.
@@ -221,8 +221,8 @@ export default function UnixTimestampGuidePage() {
               <p>
                 The Timestamp Converter uses exactly these magnitude thresholds and tells
                 you which unit it picked, so a wrong guess is visible instead of silent.
-                One caveat: dates from 1970 to 1972 written in milliseconds are small
-                enough to fall under the seconds threshold, so for very old dates choose
+                One caveat: millisecond values from 1970 to early March 1973 are small
+                enough to fall under the seconds threshold (10^11 ms is 1973-03-03),, so for very old dates choose
                 the unit explicitly rather than relying on auto-detection. JavaScript&apos;s{" "}
                 <code className="font-mono text-[var(--fg)]">Date.now()</code> always
                 returns milliseconds, which is the unit most JavaScript and Node.js code
@@ -341,7 +341,7 @@ Date.now();                     // milliseconds`}
 
 # Epoch seconds → date
 datetime.fromtimestamp(1700000000, tz=timezone.utc)
-# datetime.datetime(2023, 11, 14, 22, 13, 20, tzinfo=timezone.utc)
+# datetime.datetime(2023, 11, 14, 22, 13, 20, tzinfo=datetime.timezone.utc)
 
 # Milliseconds from JavaScript → date
 datetime.fromtimestamp(1700000000000 / 1000, tz=timezone.utc)

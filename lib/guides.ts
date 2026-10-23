@@ -466,19 +466,19 @@ export const GUIDES: Guide[] = [
       },
       {
         name: "Copy and use the result",
-        text: "Every field has a copy button. The Timestamp Converter runs entirely in your browser with no network requests, so timestamps you paste never leave your device.",
+        text: "Every result field except Relative time has a copy button, so you can take a value as-is. The Timestamp Converter runs entirely in your browser with no network requests, so timestamps you paste never leave your device.",
         url: "#step-4",
       },
       {
         name: "Check edge cases",
-        text: "Dates before 1970 produce negative epoch values and work fine. The 32-bit year-2038 limit does not apply here because JavaScript Date uses 64-bit milliseconds, and impossible calendar days such as February 30 are rejected instead of rolling over.",
+        text: "Dates before 1970 produce negative epoch values and work fine. The 32-bit year-2038 limit does not apply here because JavaScript Date uses 64-bit milliseconds, and an ISO date with an impossible calendar day, such as 2024-02-30, is rejected instead of rolling over.",
         url: "#step-5",
       },
     ],
     faqs: [
       {
         q: "How do I tell a timestamp in seconds from one in milliseconds?",
-        a: "Count the digits. Since 2001 a seconds value has 10 digits and a milliseconds value 13: 946684800 is January 1, 2000 in seconds, while 946684800000 is the same moment in milliseconds. The Timestamp Converter also detects the unit by magnitude (below 10^11 is seconds, below 10^14 milliseconds, below 10^17 microseconds, larger is nanoseconds) and shows which unit it used, and you can pick the unit yourself if detection is wrong.",
+        a: "Count the digits. Since September 2001 a seconds value has 10 digits and a milliseconds value 13: 1700000000 is 2023-11-14 22:13:20 UTC in seconds, while 1700000000000 is the same moment in milliseconds. The Timestamp Converter also detects the unit by magnitude (below 10^11 is seconds, below 10^14 milliseconds, below 10^17 microseconds, larger is nanoseconds) and shows which unit it used, and you can pick the unit yourself if detection is wrong.",
       },
       {
         q: "What is the difference between UTC and local time in a timestamp?",
@@ -498,7 +498,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Why should I include a timezone when converting a date?",
-        a: "A date without a timezone is ambiguous: 2024-02-29T00:00:00 means midnight somewhere, and a different instant for every reader. Include Z (UTC) or an explicit offset such as +05:30 so the conversion produces one correct epoch value. The tool normalizes whatever you enter and also rejects impossible calendar days like February 30.",
+        a: "A date without a timezone is ambiguous: 2024-02-29T00:00:00 means midnight somewhere, and a different instant for every reader. Include Z (UTC) or an explicit offset such as +05:30 so the conversion produces one correct epoch value. The tool normalizes whatever you enter, and rejects an ISO date with an impossible calendar day, such as 2024-02-30, instead of rolling it over.",
       },
     ],
     relatedTools: ["timestamp-converter"],
