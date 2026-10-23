@@ -10,6 +10,8 @@ import {
   wcagRating,
   rgbToHsl,
   hslToRgb,
+  parseHslComponents,
+  toHslWithAlpha,
   type RgbaColor,
 } from "../color-utils";
 
@@ -73,6 +75,15 @@ describe("HEX parsing", () => {
 });
 
 describe("RGB / RGBA and HSL / HSLA syntax varieties", () => {
+  it("preserves typed HSL components, including case-insensitive syntax", () => {
+    const first = parseHslComponents("hsl(10, 3%, 97%)");
+    const second = parseHslComponents("hsl(210.5, 40.5%, 60.5%)");
+    const third = parseHslComponents("HSL(301, 84%, 69%)");
+    expect(first.ok && toHslWithAlpha(first.value, 0.5)).toBe("hsla(10, 3%, 97%, 0.5)");
+    expect(second.ok && toHslWithAlpha(second.value, 0.5)).toBe("hsla(210.5, 40.5%, 60.5%, 0.5)");
+    expect(third.ok && toHslWithAlpha(third.value, 0.5)).toBe("hsla(301, 84%, 69%, 0.5)");
+  });
+
   it("supports comma and space syntax for rgb/rgba", () => {
     const comma = parseColor("rgba(255, 128, 0, 0.5)");
     const space = parseColor("rgb(255 128 0 / 0.5)");
