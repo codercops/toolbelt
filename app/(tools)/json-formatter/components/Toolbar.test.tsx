@@ -54,4 +54,12 @@ describe("Toolbar indent switch", () => {
     fireEvent.click(screen.getByRole("button", { name: "4 sp" }));
     expect(onIndentChange).toHaveBeenCalledWith(4);
   });
+
+  it("names the load example button and omits the placeholder text", () => {
+    renderToolbar(2);
+    expect(
+      screen.getByRole("button", { name: "Load example" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("legend placeholder")).not.toBeInTheDocument();
+  });
 });
