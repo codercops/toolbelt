@@ -429,6 +429,81 @@ export const GUIDES: Guide[] = [
     relatedTools: ["base64"],
     sitemapPriority: 0.8,
   },
+  {
+    slug: "convert-unix-timestamp-to-date",
+    path: "/guides/convert-unix-timestamp-to-date",
+    title: "How to Convert a Unix Timestamp to a Date and Back",
+    tagline: "Unix Timestamp Guide",
+    cardDescription:
+      "Convert Unix epoch timestamps to readable dates and dates back to epoch seconds or milliseconds. Auto-detects the unit (seconds, milliseconds, microseconds, nanoseconds), shows UTC and local time, ISO 8601 output, and relative time. Runs entirely in your browser.",
+    tags: ["Unix Time", "Epoch", "Date", "JavaScript", "Python", "ISO 8601"],
+    accentVar: "--lime",
+    accentHex: "#84CC16",
+    metaTitle: "How to Convert a Unix Timestamp to a Date and Back - Guide",
+    metaDescription:
+      "Convert Unix timestamps to dates and dates to epoch time. Automatic unit detection (s/ms/us/ns), UTC and local time, ISO 8601, and relative time.",
+    ogTitle: "How to Convert a Unix Timestamp to a Date and Back - CODERCOPS Guides",
+    ogDescription:
+      "Epoch to date and date to epoch conversion. Detects seconds, milliseconds, microseconds, and nanoseconds. Shows UTC, local time, ISO 8601, and relative time.",
+    publishedAt: "2026-10-23",
+    readingTime: "6 min read",
+    totalTime: "PT6M",
+    steps: [
+      {
+        name: "Paste the epoch value",
+        text: "Enter a Unix timestamp in the Epoch to date field. The tool auto-detects whether the value is in seconds, milliseconds, microseconds, or nanoseconds based on its magnitude, and shows which unit it used. You can also pick the unit yourself.",
+        url: "#step-1",
+      },
+      {
+        name: "Read the date and time",
+        text: "The tool shows the UTC time, your local time (from your browser timezone), the ISO 8601 representation, and a relative time such as \"2 hours ago\" compared to now. All fields update as you type.",
+        url: "#step-2",
+      },
+      {
+        name: "Convert a date back to epoch",
+        text: "Enter an ISO 8601 string or a date your browser recognizes in the Date to epoch field. The result shows Unix seconds, Unix milliseconds, and the normalized ISO 8601 string. Include a timezone such as Z or an explicit offset for reliable results.",
+        url: "#step-3",
+      },
+      {
+        name: "Copy and use the result",
+        text: "Every field has a copy button. The Timestamp Converter runs entirely in your browser with no network requests, so timestamps you paste never leave your device.",
+        url: "#step-4",
+      },
+      {
+        name: "Check edge cases",
+        text: "Dates before 1970 produce negative epoch values and work fine. The 32-bit year-2038 limit does not apply here because JavaScript Date uses 64-bit milliseconds, and impossible calendar days such as February 30 are rejected instead of rolling over.",
+        url: "#step-5",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I tell a timestamp in seconds from one in milliseconds?",
+        a: "Count the digits. Since 2001 a seconds value has 10 digits and a milliseconds value 13: 946684800 is January 1, 2000 in seconds, while 946684800000 is the same moment in milliseconds. The Timestamp Converter also detects the unit by magnitude (below 10^11 is seconds, below 10^14 milliseconds, below 10^17 microseconds, larger is nanoseconds) and shows which unit it used, and you can pick the unit yourself if detection is wrong.",
+      },
+      {
+        q: "What is the difference between UTC and local time in a timestamp?",
+        a: "None. A Unix timestamp counts seconds since 1970-01-01T00:00:00Z with no timezone attached, so the same timestamp is one instant worldwide. UTC and your local time are two displays of that instant: the tool shows both so you can read what 1700000000 means in your own timezone without losing the absolute value.",
+      },
+      {
+        q: "How does ISO 8601 relate to Unix timestamps?",
+        a: "ISO 8601 is a text format for the same instant, for example 2023-11-14T22:13:20Z where Z means UTC. Unix timestamps store seconds or milliseconds since the epoch; ISO 8601 stores calendar fields. Both name the same instant, but the timestamp is a single number that sorts and compares trivially, while ISO 8601 is readable and is what most APIs and logs display.",
+      },
+      {
+        q: "Can Unix timestamps go before 1970?",
+        a: "Yes. Times before the epoch are negative seconds: 1960-01-01 is -315619200. JavaScript Date handles this directly and the Timestamp Converter accepts negative values. Some older C and SQL libraries treat pre-epoch values as errors, so pass negatives only to systems you know support them.",
+      },
+      {
+        q: "What is the year 2038 problem?",
+        a: "Systems that store time as a 32-bit signed count of seconds max out at 2147483647, which is 2038-01-19T03:14:07Z, and overflow to a negative value right after. Modern JavaScript uses a 64-bit double for milliseconds, and the Timestamp Converter accepts anything within 100,000,000 days of the epoch (about 273,800 years either side), so 2038 is not a limit here. C programs using time_t on 32-bit builds, and any database column typed as a 32-bit integer epoch, still carry the risk.",
+      },
+      {
+        q: "Why should I include a timezone when converting a date?",
+        a: "A date without a timezone is ambiguous: 2024-02-29T00:00:00 means midnight somewhere, and a different instant for every reader. Include Z (UTC) or an explicit offset such as +05:30 so the conversion produces one correct epoch value. The tool normalizes whatever you enter and also rejects impossible calendar days like February 30.",
+      },
+    ],
+    relatedTools: ["timestamp-converter"],
+    sitemapPriority: 0.8,
+  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {
