@@ -605,6 +605,162 @@ describe("toTypeScript array items", () => {
   });
 });
 
+/* -----------------------------------------------------------------------
+ * sortKeys — __proto__ key preservation (issue #279)
+ * All inputs are JSON strings; assertions parse the returned JSON string.
+ * We never use JS object literals with an unquoted __proto__ property because
+ * that triggers JS prototype semantics instead of testing the JSON key.
+ * ----------------------------------------------------------------------- */
+describe("sortKeys __proto__ preservation", () => {
+  // ── Test A: primitive __proto__ value ──────────────────────────────────
+  it("A: preserves __proto__ with a primitive value and does not replace the whole output", () => {
+    const input = '{"__proto__": 5, "z": 1}';
+    const result = sortKeys(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    // Must be valid JSON
+    const parsed = JSON.parse(result.value) as Record<string, unknown>;
+    expect(typeof parsed).toBe("object");
+    expect(parsed).not.toBeNull();
+
+    // __proto__ must be an own property
+    expect(Object.hasOwn(parsed, "__proto__")).toBe(true);
+    expect(parsed["__proto__"]).toBe(5);
+    expect(parsed["z"]).toBe(1);
+
+    // Sorting must not replace the whole output with just the value 5
+    expect(result.value).not.toBe("5");
+  });
+
+  // ── Test B: object-valued __proto__ ────────────────────────────────────
+  it("B: preserves __proto__ with an object value without changing the prototype", () => {
+    const input = '{"__proto__": {"admin": true}, "b": 1, "a": 2}';
+    const result = sortKeys(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const parsed = JSON.parse(result.value) as Record<string, unknown>;
+    expect(Object.hasOwn(parsed, "__proto__")).toBe(true);
+
+    // Nested admin property must survive
+    const proto = parsed["__proto__"] as Record<string, unknown>;
+    expect(proto).toBeTruthy();
+    expect(proto["admin"]).toBe(true);
+
+    // Ordinary keys are still present
+    expect(parsed["a"]).toBe(2);
+    expect(parsed["b"]).toBe(1);
+
+    // Parsed object's prototype must NOT be changed to the supplied __proto__ value
+    expect(Object.getPrototypeOf(parsed)).toBe(Object.prototype);
+  });
+
+  // ── Test C: nested __proto__ ──────────────────────────────────────────
+  it("C: preserves nested __proto__ and sorts sibling keys alphabetically", () => {
+    const input = '{"outer": {"__proto__": 7, "z": 3, "a": 1}}';
+    const result = sortKeys(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const parsed = JSON.parse(result.value) as { outer: Record<string, unknown> };
+    const outer = parsed["outer"];
+    expect(Object.hasOwn(outer, "__proto__")).toBe(true);
+    expect(outer["__proto__"]).toBe(7);
+    expect(outer["a"]).toBe(1);
+    expect(outer["z"]).toBe(3);
+  });
+
+  // ── Test D: __proto__ inside an array ─────────────────────────────────
+  it("D: preserves __proto__ inside an array element", () => {
+    const input = '[{"__proto__": false, "z": 2, "a": 1}]';
+    const result = sortKeys(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const parsed = JSON.parse(result.value) as unknown[];
+    expect(Array.isArray(parsed)).toBe(true);
+    const elem = parsed[0] as Record<string, unknown>;
+    expect(typeof elem).toBe("object");
+    expect(Object.hasOwn(elem, "__proto__")).toBe(true);
+    expect(elem["__proto__"]).toBe(false);
+    expect(elem["a"]).toBe(1);
+    expect(elem["z"]).toBe(2);
+  });
+
+  // ── Test E: all JSON value types for __proto__ ─────────────────────────
+  it.each([
+    ["string",  '{"__proto__": "hello", "x": 1}',              "hello"],
+    ["number",  '{"__proto__": 42,      "x": 1}',              42    ],
+    ["boolean", '{"__proto__": true,    "x": 1}',              true  ],
+    ["null",    '{"__proto__": null,    "x": 1}',              null  ],
+    ["array",   '{"__proto__": [1,2],   "x": 1}',              null  ], // special-cased below
+    ["object",  '{"__proto__": {"k":9}, "x": 1}',              null  ], // special-cased below
+  ])("E: preserves __proto__ with a %s value through sort and round-trip", (kind, input, expected) => {
+    const result = sortKeys(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const parsed = JSON.parse(result.value) as Record<string, unknown>;
+    expect(Object.hasOwn(parsed, "__proto__")).toBe(true);
+    if (kind === "array") {
+      expect(Array.isArray(parsed["__proto__"])).toBe(true);
+      expect((parsed["__proto__"] as unknown[])).toEqual([1, 2]);
+    } else if (kind === "object") {
+      expect(typeof parsed["__proto__"]).toBe("object");
+      expect((parsed["__proto__"] as Record<string, unknown>)["k"]).toBe(9);
+    } else {
+      expect(parsed["__proto__"]).toBe(expected);
+    }
+    expect(result.value).not.toBe(String(expected));
+  });
+
+  // ── Test F: ordinary objects still sort alphabetically ─────────────────
+  it("F: ordinary objects still sort alphabetically, including nested and array-embedded", () => {
+    const input = '{"z": 3, "a": 1, "m": {"y": 9, "b": 2}, "list": [{"q": 0, "c": 7}]}';
+    const result = sortKeys(input, 2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const parsed = JSON.parse(result.value) as Record<string, unknown>;
+    const keys = Object.keys(parsed);
+    expect(keys).toEqual([...keys].sort());
+    const m = parsed["m"] as Record<string, unknown>;
+    expect(Object.keys(m)).toEqual([...Object.keys(m)].sort());
+  });
+
+  // ── Test G: invalid JSON still returns error result ────────────────────
+  it("G: invalid JSON returns an error Result instead of throwing", () => {
+    const result = sortKeys('{"bad": }');
+    expect(result.ok).toBe(false);
+  });
+
+  // ── Test H: both indentation modes work with __proto__ ─────────────────
+  it("H: indent=2 and indent=4 both preserve __proto__ correctly", () => {
+    const input = '{"__proto__": 5, "z": 1}';
+
+    const r2 = sortKeys(input, 2);
+    expect(r2.ok).toBe(true);
+    if (r2.ok) {
+      const p2 = JSON.parse(r2.value) as Record<string, unknown>;
+      expect(Object.hasOwn(p2, "__proto__")).toBe(true);
+      expect(p2["__proto__"]).toBe(5);
+      // 2-space indentation
+      expect(r2.value).toContain("  ");
+    }
+
+    const r4 = sortKeys(input, 4);
+    expect(r4.ok).toBe(true);
+    if (r4.ok) {
+      const p4 = JSON.parse(r4.value) as Record<string, unknown>;
+      expect(Object.hasOwn(p4, "__proto__")).toBe(true);
+      expect(p4["__proto__"]).toBe(5);
+      // 4-space indentation
+      expect(r4.value).toContain("    ");
+    }
+  });
+});
+
 describe("duplicate keys", () => {
   const DUP = '{"a": 1, "a": 2}';
 

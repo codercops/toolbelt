@@ -537,10 +537,11 @@ export function sortKeys(raw: string, indent: 2 | 4 = 2): Result<string> {
   function walk(node: unknown): unknown {
     if (Array.isArray(node)) return node.map(walk);
     if (isContainer(node)) {
-      const keys = Object.keys(node as Record<string, unknown>).sort();
-      const out: Record<string, unknown> = {};
-      for (const k of keys) out[k] = walk((node as Record<string, unknown>)[k]);
-      return out;
+      const record = node as Record<string, unknown>;
+      const entries = Object.keys(record)
+        .sort()
+        .map((k) => [k, walk(record[k])] as [string, unknown]);
+      return Object.fromEntries(entries);
     }
     return node;
   }
