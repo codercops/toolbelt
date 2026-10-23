@@ -34,6 +34,24 @@ export function useLocalStorage<T>(
     }
   }, [key, value, loaded]);
 
+  // Adopt changes made under the same key by another tab, so a later write
+  // from this tab does not overwrite what the other tab just saved.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== key) return;
+
+      try {
+        setValue(event.newValue === null ? initial : (JSON.parse(event.newValue) as T));
+        setPersistError(null);
+      } catch {
+        /* ignore malformed storage */
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [key, initial]);
+
   const reset = useCallback(() => {
     try {
       window.localStorage.removeItem(key);
