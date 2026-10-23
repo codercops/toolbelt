@@ -44,22 +44,22 @@ const invoiceFields = [
   },
   {
     field: "Line items",
-    include: "Description, quantity, unit, rate, and amount per deliverable",
+    include: "Description, quantity, rate, and the amount per deliverable",
     why: "The client can match the invoice to the quote or purchase order",
   },
   {
     field: "Totals",
-    include: "Subtotal, discounts, tax when applicable, and the total due",
+    include: "Subtotal, tax when applicable, and the total due",
     why: "Arithmetic the client has to redo slows down approval",
   },
   {
     field: "Payment instructions",
-    include: "Bank details or a payment link, and the currency",
+    include: "Bank details or a payment link in the Notes field, and the currency",
     why: "Removes the back-and-forth that delays a first payment",
   },
   {
     field: "Terms and notes",
-    include: "Payment terms, late-payment policy, and a project reference",
+    include: "The due date plus notes for a project reference or late-payment policy",
     why: "Sets expectations without needing a separate email",
   },
 ];

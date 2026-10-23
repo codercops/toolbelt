@@ -219,12 +219,12 @@ export const GUIDES: Guide[] = [
       },
       {
         name: "Describe the work in clear line items",
-        text: "List each deliverable with a description, quantity, unit and rate. Replace vague entries such as 'services' with the work the client recognises from the quote, and keep hours or milestones consistent with what was agreed.",
+        text: "List each deliverable with a description, quantity and rate. Use the quantity for hours, days or a fixed count so that quantity times rate gives the amount, and put the details the client recognises from the quote in the description.",
         url: "#step-3",
       },
       {
-        name: "Total it, then apply discounts and tax",
-        text: "Add the line items into a subtotal, apply any agreed discount, then add tax if it applies to you. Show the tax rate and amount as a separate line, and use one currency throughout the document.",
+        name: "Total it, then add tax if it applies",
+        text: "The generator multiplies each quantity by its rate, adds the line amounts into a subtotal, then applies a single tax rate. If you agreed a discount, enter the discounted rate on the line itself, because the generator has no separate discount row. Use one currency throughout the document.",
         url: "#step-4",
       },
       {
@@ -252,7 +252,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Can I create an invoice without sending my data to a website?",
-        a: "Yes. The CODERCOPS Invoice Generator runs entirely in your browser: the details you type are used to render the preview and PDF locally, and are saved in your browser rather than uploaded to a server.",
+        a: "Yes. The CODERCOPS Invoice Generator runs entirely in your browser: the details you type are used to render the preview and PDF locally and are not uploaded. Nothing is stored until you click Save, so closing the tab first loses what you typed; the invoices you save, and your sender details, stay in this browser until you delete them.",
       },
     ],
     relatedTools: ["invoice-generator"],
