@@ -53,7 +53,7 @@ export function EncoderTab() {
     }
     try {
       setLoading(true);
-      const t = await encodeJwt({}, payloadObj, keyMaterial, alg);
+      const t = await encodeJwt({}, payloadObj as Record<string, unknown>, keyMaterial, alg);
       setToken(t);
       push("Token generated ✓", "success");
     } catch (e) {
