@@ -68,9 +68,23 @@ export const DELIMITERS: { value: CsvDelimiter; label: string; short: string }[]
 export const MAX_REPORTED_ROW_ERRORS = 25;
 
 const BOM = "\uFEFF";
-const NUMBER_RE = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/;
+const PLAIN_NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const YAML_KEY_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+// Plain YAML keys that a 1.1 parser reads as null or a boolean. They must be
+// quoted, or `null: x` becomes `{None: "x"}` and `on: y` becomes `{True: "y"}`.
+const YAML_RESERVED_KEYS = new Set([
+  "null",
+  "~",
+  "true",
+  "false",
+  "yes",
+  "no",
+  "on",
+  "off",
+  "y",
+  "n",
+]);
 
 export function delimiterLabel(delimiter: CsvDelimiter): string {
   return DELIMITERS.find((d) => d.value === delimiter)?.label ?? delimiter;
@@ -516,47 +530,34 @@ export function csvToJson(header: string[], rows: string[][]): Record<string, st
   });
 }
 
-function isEmptyCell(value: string | undefined): boolean {
-  return value === undefined || value.trim() === "";
-}
-
-function inferColumnType(rows: string[][], index: number): "boolean" | "number" | "string" {
-  const values = rows
-    .map((row) => row[index])
-    .filter((value): value is string => !isEmptyCell(value))
-    .map((value) => value.trim());
-
-  if (values.length === 0) return "string";
-  if (values.every((value) => value === "true" || value === "false")) return "boolean";
-  if (values.every((value) => NUMBER_RE.test(value))) return "number";
-  return "string";
-}
-
 function tsProperty(name: string): string {
   return IDENTIFIER_RE.test(name) ? name : JSON.stringify(name);
 }
 
-/** Infer a TypeScript interface from the values in each column. */
-export function csvToTypeScript(
-  header: string[],
-  rows: string[][],
-  typeName = "Row",
-): string {
+/**
+ * Build a TypeScript interface describing the JSON output. Every CSV value is
+ * text and the JSON array keeps it that way, so every field is `string` — a
+ * narrower guess (`number` for "007") would describe values the JSON does not
+ * contain.
+ */
+export function csvToTypeScript(header: string[], typeName = "Row"): string {
   const keys = uniqueHeaders(header);
   const name = IDENTIFIER_RE.test(typeName) ? typeName : "Row";
 
   if (keys.length === 0) return `export interface ${name} {}`;
 
-  const fields = keys.map((key, index) => {
-    const type = inferColumnType(rows, index);
-    return `  ${tsProperty(key)}: ${type};`;
-  });
+  const fields = keys.map((key) => `  ${tsProperty(key)}: string;`);
 
   return `export interface ${name} {\n${fields.join("\n")}\n}`;
 }
 
 function yamlString(value: string): string {
   return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r")}"`;
+}
+
+function yamlKey(key: string): string {
+  if (YAML_KEY_RE.test(key) && !YAML_RESERVED_KEYS.has(key.toLowerCase())) return key;
+  return yamlString(key);
 }
 
 /** Convert to a YAML sequence of mappings. Values stay quoted strings. */
@@ -569,9 +570,8 @@ export function csvToYaml(header: string[], rows: string[][]): string {
       const normalized = normalizeRow(row, keys.length);
       return keys
         .map((key, index) => {
-          const property = YAML_KEY_RE.test(key) ? key : yamlString(key);
           const prefix = index === 0 ? "- " : "  ";
-          return `${prefix}${property}: ${yamlString(normalized[index] ?? "")}`;
+          return `${prefix}${yamlKey(key)}: ${yamlString(normalized[index] ?? "")}`;
         })
         .join("\n");
     })
@@ -584,7 +584,9 @@ function sqlIdentifier(name: string): string {
 
 function sqlValue(value: string): string {
   if (value === "") return "NULL";
-  if (NUMBER_RE.test(value.trim())) return value.trim();
+  // Only bare numbers that round-trip as numbers. Leading zeros ("007") and a
+  // leading plus ("+1555…") would be silently changed, so they stay quoted.
+  if (PLAIN_NUMBER_RE.test(value.trim())) return value.trim();
   return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "''")}'`;
 }
 

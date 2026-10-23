@@ -54,7 +54,7 @@ function buildOutput(
     case "json":
       return JSON.stringify(csvToJson(parsed.header, parsed.rows), null, 2);
     case "typescript":
-      return csvToTypeScript(parsed.header, parsed.rows, typeName);
+      return csvToTypeScript(parsed.header, typeName);
     case "yaml":
       return csvToYaml(parsed.header, parsed.rows);
     case "sql":

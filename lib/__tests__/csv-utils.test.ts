@@ -184,32 +184,27 @@ describe("csvToJson", () => {
 });
 
 describe("csvToTypeScript", () => {
-  it("infers boolean, number and string columns", () => {
-    const output = csvToTypeScript(
-      ["name", "age", "active"],
-      [
-        ["Ada", "36", "true"],
-        ["Grace", "85", "false"],
-      ],
-      "Person",
-    );
+  it("types every column as a string, matching the JSON output", () => {
+    const output = csvToTypeScript(["name", "age", "active", "zip"], "Person");
     expect(output).toBe(
-      "export interface Person {\n  name: string;\n  age: number;\n  active: boolean;\n}",
+      "export interface Person {\n  name: string;\n  age: string;\n  active: string;\n  zip: string;\n}",
     );
+  });
+
+  it("does not narrow identifier-like values such as a leading-zero zip", () => {
+    const output = csvToTypeScript(["zip", "phone", "id"]);
+    expect(output).toContain("zip: string;");
+    expect(output).toContain("phone: string;");
+    expect(output).toContain("id: string;");
   });
 
   it("quotes property names that are not identifiers", () => {
-    const output = csvToTypeScript(["first name"], [["Ada"]]);
+    const output = csvToTypeScript(["first name"]);
     expect(output).toContain('"first name": string;');
   });
 
-  it("does not treat empty cells as a type", () => {
-    const output = csvToTypeScript(["age"], [[""], ["36"], [" "]]);
-    expect(output).toContain("age: number;");
-  });
-
   it("handles no columns", () => {
-    expect(csvToTypeScript([], [])).toBe("export interface Row {}");
+    expect(csvToTypeScript([])).toBe("export interface Row {}");
   });
 });
 
@@ -226,6 +221,24 @@ describe("csvToYaml", () => {
     expect(csvToYaml(["first name"], [["Ada"]])).toBe('- "first name": "Ada"');
   });
 
+  it("quotes keys that YAML would read as null or a boolean", () => {
+    const output = csvToYaml(
+      ["null", "Null", "true", "FALSE", "yes", "no", "on", "Off", "y", "N"],
+      [["x", "x", "x", "x", "x", "x", "x", "x", "x", "x"]],
+    );
+    for (const key of ["null", "Null", "true", "FALSE", "yes", "no", "on", "Off", "y", "N"]) {
+      expect(output).toContain(`"${key}": "x"`);
+    }
+    // The first key also carries the sequence dash.
+    expect(output.startsWith('- "null": "x"')).toBe(true);
+  });
+
+  it("leaves ordinary keys unquoted", () => {
+    expect(csvToYaml(["first_name", "user-id"], [["Ada", "1"]])).toBe(
+      '- first_name: "Ada"\n  user-id: "1"',
+    );
+  });
+
   it("returns an empty sequence for no rows", () => {
     expect(csvToYaml(["a"], [])).toBe("[]");
   });
@@ -240,6 +253,18 @@ describe("csvToSql", () => {
 
   it("uses NULL for empty cells", () => {
     expect(csvToSql(["note"], [[""]], "t")).toBe("INSERT INTO `t` (`note`) VALUES (NULL);");
+  });
+
+  it("quotes identifier-like values so leading zeros and plus signs survive", () => {
+    expect(csvToSql(["zip", "phone", "id"], [["02134", "+15551234567", "007"]], "t")).toBe(
+      "INSERT INTO `t` (`zip`, `phone`, `id`) VALUES ('02134', '+15551234567', '007');",
+    );
+  });
+
+  it("still emits plain numbers bare", () => {
+    expect(csvToSql(["a", "b", "c", "d"], [["0", "-2.5", "1e3", "36"]], "t")).toContain(
+      "VALUES (0, -2.5, 1e3, 36);",
+    );
   });
 
   it("escapes single quotes and backslashes", () => {

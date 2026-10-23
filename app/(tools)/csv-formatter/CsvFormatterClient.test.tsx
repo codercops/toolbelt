@@ -114,10 +114,34 @@ describe("CsvFormatterClient", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "TypeScript" }));
     expect(await screen.findByText(/export interface Row/)).toBeInTheDocument();
-    expect(screen.getByText(/age: number;/)).toBeInTheDocument();
+    expect(screen.getByText(/age: string;/)).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Interface"), { target: { value: "Person" } });
     expect(await screen.findByText(/export interface Person/)).toBeInTheDocument();
+  });
+
+  it("keeps identifier-like values lossless in every output", async () => {
+    renderClient();
+    typeCsv("zip,phone,id,null,on\n02134,+15551234567,007,x,y");
+    await screen.findByText(/Parsed CSV table/);
+
+    fireEvent.click(screen.getByRole("tab", { name: "TypeScript" }));
+    expect(await screen.findByText(/zip: string;/)).toBeInTheDocument();
+    expect(screen.getByText(/phone: string;/)).toBeInTheDocument();
+    expect(screen.getByText(/id: string;/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "SQL" }));
+    expect(
+      await screen.findByText(
+        "INSERT INTO `records` (`zip`, `phone`, `id`, `null`, `on`) VALUES ('02134', '+15551234567', '007', 'x', 'y');",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "YAML" }));
+    const yaml = await screen.findByText(/^- zip: "02134"/);
+    expect(yaml.textContent).toContain('phone: "+15551234567"');
+    expect(yaml.textContent).toContain('"null": "x"');
+    expect(yaml.textContent).toContain('"on": "y"');
   });
 
   it("converts to YAML and SQL, using the table name field", async () => {
