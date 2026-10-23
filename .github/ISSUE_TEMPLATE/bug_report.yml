@@ -20,6 +20,7 @@ body:
         - Unix timestamp converter
         - Text case converter
         - Number base converter
+        - UUID Generator & Inspector
         - Shell (theme, command palette, header)
         - Other / not sure
     validations:

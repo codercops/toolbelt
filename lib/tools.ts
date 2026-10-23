@@ -527,6 +527,59 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+  {
+    slug: "uuid-generator",
+    path: "/uuid-generator",
+    title: "UUID Generator & Inspector",
+    tagline: "Identifiers",
+    cardDescription:
+      "Generate UUID v4 and v7 identifiers locally, create batches, customize formatting, and inspect versions, variants, and v7 timestamps.",
+    features: ["UUID v4", "UUID v7", "Bulk", "Inspect", "No hyphens"],
+    accentVar: "--amber",
+    accentHex: "#FFB547",
+    metaTitle: "UUID Generator & Inspector - Free Online Tool",
+    metaDescription:
+      "Generate UUID v4 and v7 values in your browser. Create batches, choose uppercase or compact output, and inspect UUID versions, variants, and timestamps.",
+    ogTitle: "UUID Generator & Inspector - CODERCOPS Tools",
+    ogDescription:
+      "Generate UUID v4 and v7 identifiers, create batches, and inspect versions, variants, and timestamps locally.",
+    heroBreadcrumb: "Identifiers",
+    heroHeading: "UUID Generator & Inspector",
+    heroDim: "&",
+    heroDescription:
+      "Generate random UUID v4 and time-ordered UUID v7 values, or inspect a UUID's version, variant, and v7 timestamp. Everything stays in your browser.",
+    jsonLdName: "UUID Generator & Inspector",
+    jsonLdDescription:
+      "A browser-based UUID v4 and v7 generator and inspector with bulk generation, formatting options, and UUID version, variant, and timestamp details.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "What UUID versions can I generate?",
+        a: "Generate random UUID v4 values or time-ordered UUID v7 values, which include a Unix timestamp in milliseconds. Other versions are outside this tool's scope.",
+      },
+      {
+        q: "Can I generate multiple UUIDs at once?",
+        a: "Yes. Generate between 1 and 100 UUIDs at a time, then copy an individual value or the complete batch.",
+      },
+      {
+        q: "What does the inspector show?",
+        a: "It identifies the UUID version and variant. For UUID v7, it also displays the encoded Unix timestamp in milliseconds and as a date.",
+      },
+      {
+        q: "Are my UUIDs sent to a server?",
+        a: "No. UUID generation, formatting, and inspection happen in your browser. Nothing you enter or generate is uploaded.",
+      },
+    ],
+    cta: {
+      headline: "Building software that needs reliable identifiers?",
+      sub: "CODERCOPS builds production APIs, data systems, and full-stack applications for startups and enterprises.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get in touch",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {
