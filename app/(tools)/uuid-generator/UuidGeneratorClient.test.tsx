@@ -14,6 +14,21 @@ function renderClient() {
   );
 }
 
+// Random bytes go DOWN from one UUID to the next, so an unsorted batch is descending.
+function mockDescendingRandom() {
+  let descending = 255;
+  vi.spyOn(globalThis.crypto, "getRandomValues").mockImplementation((array) => {
+    if (!(array instanceof Uint8Array)) throw new TypeError("Expected a UUID byte array");
+    array.fill(descending--);
+    return array;
+  });
+}
+
+function shownUuids() {
+  const list = screen.getByRole("list", { name: "Generated UUIDs" });
+  return Array.from(list.querySelectorAll("code")).map((code) => code.textContent);
+}
+
 describe("UuidGeneratorClient", () => {
   beforeEach(() => {
     randomValue = 0;
@@ -45,6 +60,35 @@ describe("UuidGeneratorClient", () => {
     expect(screen.getByRole("list", { name: "Generated UUIDs" })).toHaveTextContent(
       /-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-/i,
     );
+  });
+
+  it("keeps a v7 batch in ascending order when every UUID shares one millisecond", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1700000000000);
+    mockDescendingRandom();
+
+    renderClient();
+    fireEvent.click(screen.getByRole("button", { name: "UUID v7" }));
+    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "3" } });
+    fireEvent.click(screen.getByRole("button", { name: "Generate UUIDs" }));
+
+    expect(shownUuids()).toEqual([
+      "018bcfe5-6800-7dfd-bdfd-fdfdfdfdfdfd",
+      "018bcfe5-6800-7efe-befe-fefefefefefe",
+      "018bcfe5-6800-7fff-bfff-ffffffffffff",
+    ]);
+  });
+
+  it("leaves v4 batches in creation order", () => {
+    mockDescendingRandom();
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Generate UUIDs" }));
+
+    expect(shownUuids()).toEqual([
+      "ffffffff-ffff-4fff-bfff-ffffffffffff",
+      "fefefefe-fefe-4efe-befe-fefefefefefe",
+    ]);
   });
 
   it("generates the requested quantity and applies formatting toggles", () => {
