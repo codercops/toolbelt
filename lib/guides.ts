@@ -51,6 +51,69 @@ export interface Guide {
 
 export const GUIDES: Guide[] = [
   {
+    slug: "url-encode-string",
+    path: "/guides/url-encode-string",
+    title: "How to URL Encode a String",
+    tagline: "URL Encoding Guide",
+    cardDescription:
+      "Learn percent-encoding, choose between encodeURIComponent and encodeURI, handle + versus %20, and avoid double-encoding bugs.",
+    tags: ["URLs", "JavaScript", "Encoding", "Web APIs"],
+    accentVar: "--cyan",
+    accentHex: "#00E5C7",
+    metaTitle: "How to URL Encode a String: encodeURIComponent vs encodeURI",
+    metaDescription:
+      "Learn how to URL encode strings with percent-encoding, encodeURIComponent, encodeURI, UTF-8, query-string spaces, and double-encoding examples.",
+    ogTitle: "How to URL Encode a String - CODERCOPS Guides",
+    ogDescription:
+      "A practical guide to percent-encoding, encodeURIComponent vs encodeURI, spaces, Unicode, and double encoding.",
+    publishedAt: "2026-10-23",
+    updatedAt: "2026-10-23",
+    readingTime: "6 min read",
+    totalTime: "PT6M",
+    steps: [
+      {
+        name: "Choose what you are encoding",
+        text: "Encode one value with encodeURIComponent, or encode a complete URL while preserving its structure with encodeURI.",
+        url: "#step-1",
+      },
+      {
+        name: "Encode the value",
+        text: "The encoder converts the string to UTF-8 bytes and percent-encodes bytes that are not allowed in that context.",
+        url: "#step-2",
+      },
+      {
+        name: "Build query parameters safely",
+        text: "Encode parameter names and values separately, then join them with = and &, rather than encoding the complete URL as one value.",
+        url: "#step-3",
+      },
+      {
+        name: "Decode once at the matching boundary",
+        text: "Use decodeURIComponent for percent-encoded components and opt into treating plus signs as spaces only for form-style query data.",
+        url: "#step-4",
+      },
+    ],
+    faqs: [
+      {
+        q: "Should I use encodeURI or encodeURIComponent?",
+        a: "Use encodeURIComponent for one URL component, such as a query parameter value. Use encodeURI for a complete URL whose separators such as ://, ?, &, and # must remain meaningful.",
+      },
+      {
+        q: "Is a plus sign the same as %20?",
+        a: "Not in every URL context. %20 is percent-encoding for a space. A plus sign represents a space in application/x-www-form-urlencoded data, but in a general URL it is a literal plus. The URL Encoder lets you choose whether + should be treated as a space while decoding.",
+      },
+      {
+        q: "Why did my encoded value become %2520?",
+        a: "That is usually double encoding: % was encoded again as %25. Encode a value once at the boundary where it enters a URL, and decode it once at the boundary where it leaves one.",
+      },
+      {
+        q: "Does URL encoding encrypt data?",
+        a: "No. Percent-encoding changes representation for transport; it does not hide the value or provide confidentiality. Use HTTPS and appropriate encryption for sensitive data.",
+      },
+    ],
+    relatedTools: ["url-encoder"],
+    sitemapPriority: 0.8,
+  },
+  {
     slug: "format-and-validate-json",
     path: "/guides/format-and-validate-json",
     title: "How to Format and Validate JSON",
