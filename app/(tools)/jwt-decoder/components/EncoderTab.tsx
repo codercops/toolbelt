@@ -36,9 +36,15 @@ export function EncoderTab() {
 
   async function generate() {
     setError(null);
+    setToken("");
     const v = validateJson(payload);
     if (!v.ok) {
       setError(`Payload is not valid JSON — ${v.error.message}`);
+      return;
+    }
+    const payloadObj: unknown = JSON.parse(payload);
+    if (typeof payloadObj !== "object" || payloadObj === null || Array.isArray(payloadObj)) {
+      setError("The payload must be a JSON object");
       return;
     }
     if (!keyMaterial) {
@@ -47,7 +53,6 @@ export function EncoderTab() {
     }
     try {
       setLoading(true);
-      const payloadObj = JSON.parse(payload);
       const t = await encodeJwt({}, payloadObj, keyMaterial, alg);
       setToken(t);
       push("Token generated ✓", "success");
