@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Calendar, Clock } from "lucide-react";
-import { getGuide } from "@/lib/guides";
+import { getGuide, getRelatedGuides } from "@/lib/guides";
 import { generateGuideMetadata } from "@/lib/toolMetadata";
 import { guideArticleJsonLd, guideHowToJsonLd, guideBreadcrumbJsonLd, guideFaqJsonLd } from "@/lib/jsonLd";
 import { Faq } from "@/components/shared/Faq";
 
 const guide = getGuide("convert-between-binary-decimal-hexadecimal")!;
+const relatedGuides = getRelatedGuides(guide.slug);
 export const metadata: Metadata = generateGuideMetadata(guide);
 const code = "font-mono text-[var(--fg)]";
 
@@ -27,6 +28,19 @@ export default function NumberBaseGuidePage() {
         <section><h2 className="font-display text-2xl font-semibold text-[var(--fg)] mb-4">JavaScript: radix, parseInt, and BigInt</h2><p>For safe integers, <code className={code}>parseInt(text, radix)</code> reads a string and <code className={code}>number.toString(radix)</code> writes a number. Pass the radix explicitly. For values beyond <code className={code}>Number.MAX_SAFE_INTEGER</code> (2⁵³ − 1), use <code className={code}>BigInt</code>; <code className={code}>BigInt(&quot;18446744073709551616&quot;).toString(16)</code> returns <code className={code}>10000000000000000</code>. A plain <code className={code}>BigInt(&quot;101101&quot;)</code> is decimal, not binary.</p></section>
         <section><h2 className="font-display text-2xl font-semibold text-[var(--fg)] mb-6">Step-by-step checklist</h2><div className="space-y-4">{guide.steps.map((step, i) => <div key={step.name} id={`step-${i + 1}`} className="p-5 rounded-lg border border-[var(--hairline)] bg-[var(--bg-raise)] scroll-mt-20"><h3 className="font-display text-lg font-semibold text-[var(--fg)] mb-2"><span className="mr-2 font-mono text-[var(--violet)]">{i + 1}.</span>{step.name}</h3><p>{step.text}</p></div>)}</div></section>
         {guide.faqs && <section className="pt-6 border-t border-[var(--hairline)]"><h2 className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-6">{"// Frequently Asked Questions"}</h2><div className="grid gap-4">{guide.faqs.map((item) => <Faq key={item.q} q={item.q} a={item.a} />)}</div></section>}
+        <section className="pt-6 border-t border-[var(--hairline)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">Keep reading</div>
+            <div className="font-display text-base font-semibold text-[var(--fg)] mt-1">Related guides and tools</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {relatedGuides.map((related) => (
+              <Link key={related.slug} href={related.path} className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--cyan)] hover:underline">
+                {related.title} <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </article>
   </>;
