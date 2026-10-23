@@ -22,6 +22,7 @@ body:
         - Number base converter
         - UUID Generator & Inspector
         - Cron Expression Explainer
+        - CSV/TSV Formatter & Validator
         - Shell (theme, command palette, header)
         - Other / not sure
     validations:
