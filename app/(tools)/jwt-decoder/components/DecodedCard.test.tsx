@@ -35,6 +35,20 @@ describe("DecodedCard claims", () => {
     renderPayload('{"sub":"1234"}');
     expect(screen.getByText("Subject")).toBeInTheDocument();
   });
+
+  it("names the header copy button and keeps the visible Copy text", () => {
+    render(
+      <ToastProvider>
+        <DecodedCard title="Header" data={{ alg: "HS256" }} accent="#9E7BFF" />
+      </ToastProvider>,
+    );
+    expect(screen.getByRole("button", { name: "Copy header" })).toHaveTextContent("Copy");
+  });
+
+  it("names the payload copy button and keeps the visible Copy text", () => {
+    renderPayload('{"sub":"1234"}');
+    expect(screen.getByRole("button", { name: "Copy payload" })).toHaveTextContent("Copy");
+  });
 });
 
 describe("DecodedCard with numbers too big for a JS number", () => {

@@ -287,7 +287,11 @@ export function JwtDecoderClient() {
                   <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
                     cURL snippet
                   </span>
-                  <CopyButton value={curlWithToken(token, curlEndpoint)} className="py-1" />
+                  <CopyButton
+                    value={curlWithToken(token, curlEndpoint)}
+                    ariaLabel="Copy cURL command"
+                    className="py-1"
+                  />
                 </div>
                 <div className="p-3 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -499,7 +503,7 @@ function SignatureCard({
             Signature
           </span>
         </div>
-        <CopyButton value={signature} className="py-1" />
+        <CopyButton value={signature} ariaLabel="Copy signature" className="py-1" />
       </div>
       <pre className="px-4 py-3 font-mono text-[12px] leading-[1.6] break-all whitespace-pre-wrap text-[var(--lime)]">
         {signature}

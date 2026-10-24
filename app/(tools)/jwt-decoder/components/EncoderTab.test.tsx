@@ -34,6 +34,16 @@ describe("EncoderTab accessible labels", () => {
       screen.getByRole("combobox", { name: "Payload template" })
     ).toBeInTheDocument();
   });
+
+  it("names the token copy button and keeps the visible Copy text", () => {
+    render(
+      <ToastProvider>
+        <EncoderTab />
+      </ToastProvider>
+    );
+
+    expect(screen.getByRole("button", { name: "Copy token" })).toHaveTextContent("Copy");
+  });
 });
 
 describe("EncoderTab payload validation", () => {

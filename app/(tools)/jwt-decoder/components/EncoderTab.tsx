@@ -205,7 +205,7 @@ export function EncoderTab() {
           <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--cyan)]">
             Generated token
           </span>
-          <CopyButton value={token} disabled={!token} className="py-1" />
+          <CopyButton value={token} ariaLabel="Copy token" disabled={!token} className="py-1" />
         </div>
         {token ? (
           <div className="p-4 font-mono text-[12.5px] leading-[1.75] break-all">

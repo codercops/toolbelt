@@ -62,7 +62,11 @@ export function DecodedCard({
             </span>
           )}
         </div>
-        <CopyButton value={formatted} className="py-1" />
+        <CopyButton
+          value={formatted}
+          ariaLabel={isPayload ? "Copy payload" : "Copy header"}
+          className="py-1"
+        />
       </div>
       <pre className="px-4 py-3 font-mono text-[12.5px] leading-[1.7] whitespace-pre overflow-x-auto">
         {tokens.map((t, i) => {
