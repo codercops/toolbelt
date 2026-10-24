@@ -100,4 +100,16 @@ describe("TextTab switches", () => {
     expect(screen.getByRole("textbox", { name: "Base64 to decode" })).toHaveValue("SGVsbG8gd29ybGQ=");
     await waitFor(() => expect(screen.getByText("Hello world")).toBeInTheDocument());
   });
+
+  it("names the output copy buttons by what they copy", async () => {
+    renderTab();
+    fireEvent.change(screen.getByRole("textbox", { name: "Text to encode" }), {
+      target: { value: "Hello world" },
+    });
+
+    expect(await screen.findByText("SGVsbG8gd29ybGQ=")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy Base64 output" })).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Copy as code literal/).closest("button")!);
+    expect(screen.getByRole("button", { name: "Copy javascript code literal" })).toBeInTheDocument();
+  });
 });

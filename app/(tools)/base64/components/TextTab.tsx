@@ -292,7 +292,12 @@ export function TextTab() {
             <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--amber)]">
               {direction === "encode" ? "Base64 output" : "Decoded text"}
             </span>
-            <CopyButton value={output} disabled={!output} className="py-1" />
+            <CopyButton
+              value={output}
+              ariaLabel={direction === "encode" ? "Copy Base64 output" : "Copy decoded text"}
+              disabled={!output}
+              className="py-1"
+            />
           </div>
           {error ? (
             <div className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
@@ -348,7 +353,11 @@ export function TextTab() {
                 <pre className="flex-1 p-2.5 rounded-md border border-[var(--hairline)] bg-[var(--bg-soft)] font-mono text-[12px] text-[var(--amber)] whitespace-pre-wrap break-all max-h-32 overflow-auto">
                   {toLanguageLiteral(output, lang)}
                 </pre>
-                <CopyButton value={toLanguageLiteral(output, lang)} className="py-1 shrink-0" />
+                <CopyButton
+                  value={toLanguageLiteral(output, lang)}
+                  ariaLabel={`Copy ${lang} code literal`}
+                  className="py-1 shrink-0"
+                />
               </div>
             </div>
           )}

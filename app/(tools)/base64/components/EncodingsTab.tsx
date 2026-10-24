@@ -83,7 +83,12 @@ export function EncodingsTab() {
               <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
                 {LABELS[enc]}
               </span>
-              <CopyButton value={outputs[enc]} disabled={!text} className="py-1" />
+              <CopyButton
+                value={outputs[enc]}
+                ariaLabel={`Copy ${LABELS[enc]}`}
+                disabled={!text}
+                className="py-1"
+              />
             </div>
             <pre
               className={cn(
@@ -112,7 +117,12 @@ export function EncodingsTab() {
                   <code className="flex-1 font-mono text-[11.5px] text-[var(--fg)] truncate">
                     {hashes[h]}
                   </code>
-                  <CopyButton value={hashes[h]} iconOnly className="!py-1 !px-2" />
+                  <CopyButton
+                    value={hashes[h]}
+                    ariaLabel={`Copy ${h.toUpperCase()}`}
+                    iconOnly
+                    className="!py-1 !px-2"
+                  />
                 </div>
               ))}
             </div>

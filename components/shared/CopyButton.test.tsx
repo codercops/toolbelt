@@ -31,4 +31,15 @@ describe("CopyButton", () => {
       expect(screen.getByText("Copied")).toBeInTheDocument();
     });
   });
+
+  it("uses ariaLabel for the accessible name without changing visible text", () => {
+    render(
+      <ToastProvider>
+        <CopyButton value="hello-world" ariaLabel="Copy Base64 output" />
+      </ToastProvider>
+    );
+
+    expect(screen.getByRole("button", { name: "Copy Base64 output" })).toBeInTheDocument();
+    expect(screen.getByText("Copy")).toBeInTheDocument();
+  });
 });
