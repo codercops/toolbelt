@@ -51,6 +51,82 @@ export interface Guide {
 
 export const GUIDES: Guide[] = [
   {
+    slug: "wcag-color-contrast-ratio",
+    path: "/guides/wcag-color-contrast-ratio",
+    title: "WCAG Color Contrast Ratio: How to Check and Fix It",
+    tagline: "Accessibility Guide",
+    cardDescription:
+      "Learn how the WCAG contrast ratio is calculated from relative luminance, the AA and AAA thresholds for text and UI components, and how to fix a failing color pair.",
+    tags: ["WCAG", "Accessibility", "Color", "Contrast"],
+    accentVar: "--fuchsia",
+    accentHex: "#F26DF0",
+    metaTitle: "WCAG Color Contrast Ratio: How to Check and Fix It",
+    metaDescription:
+      "Learn how the WCAG contrast ratio is calculated, the AA and AAA thresholds for text and UI components, and how to fix a failing color pair.",
+    ogTitle: "WCAG Color Contrast Ratio: How to Check and Fix It - CODERCOPS Guides",
+    ogDescription:
+      "How WCAG contrast is calculated from relative luminance, which ratios text and UI need, what counts as large text, and how to fix a failing pair.",
+    publishedAt: "2026-10-24", // set to the day the PR merges
+    updatedAt: "2026-10-24",
+    readingTime: "6 min read",
+    totalTime: "PT6M",
+    steps: [
+      {
+        name: "Enter the text and background colors",
+        text: "In the Color Converter & Contrast Checker, type the text color into Text / Foreground and the background into Surface / Background. HEX, rgb() and hsl() values all work, with or without alpha.",
+        url: "#step-1",
+      },
+      {
+        name: "Read the contrast ratio",
+        text: "The checker shows the ratio as x : 1, along with the relative luminance of each color. The ratio runs from 1 : 1 for identical colors to 21 : 1 for black on white.",
+        url: "#step-2",
+      },
+      {
+        name: "Match the ratio to your text size",
+        text: "Check the four badges: Normal AA needs 4.5, Normal AAA 7.0, Large AA 3.0 and Large AAA 4.5. Pick the row that matches your text size; the checker does not measure your real font sizes.",
+        url: "#step-3",
+      },
+      {
+        name: "Fix a failing pair",
+        text: "Change the lightness of one color, not its hue, then test again. Type a new value into the color input, then use Set as FG or Set as BG to move it into the checker, or use Swap colors to test the reverse pairing.",
+        url: "#step-4",
+      },
+      {
+        name: "Check icons, borders and focus rings against 3:1",
+        text: "WCAG asks for at least 3:1 for UI components and graphics. The checker has no badge for this, so compare the displayed ratio with 3 yourself.",
+        url: "#step-5",
+      },
+    ],
+    faqs: [
+      {
+        q: "What is a good contrast ratio for text?",
+        a: "For WCAG Level AA, normal text needs at least 4.5:1 and large text at least 3:1. Level AAA raises these to 7:1 and 4.5:1. Higher is easier to read, and 21:1 (black on white) is the maximum.",
+      },
+      {
+        q: "How is the WCAG contrast ratio calculated?",
+        a: "Each color is converted to a relative luminance between 0 and 1, then the ratio is (L1 + 0.05) / (L2 + 0.05), where L1 is the lighter color. Luminance weights linearized red, green and blue as 0.2126, 0.7152 and 0.0722.",
+      },
+      {
+        q: "What counts as large text in WCAG?",
+        a: "Text that is at least 18 point, or at least 14 point if bold. In CSS pixels that is about 24px regular or about 18.66px bold. Anything smaller is normal text.",
+      },
+      {
+        q: "Do icons, borders and focus rings need contrast too?",
+        a: "Yes. WCAG 2.1 success criterion 1.4.11 requires at least 3:1 against adjacent colors for UI components and the graphics needed to understand content. The CODERCOPS checker reports text ratings only, so compare its ratio with 3:1 for these.",
+      },
+      {
+        q: "Does the checker handle transparent colors?",
+        a: "Yes. A translucent background is composited over white, and a translucent foreground is composited over that background, before the ratio is calculated. Use an opaque color if you want to test a specific rendered result.",
+      },
+      {
+        q: "Why does the checker show 4.47 when other tools show 4.48?",
+        a: "The checker truncates the ratio to two decimals instead of rounding up, so a pair that misses a threshold never displays as if it met it. A ratio of 4.478 therefore reads 4.47, and the Normal AA badge shows FAIL.",
+      },
+    ],
+    relatedTools: ["color-converter"],
+    sitemapPriority: 0.8,
+  },
+  {
     slug: "convert-between-binary-decimal-hexadecimal",
     path: "/guides/convert-between-binary-decimal-hexadecimal",
     title: "How to Convert Between Binary, Decimal, and Hexadecimal",
