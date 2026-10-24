@@ -62,8 +62,25 @@ describe("text round-trip", () => {
 
   it("preserves errors for invalid Base64 syntax", () => {
     const result = base64ToBytes("!");
-    expect(result.ok).toBe(false);
+    expect(result).toEqual({
+      ok: false,
+      error: 'Invalid base64 string: illegal character "!" at position 1 (line 1, column 1)',
+    });
     expect(decodeText("!")).toEqual(result);
+  });
+
+  it("reports illegal characters at their original position after spaces", () => {
+    expect(base64ToBytes("SGVs bG8!")).toEqual({
+      ok: false,
+      error: 'Invalid base64 string: illegal character "!" at position 9 (line 1, column 9)',
+    });
+  });
+
+  it("reports the original position, line, and column for multiline input", () => {
+    expect(base64ToBytes("SGVs\nbG8!")).toEqual({
+      ok: false,
+      error: 'Invalid base64 string: illegal character "!" at position 9 (line 2, column 4)',
+    });
   });
 
   it("still decodes binary data as bytes for the file tab", () => {

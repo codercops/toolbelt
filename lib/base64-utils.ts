@@ -44,13 +44,24 @@ export function base64ToBytes(
   let normalized = clean.replace(/-/g, "+").replace(/_/g, "/");
   // Pad
   while (normalized.length % 4 !== 0) normalized += "=";
-  // Validate characters
-  const invalidMatch = normalized.match(/[^A-Za-z0-9+/=]/);
-  if (invalidMatch && invalidMatch.index !== undefined) {
-    return {
-      ok: false,
-      error: `Invalid base64 string: illegal character "${invalidMatch[0]}" at position ${invalidMatch.index}`,
-    };
+  // Validate the original input so whitespace removal doesn't shift error positions.
+  let line = 1;
+  let column = 1;
+  for (let i = 0; i < s.length; i++) {
+    const char = s[i];
+    if (char === "\n") {
+      line++;
+      column = 1;
+      continue;
+    }
+    if (char === "\r") continue;
+    if (!/\s/.test(char) && !/[A-Za-z0-9+/=_-]/.test(char)) {
+      return {
+        ok: false,
+        error: `Invalid base64 string: illegal character "${char}" at position ${i + 1} (line ${line}, column ${column})`,
+      };
+    }
+    column++;
   }
   try {
     const bin = atob(normalized);
