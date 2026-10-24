@@ -8,7 +8,15 @@ export interface Shortcut {
   label: string;
 }
 
-export function ShortcutsLegend({ shortcuts }: { shortcuts: Shortcut[] }) {
+export interface ShortcutsLegendProps {
+  shortcuts: Shortcut[];
+  align?: "left" | "right";
+}
+
+export function ShortcutsLegend({
+  shortcuts,
+  align = "right",
+}: ShortcutsLegendProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -17,7 +25,8 @@ export function ShortcutsLegend({ shortcuts }: { shortcuts: Shortcut[] }) {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape" && open) {
@@ -52,7 +61,9 @@ export function ShortcutsLegend({ shortcuts }: { shortcuts: Shortcut[] }) {
           id={popupId}
           role="dialog"
           aria-labelledby={headingId}
-          className="absolute right-0 top-full mt-2 w-72 card-raise p-3 z-30 animate-fade-in shadow-2xl"
+          className={`absolute ${
+            align === "left" ? "left-0" : "right-0"
+          } top-full mt-2 w-72 card-raise p-3 z-30 animate-fade-in shadow-2xl`}
         >
           <div
             id={headingId}
