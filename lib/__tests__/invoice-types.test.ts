@@ -4,6 +4,7 @@ import {
   currencyMinorDigits,
   DEFAULT_SENDER,
   emptyInvoice,
+  formatMoney,
   roundTo,
   nextInvoiceNumber,
   placeholderInvoice,
@@ -16,6 +17,19 @@ function items(...pairs: [number, number][]): LineItem[] {
 }
 
 describe("roundTo", () => {
+  it.each([
+    [-0.004, 2],
+    [-0.4, 0],
+    [-0.0004, 3],
+    [-0, 2],
+  ])("returns positive zero for %s rounded to %i digits", (value, digits) => {
+    expect(roundTo(value, digits)).toBe(0);
+  });
+
+  it.each([NaN, Infinity, -Infinity])("returns zero for nonfinite input %s", (value) => {
+    expect(roundTo(value, 2)).toBe(0);
+  });
+
   it("rounds half away from zero for negative numbers", () => {
     expect(roundTo(-2.175, 2)).toBe(-2.18);
   });
@@ -40,6 +54,29 @@ describe("roundTo", () => {
 });
 
 describe("computeTotals rounding", () => {
+  it("returns and formats positive zero when invoice lines cancel out", () => {
+    const descriptions = ["Website build", "Deposit received", "Credit"];
+    const t = computeTotals({
+      items: items([1200, 1], [-1000.10, 1], [-199.90, 1]).map((item, i) => ({
+        ...item,
+        description: descriptions[i],
+      })),
+      taxRate: 0,
+      currency: "USD",
+    });
+    expect.soft(t.subtotal).toBe(0);
+    expect.soft(t.tax).toBe(0);
+    expect.soft(t.total).toBe(0);
+    expect.soft(formatMoney(t.subtotal, "USD")).toBe("$0.00");
+  });
+
+  it("preserves and formats a real negative amount", () => {
+    const t = computeTotals({ items: items([-200, 1]), taxRate: 0, currency: "USD" });
+    expect(t.subtotal).toBe(-200);
+    expect(t.total).toBe(-200);
+    expect(formatMoney(t.subtotal, "USD")).toBe("-$200.00");
+  });
+
   it("rounds so subtotal, tax, and total agree to the cent", () => {
     const t = computeTotals({ items: items([0.1, 1], [0.2, 1]), taxRate: 0, currency: "USD" });
     expect(t.subtotal).toBe(0.3);
@@ -57,6 +94,13 @@ describe("computeTotals rounding", () => {
     expect(currencyMinorDigits("JPY")).toBe(0);
     const t = computeTotals({ items: items([100.4, 1], [100.4, 1]), taxRate: 0, currency: "JPY" });
     expect(t.subtotal).toBe(200); // each 100.4 rounds to 100
+  });
+
+  it("uses three minor-unit digits for BHD", () => {
+    expect(currencyMinorDigits("BHD")).toBe(3);
+    const t = computeTotals({ items: items([1.2345, 1]), taxRate: 0, currency: "BHD" });
+    expect(t.subtotal).toBe(1.235);
+    expect(t.total).toBe(1.235);
   });
 
   it("defaults to 2 digits for unknown currencies", () => {

@@ -49,7 +49,12 @@ export function CaseConverterClient() {
               <span className="font-mono text-[10.5px] tracking-[0.22em] text-[var(--fg-dim)]">
                 {o.label}
               </span>
-              <CopyButton value={o.value} disabled={!o.value} className="py-1" />
+              <CopyButton
+                value={o.value}
+                ariaLabel={`Copy ${o.label}`}
+                disabled={!o.value}
+                className="py-1"
+              />
             </div>
             <pre
               className="flex-1 p-4 font-mono text-[13px] leading-[1.7] whitespace-pre-wrap break-all overflow-auto text-[var(--fg)]"

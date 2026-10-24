@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { describe, it, expect } from "vitest";
-import { GUIDES, getGuide } from "../guides";
-import { SITE_URL } from "../tools";
+import { GUIDES, getGuide, getGuidesForTool } from "../guides";
+import { TOOLS, SITE_URL } from "../tools";
 import {
   guideArticleJsonLd,
   guideHowToJsonLd,
@@ -83,6 +83,29 @@ describe("guides registry", () => {
       expect(meta.alternates?.canonical).toBe(`${SITE_URL}${guide.path}`);
       expect(meta.openGraph).toMatchObject({ type: "article" });
     });
+  });
+});
+
+describe("guide and tool linking", () => {
+  it("only references tools that exist in the tool registry", () => {
+    const toolSlugs = new Set(TOOLS.map((tool) => tool.slug));
+    for (const guide of GUIDES) {
+      for (const slug of guide.relatedTools ?? []) {
+        expect(toolSlugs.has(slug)).toBe(true);
+      }
+    }
+  });
+
+  it("finds every guide from each tool it links to", () => {
+    for (const guide of GUIDES) {
+      for (const slug of guide.relatedTools ?? []) {
+        expect(getGuidesForTool(slug).map((g) => g.slug)).toContain(guide.slug);
+      }
+    }
+  });
+
+  it("returns no guides for a tool that has none", () => {
+    expect(getGuidesForTool("no-such-tool")).toEqual([]);
   });
 });
 

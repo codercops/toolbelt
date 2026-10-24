@@ -44,7 +44,13 @@ function OutputCard({ label, value, placeholder }: { label: string; value: strin
     <div className="card overflow-hidden flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)]">
         <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">{label}</span>
-        <CopyButton value={value} disabled={!value} successMessage={`${label} copied`} className="py-1" />
+        <CopyButton
+          value={value}
+          ariaLabel={`Copy ${label}`}
+          disabled={!value}
+          successMessage={`${label} copied`}
+          className="py-1"
+        />
       </div>
       <pre
         className="flex-1 p-4 font-mono text-[13px] leading-[1.7] whitespace-pre-wrap break-all overflow-auto text-[var(--fg)]"

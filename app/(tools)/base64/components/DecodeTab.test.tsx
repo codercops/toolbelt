@@ -44,4 +44,30 @@ describe("DecodeTab data URIs", () => {
     decode("data:text/plain,hello");
     expect(notice()).not.toBeInTheDocument();
   });
+
+  it("exposes invalid base64 through an alert", async () => {
+    decode("SGVs!bG8=");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Invalid base64/i);
+  });
+});
+
+describe("DecodeTab hex toggle", () => {
+  afterEach(cleanup);
+
+  it("reflects the hex dump state with aria-pressed", () => {
+    render(
+      <ToastProvider>
+        <DecodeTab />
+      </ToastProvider>,
+    );
+    fireEvent.change(screen.getByLabelText("Base64 to decode"), { target: { value: "SGVsbG8=" } });
+    const hex = screen.getByRole("button", { name: "Hex" });
+    expect(hex).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(hex);
+    expect(hex).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("Hex dump")).toBeInTheDocument();
+    fireEvent.click(hex);
+    expect(hex).toHaveAttribute("aria-pressed", "false");
+  });
 });

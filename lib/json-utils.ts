@@ -363,14 +363,24 @@ function needsQuote(s: string): boolean {
   if (/^[+-]?\.(inf|nan)$/i.test(s)) return true;
   if (/^\d{4}-\d{1,2}-\d{1,2}(?:[Tt ].*)?$/.test(s)) return true;
   if (/[:#]\s|\s#/.test(s)) return true;
-  if (/[\n\t\r"]/.test(s)) return true;
+  if (/[\x00-\x1f\x7f-\x9f\u2028\u2029\ufffe\uffff"]/.test(s)) return true;
   return false;
 }
 
-
 function yamlString(s: string): string {
   if (!needsQuote(s)) return s;
-  const escaped = s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\t/g, "\\t").replace(/\r/g, "\\r");
+  const escaped = s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\t/g, "\\t")
+    .replace(/\r/g, "\\r")
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f\u2028\u2029\ufffe\uffff]/g, (c) => {
+      const code = c.charCodeAt(0);
+      return code < 0x100
+        ? `\\x${code.toString(16).toUpperCase().padStart(2, "0")}`
+        : `\\u${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    });
   return `"${escaped}"`;
 }
 
@@ -527,10 +537,11 @@ export function sortKeys(raw: string, indent: 2 | 4 = 2): Result<string> {
   function walk(node: unknown): unknown {
     if (Array.isArray(node)) return node.map(walk);
     if (isContainer(node)) {
-      const keys = Object.keys(node as Record<string, unknown>).sort();
-      const out: Record<string, unknown> = {};
-      for (const k of keys) out[k] = walk((node as Record<string, unknown>)[k]);
-      return out;
+      const record = node as Record<string, unknown>;
+      const entries = Object.keys(record)
+        .sort()
+        .map((k) => [k, walk(record[k])] as [string, unknown]);
+      return Object.fromEntries(entries);
     }
     return node;
   }
@@ -705,7 +716,7 @@ export function escapeForCode(raw: string, lang: EscapeLang): string {
       // Escape backticks and template literal expressions for safety in template strings
       return "`" + minified.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${") + "`";
     case "python":
-      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'''/g, "'\\''") + "'''";
+      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'''";
     case "go":
       return "`" + minified.replace(/`/g, "` + \"`\" + `") + "`";
     case "rust":

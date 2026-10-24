@@ -71,6 +71,7 @@ describe("UrlEncoderClient tabs", () => {
     fireEvent.change(input, { target: { value: "Save 50% today" } });
 
     expect(await screen.findByText(/Malformed percent-encoding/)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/Malformed percent-encoding/);
     expect(screen.getByRole("button", { name: "Swap direction" })).toBeDisabled();
 
     commandRegistry.commands.find((command) => command.id === "url:swap")?.run();

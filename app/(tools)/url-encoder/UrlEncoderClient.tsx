@@ -174,7 +174,7 @@ export function UrlEncoderClient() {
               <CopyButton value={output} disabled={!output} className="py-1" />
             </div>
             {error ? (
-              <div className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
+              <div role="alert" className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
                 <AlertCircle className="w-4 h-4 mt-0.5" />
                 <span>{error}</span>
               </div>
