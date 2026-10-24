@@ -12,6 +12,7 @@ import {
   parseJson5Compat,
   diffLines,
   validate,
+  SAMPLE_JSON,
 } from "../json-utils";
 
 const BIG = '{"id":12345678901234567890,"pi":3.141592653589793238,"n":42}';
@@ -107,6 +108,47 @@ describe("lossless numbers", () => {
   it("infers number type for big values in TypeScript output", () => {
     const ts = toTypeScript(BIG);
     expect(ts.ok && /id\??: number/.test(ts.value)).toBe(true);
+  });
+});
+
+describe("format and minify keep the input's key order", () => {
+  it("does not move integer-like keys to the top", () => {
+    const min = minify('{"name":"x","2024":10,"2023":5}');
+    expect(min.ok && min.value).toBe('{"name":"x","2024":10,"2023":5}');
+
+    const formatted = format('{"id":"a","10":1,"9":2}');
+    expect(formatted.ok && formatted.value).toBe('{\n  "id": "a",\n  "10": 1,\n  "9": 2\n}');
+
+    const nested = format('{"z":1,"nested":{"b":1,"1":2}}');
+    expect(nested.ok && nested.value).toBe(
+      '{\n  "z": 1,\n  "nested": {\n    "b": 1,\n    "1": 2\n  }\n}'
+    );
+  });
+
+  it("matches JSON.stringify layout when key order isn't affected", () => {
+    for (const indent of [2, 4] as const) {
+      const r = format(SAMPLE_JSON, indent);
+      expect(r.ok && r.value).toBe(JSON.stringify(JSON.parse(SAMPLE_JSON), null, indent));
+    }
+    const min = minify(SAMPLE_JSON);
+    expect(min.ok && min.value).toBe(JSON.stringify(JSON.parse(SAMPLE_JSON)));
+  });
+
+  it("keeps numbers, empty containers and string contents exactly", () => {
+    const input = '{ "a" : 1.0, "b" : { }, "c" : [\n], "d" : "x\\"{y}, [z]: \\\\", "e": [1e3, -0] }';
+    const min = minify(input);
+    expect(min.ok && min.value).toBe('{"a":1.0,"b":{},"c":[],"d":"x\\"{y}, [z]: \\\\","e":[1e3,-0]}');
+    const formatted = format(input);
+    expect(formatted.ok && formatted.value).toBe(
+      '{\n  "a": 1.0,\n  "b": {},\n  "c": [],\n  "d": "x\\"{y}, [z]: \\\\",\n  "e": [\n    1e3,\n    -0\n  ]\n}'
+    );
+  });
+
+  it("formats top-level primitives and still rejects invalid JSON", () => {
+    const r = format('  "hi"  ');
+    expect(r.ok && r.value).toBe('"hi"');
+    expect(format('{"a":1,}').ok).toBe(false);
+    expect(minify("").ok).toBe(false);
   });
 });
 
@@ -773,7 +815,7 @@ describe("duplicate keys", () => {
   });
 
   it("conversions surface a duplicate-key error instead of throwing", () => {
-    const results = [toCSV(DUP), toTypeScript(DUP), toYAML(DUP), toXML(DUP), sortKeys(DUP)];
+    const results = [format(DUP), minify(DUP), toCSV(DUP), toTypeScript(DUP), toYAML(DUP), toXML(DUP), sortKeys(DUP)];
     for (const result of results) {
       expect(result.ok).toBe(false);
       if (!result.ok) {
