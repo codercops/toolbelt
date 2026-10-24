@@ -91,6 +91,61 @@ describe("toEpoch", () => {
     expect(toEpoch("2023-02-29T00:00:00Z").ok).toBe(false);
     expect(toEpoch("2024-04-31").ok).toBe(false);
     expect(toEpoch("2024-06-31T09:30:00Z").ok).toBe(false);
+    expect(toEpoch("2024-02-30").ok).toBe(false);
+    expect(toEpoch("February 30, 2024").ok).toBe(false);
+    expect(toEpoch("Feb 30 2024").ok).toBe(false);
+    expect(toEpoch("2024/02/30").ok).toBe(false);
+    expect(toEpoch("30 February 2024").ok).toBe(false);
+    expect(toEpoch("Tue, 31 Apr 2024 10:00:00 GMT").ok).toBe(false);
+  });
+
+  it("accepts month names followed by a four-digit year without a day", () => {
+    const february = toEpoch("Feb 3000");
+    expect(february.ok).toBe(true);
+    if (february.ok) {
+      expect(new Date(february.milliseconds).getFullYear()).toBe(3000);
+    }
+
+    const april = toEpoch("Apr 3100");
+    expect(april.ok).toBe(true);
+    if (april.ok) {
+      expect(new Date(april.milliseconds).getFullYear()).toBe(3100);
+    }
+  });
+
+  it("accepts valid leap days in the supported formats", () => {
+    const monthName = toEpoch("February 29, 2024");
+    expect(monthName.ok).toBe(true);
+    if (monthName.ok) {
+      const date = new Date(monthName.milliseconds);
+      expect(date.getFullYear()).toBe(2024);
+      expect(date.getMonth()).toBe(1);
+      expect(date.getDate()).toBe(29);
+    }
+
+    const slashes = toEpoch("2024/02/29");
+    expect(slashes.ok).toBe(true);
+    if (slashes.ok) {
+      const date = new Date(slashes.milliseconds);
+      expect(date.getFullYear()).toBe(2024);
+      expect(date.getMonth()).toBe(1);
+      expect(date.getDate()).toBe(29);
+    }
+
+    const abbreviated = toEpoch("Feb 29 2024");
+    expect(abbreviated.ok).toBe(true);
+    if (abbreviated.ok) {
+      const date = new Date(abbreviated.milliseconds);
+      expect(date.getFullYear()).toBe(2024);
+      expect(date.getMonth()).toBe(1);
+      expect(date.getDate()).toBe(29);
+    }
+
+    const iso = toEpoch("2024-02-29T00:00:00Z");
+    expect(iso.ok).toBe(true);
+    if (iso.ok) {
+      expect(iso.seconds).toBe(1_709_164_800);
+    }
   });
 
   it("accepts a valid date whose offset lands on the next UTC day", () => {
