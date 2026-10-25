@@ -1,10 +1,16 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
 import { ShortcutsLegend } from "./ShortcutsLegend";
 
 const shortcuts = [
   { keys: ["Ctrl", "S"], label: "Save" },
   { keys: ["Ctrl", "Z"], label: "Undo" },
+];
+
+const mockShortcuts = [
+  { label: "Encode", keys: ["Ctrl", "Enter"] },
 ];
 
 describe("ShortcutsLegend", () => {
@@ -115,5 +121,42 @@ describe("ShortcutsLegend", () => {
 
     const dialog = await screen.findByRole("dialog");
     expect(button.getAttribute("aria-controls")).toBe(dialog.id);
+  });
+
+  it("defaults to right alignment when no align prop is passed", async () => {
+    render(<ShortcutsLegend shortcuts={shortcuts} />);
+    const button = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    fireEvent.click(button);
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog.className).toContain("right-0");
+  });
+
+  it("aligns to the left when align='left' is passed", async () => {
+    render(<ShortcutsLegend shortcuts={shortcuts} align="left" />);
+    const button = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    fireEvent.click(button);
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog.className).toContain("left-0");
+  });
+});
+
+describe("ShortcutsLegend alignment SSR", () => {
+  it("renders without crashing with default props", () => {
+    const html = renderToString(<ShortcutsLegend shortcuts={mockShortcuts} />);
+    expect(html).toContain("Shortcuts");
+  });
+
+  it("accepts align='left' prop", () => {
+    const html = renderToString(<ShortcutsLegend shortcuts={mockShortcuts} align="left" />);
+    expect(html).toBeDefined();
+    expect(html).toContain("Shortcuts");
+  });
+
+  it("accepts align='right' prop", () => {
+    const html = renderToString(<ShortcutsLegend shortcuts={mockShortcuts} align="right" />);
+    expect(html).toBeDefined();
+    expect(html).toContain("Shortcuts");
   });
 });
