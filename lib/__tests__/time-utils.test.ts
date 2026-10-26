@@ -99,6 +99,34 @@ describe("toEpoch", () => {
     expect(toEpoch("Tue, 31 Apr 2024 10:00:00 GMT").ok).toBe(false);
   });
 
+  it.each(["02/30/2024", "2/30/2024", "02/29/2023", "04/31/2024"])(
+    "rejects impossible US-style numeric date %s",
+    (input) => {
+      expect(toEpoch(input).ok).toBe(false);
+    }
+  );
+
+  it("accepts valid US-style dates and preserves their local calendar day", () => {
+    const dates = [
+      ["02/29/2024", 2024, 1, 29],
+      ["2/29/2024", 2024, 1, 29],
+      ["02/9/2024", 2024, 1, 9],
+      ["2/09/2024", 2024, 1, 9],
+      ["12/31/2024", 2024, 11, 31],
+    ] as const;
+
+    for (const [input, year, month, day] of dates) {
+      const result = toEpoch(input);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const date = new Date(result.milliseconds);
+        expect(date.getFullYear()).toBe(year);
+        expect(date.getMonth()).toBe(month);
+        expect(date.getDate()).toBe(day);
+      }
+    }
+  });
+
   it("accepts month names followed by a four-digit year without a day", () => {
     const february = toEpoch("Feb 3000");
     expect(february.ok).toBe(true);

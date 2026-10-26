@@ -152,6 +152,17 @@ function extractCalendarDay(dateString: string): CalendarDay | null {
     };
   }
 
+  const monthFirstNumeric = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?!\d)/.exec(
+    dateString
+  );
+  if (monthFirstNumeric) {
+    return {
+      year: Number(monthFirstNumeric[3]),
+      month: Number(monthFirstNumeric[1]),
+      day: Number(monthFirstNumeric[2]),
+    };
+  }
+
   const dayFirst =
     /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-]+([A-Za-z]{3,9})\.?,?\s+(\d{4})/i.exec(
       dateString
