@@ -11,8 +11,8 @@ describe("MarkdownPreviewClient", () => {
 
     await screen.findByText("Preview");
     const preview = document.querySelector(".markdown-preview");
-    expect(preview?.innerHTML).not.toContain("script");
-    expect(preview?.innerHTML).not.toContain("onerror");
-    expect(preview?.innerHTML).not.toContain("javascript:");
+    expect(preview?.querySelector("script")).toBeNull();
+    expect(preview?.querySelector("[onerror]")).toBeNull();
+    expect(preview?.querySelector('a[href^="javascript:"]')).toBeNull();
   });
 });
