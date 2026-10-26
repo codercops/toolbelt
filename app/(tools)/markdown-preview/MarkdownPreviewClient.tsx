@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import DOMPurify from "dompurify";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { getMarkdownStats, insertMarkdown, renderMarkdown } from "@/lib/markdown-preview";
 
 const starter = `# Hello, Markdown!\n\nWrite on the left and see **GitHub-flavored Markdown** rendered here.\n\n- [x] Live preview\n- [ ] Copy sanitized HTML\n\n| Feature | Status |\n| --- | --- |\n| Tables | Ready |\n| Code | \`const answer = 42\` |\n\n~~~ts\nconst greeting = "Hello, world!";\n~~~`;
+const subscribeToMountedState = () => () => {};
 
 function sanitizePreviewHtml(markdown: string) {
   const clean = DOMPurify.sanitize(renderMarkdown(markdown), {
@@ -29,9 +30,8 @@ function sanitizePreviewHtml(markdown: string) {
 export function MarkdownPreviewClient() {
   const [markdown, setMarkdown] = useState(starter);
   const [darkPreview, setDarkPreview] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeToMountedState, () => true, () => false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => setMounted(true), []);
   const html = useMemo(() => {
     return mounted ? sanitizePreviewHtml(markdown) : "";
   }, [markdown, mounted]);
@@ -77,7 +77,7 @@ export function MarkdownPreviewClient() {
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <div className="card overflow-hidden"><div className="px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)] font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">Markdown</div><textarea ref={textareaRef} aria-label="Markdown input" value={markdown} onChange={(e) => setMarkdown(e.target.value)} spellCheck={false} className="editor-input p-4" style={{ minHeight: 520 }} /></div>
-      <div className={`card overflow-hidden ${darkPreview ? "bg-[#17191f] text-[#f4f4f5]" : "bg-white text-[#17191f]"}`}><div className="px-3 py-2 border-b border-black/10 font-mono text-[10.5px] tracking-[0.22em] uppercase opacity-60">Preview</div><article className="markdown-preview p-5 min-h-[520px] overflow-auto" dangerouslySetInnerHTML={{ __html: html }} /></div>
+      <div className="card overflow-hidden" style={{ background: darkPreview ? "#17191f" : "#ffffff", color: darkPreview ? "#f4f4f5" : "#17191f" }}><div className="px-3 py-2 border-b border-black/10 font-mono text-[10.5px] tracking-[0.22em] uppercase opacity-60">Preview</div><article className="markdown-preview p-5 min-h-[520px] overflow-auto" dangerouslySetInnerHTML={{ __html: html }} /></div>
     </div>
     <div className="card px-4 py-3 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[11px] text-[var(--fg-dim)]"><span>{words} words</span><span>{chars} chars</span><span>{lines} lines</span><span>{readingMinutes} min read</span><span className="ml-auto">HTML is sanitized before rendering and export</span></div>
   </section>;
