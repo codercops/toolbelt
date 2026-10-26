@@ -93,7 +93,9 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
     <td width="50%">
       <a href="https://tools.codercops.com/regex-tester"><img src="./.github/assets/og-regex-tester.png" alt="Regex Tester"></a>
     </td>
-    <td width="50%"></td>
+    <td width="50%">
+      <a href="https://tools.codercops.com/markdown-preview"><img src="./.github/assets/og-markdown-preview.png" alt="Markdown Live Preview"></a>
+    </td>
   </tr>
 </table>
 
@@ -110,6 +112,7 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
 - **[Cron expression explainer](https://tools.codercops.com/cron-explainer).** Paste a crontab line and get a plain-English description, a field-by-field breakdown and the next run times in UTC or your local time.
 - **[CSV/TSV formatter & validator](https://tools.codercops.com/csv-formatter).** Parse, validate, and pretty-print CSV/TSV. Auto-detect delimiters, convert to JSON, TypeScript, YAML, SQL, and fix common formatting issues.
 - **[Regex tester](https://tools.codercops.com/regex-tester).** Test a JavaScript regular expression against sample text with highlighted matches, capture groups, named groups and a replace preview.
+- **[Markdown live preview](https://tools.codercops.com/markdown-preview).** Write GitHub-flavored Markdown with a sanitized live HTML preview, syntax-highlighted code, stats, and export tools.
 
 ## Why it exists
 

@@ -24,6 +24,7 @@ body:
         - Cron Expression Explainer
         - CSV/TSV Formatter & Validator
         - Regex Tester
+        - Markdown Live Preview
         - Shell (theme, command palette, header)
         - Other / not sure
     validations:
