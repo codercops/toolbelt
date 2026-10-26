@@ -143,17 +143,32 @@ export function minify(raw: string): Result<string> {
 
 function suggestFix(raw: string): string | undefined {
   if (!raw.trim()) return undefined;
-  if (/,\s*[\]}]/.test(raw)) return "Trailing comma detected — JSON doesn't allow commas before } or ].";
-  if (/[{,]\s*['"]?[A-Za-z_$][\w$]*['"]?\s*:/.test(raw) && /[{,]\s*[A-Za-z_$][\w$]*\s*:/.test(raw))
+  let diagnosticText = "";
+  let inString = false;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw[i];
+    if (inString) {
+      if (char === "\\") i++; // Skip escaped quotes and backslashes with their following character.
+      else if (char === '"') {
+        diagnosticText += char;
+        inString = false;
+      }
+    } else {
+      diagnosticText += char;
+      if (char === '"') inString = true;
+    }
+  }
+  if (/,\s*[\]}]/.test(diagnosticText)) return "Trailing comma detected — JSON doesn't allow commas before } or ].";
+  if (/[{,]\s*['"]?[A-Za-z_$][\w$]*['"]?\s*:/.test(diagnosticText) && /[{,]\s*[A-Za-z_$][\w$]*\s*:/.test(diagnosticText))
     return "Object keys must be wrapped in double quotes (e.g. \"key\": value).";
-  if (/'[^']*'\s*[:,}\]]/.test(raw)) return "Strings must use double quotes, not single quotes.";
-  if (/\/\/|\/\*/.test(raw)) return "JSON doesn't support comments — remove // or /* */ segments.";
-  if (/\bundefined\b/.test(raw)) return "JSON has no `undefined` — use null instead.";
-  const openCurly = (raw.match(/{/g) || []).length;
-  const closeCurly = (raw.match(/}/g) || []).length;
+  if (/'[^']*'\s*[:,}\]]/.test(diagnosticText)) return "Strings must use double quotes, not single quotes.";
+  if (/\/\/|\/\*/.test(diagnosticText)) return "JSON doesn't support comments — remove // or /* */ segments.";
+  if (/\bundefined\b/.test(diagnosticText)) return "JSON has no `undefined` — use null instead.";
+  const openCurly = (diagnosticText.match(/{/g) || []).length;
+  const closeCurly = (diagnosticText.match(/}/g) || []).length;
   if (openCurly !== closeCurly) return `Unbalanced braces — ${openCurly} "{" vs ${closeCurly} "}".`;
-  const openBr = (raw.match(/\[/g) || []).length;
-  const closeBr = (raw.match(/\]/g) || []).length;
+  const openBr = (diagnosticText.match(/\[/g) || []).length;
+  const closeBr = (diagnosticText.match(/\]/g) || []).length;
   if (openBr !== closeBr) return `Unbalanced brackets — ${openBr} "[" vs ${closeBr} "]".`;
   return undefined;
 }

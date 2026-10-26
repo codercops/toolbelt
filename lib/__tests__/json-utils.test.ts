@@ -74,6 +74,31 @@ describe("JSON Formatter Error Locations", () => {
   });
 });
 
+describe("JSON Formatter suggestions", () => {
+  it.each([
+    ['{"url": "https://example.com" "id": 1}', "a URL containing //"],
+    ['{"a": "{", "b" 1}', "a brace inside a string"],
+    ['{"note": "value is undefined" "x": 1}', "undefined inside a string"],
+    [String.raw`{"note": "say \"// undefined { [" "x": 1}`, "an escaped quote before diagnostic text"],
+    [String.raw`{"note": "path \\ // undefined { [" "x": 1}`, "an escaped backslash before diagnostic text"],
+    ['"https://example.com', "an unterminated string"],
+  ])("does not suggest a string's contents for %s (%s)", (input) => {
+    const result = validate(input);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.suggestion).toBeUndefined();
+  });
+
+  it.each([
+    ['{"a": 1 // comment\n}', "comments"],
+    ['{"a": undefined}', "undefined"],
+    ['{"a": 1', "Unbalanced braces"],
+  ])("preserves the relevant suggestion for %s", (input, suggestion) => {
+    const result = validate(input);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.suggestion).toContain(suggestion);
+  });
+});
+
 describe("lossless numbers", () => {
   it("preserves large integers and long decimals when formatting", () => {
     const r = format(BIG, 2);
