@@ -14,7 +14,12 @@ export function MarkdownPreviewClient() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => setMounted(true), []);
   const html = useMemo(() => {
-    return mounted ? DOMPurify.sanitize(renderMarkdown(markdown)) : "";
+    return mounted
+      ? DOMPurify.sanitize(renderMarkdown(markdown), {
+          FORBID_TAGS: ["script"],
+          FORBID_ATTR: ["onerror", "onload", "onclick"],
+        })
+      : "";
   }, [markdown, mounted]);
   const { words, chars, lines, readingMinutes } = getMarkdownStats(markdown);
 
