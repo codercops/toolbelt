@@ -527,6 +527,193 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+  {
+    slug: "uuid-generator",
+    path: "/uuid-generator",
+    title: "UUID Generator & Inspector",
+    tagline: "Identifiers",
+    cardDescription:
+      "Generate UUID v4 and v7 identifiers locally, create batches, customize formatting, and inspect versions, variants, and v7 timestamps.",
+    features: ["UUID v4", "UUID v7", "Bulk", "Inspect", "No hyphens"],
+    accentVar: "--amber",
+    accentHex: "#FFB547",
+    metaTitle: "UUID Generator & Inspector - Free Online Tool",
+    metaDescription:
+      "Generate UUID v4 and v7 values in your browser. Create batches, choose uppercase or compact output, and inspect UUID versions, variants, and timestamps.",
+    ogTitle: "UUID Generator & Inspector - CODERCOPS Tools",
+    ogDescription:
+      "Generate UUID v4 and v7 identifiers, create batches, and inspect versions, variants, and timestamps locally.",
+    heroBreadcrumb: "Identifiers",
+    heroHeading: "UUID Generator & Inspector",
+    heroDim: "&",
+    heroDescription:
+      "Generate random UUID v4 and time-ordered UUID v7 values, or inspect a UUID's version, variant, and v7 timestamp. Everything stays in your browser.",
+    jsonLdName: "UUID Generator & Inspector",
+    jsonLdDescription:
+      "A browser-based UUID v4 and v7 generator and inspector with bulk generation, formatting options, and UUID version, variant, and timestamp details.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "What UUID versions can I generate?",
+        a: "Generate random UUID v4 values or time-ordered UUID v7 values, which include a Unix timestamp in milliseconds. Other versions are outside this tool's scope.",
+      },
+      {
+        q: "Can I generate multiple UUIDs at once?",
+        a: "Yes. Generate between 1 and 100 UUIDs at a time, then copy an individual value or the complete batch.",
+      },
+      {
+        q: "What does the inspector show?",
+        a: "It identifies the UUID version and variant. For UUID v7, it also displays the encoded Unix timestamp in milliseconds and as a date.",
+      },
+      {
+        q: "Are my UUIDs sent to a server?",
+        a: "No. UUID generation, formatting, and inspection happen in your browser. Nothing you enter or generate is uploaded.",
+      },
+    ],
+    cta: {
+      headline: "Building software that needs reliable identifiers?",
+      sub: "CODERCOPS builds production APIs, data systems, and full-stack applications for startups and enterprises.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get in touch",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
+  {
+    slug: "cron-explainer",
+    path: "/cron-explainer",
+    title: "Cron Expression Explainer",
+    tagline: "Scheduling",
+    cardDescription:
+      "Paste a crontab line and get a plain-English description, a field-by-field breakdown and the next run times in UTC or your local time.",
+    features: ["Plain English", "Next runs", "Ranges and steps", "Macros", "UTC or local"],
+    accentVar: "--sky",
+    accentHex: "#5AB5FF",
+    metaTitle: "Cron Expression Explainer - Free Online Tool",
+    metaDescription:
+      "Paste a cron expression and read it in plain English with the next run times. Handles ranges, steps, names and macros like @daily. Runs in your browser.",
+    ogTitle: "Cron Expression Explainer - CODERCOPS Tools",
+    ogDescription:
+      "Explain any cron expression in plain English and see the next run times in UTC or local time. Free and private.",
+    heroBreadcrumb: "Scheduling",
+    heroHeading: "Cron Expression Explainer",
+    heroDim: "",
+    heroDescription:
+      "Paste a crontab line from a CI schedule, a Kubernetes CronJob or a GitHub Actions workflow and see what it means, field by field, with the next times it runs. Everything stays in your browser.",
+    jsonLdName: "Cron Expression Explainer",
+    jsonLdDescription:
+      "A browser-based cron expression explainer that describes a schedule in plain English, breaks it down field by field and lists the next run times in UTC or local time.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "Which cron syntax does it understand?",
+        a: "Standard five-field cron: minute, hour, day of month, month and day of week. It reads lists, ranges, steps such as */15 and 1-10/2, month and weekday names such as JAN and MON, and the macros @hourly, @daily, @weekly, @monthly and @yearly. Seconds and year fields (Quartz style) and Jenkins H syntax are not supported.",
+      },
+      {
+        q: "What happens when both the day of month and the day of week are set?",
+        a: "Classic cron runs the job on days that match either one. So 0 0 1 * 1 runs at midnight on the first of every month and also every Monday. If either field starts with *, both have to match.",
+      },
+      {
+        q: "How are the next run times worked out?",
+        a: "The tool steps through the calendar from the current time and lists the next five times the schedule fires, in UTC or in your local time. A schedule that can never run, such as 0 0 31 2 *, says so instead of searching forever.",
+      },
+      {
+        q: "Is my cron expression sent to a server?",
+        a: "No. Parsing, describing and working out the run times all happen in your browser. Nothing you type is uploaded.",
+      },
+    ],
+    cta: {
+      headline: "Running scheduled jobs in production?",
+      sub: "CODERCOPS builds reliable backends, data pipelines, and full-stack applications for startups and enterprises.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get in touch",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
+  {
+    slug: "csv-formatter",
+    path: "/csv-formatter",
+    title: "CSV/TSV Formatter & Validator",
+    tagline: "Data",
+    cardDescription:
+      "Parse, validate, and pretty-print CSV/TSV. Auto-detect delimiters, convert to JSON, TypeScript, YAML, SQL, and fix common formatting issues.",
+    features: ["Parse", "Validate", "Format", "JSON", "TypeScript", "YAML", "SQL"],
+    accentVar: "--fuchsia",
+    accentHex: "#F26DF0",
+    metaTitle: "CSV/TSV Formatter & Validator - Free Online Tool",
+    metaDescription:
+      "Free online CSV/TSV formatter and validator. Parse, validate, format, and convert CSV/TSV to JSON, TypeScript, YAML, and SQL. Auto-detects delimiters.",
+    ogTitle: "CSV/TSV Formatter & Validator - CODERCOPS Tools",
+    ogDescription:
+      "Parse and format CSV/TSV with auto delimiter detection. Convert to JSON, TypeScript, YAML, and SQL. Runs entirely in your browser.",
+    heroBreadcrumb: "Parse · Validate · Convert",
+    heroHeading: "CSV/TSV Formatter & Validator",
+    heroDim: "&",
+    heroDescription:
+      "Paste your CSV or TSV below to parse, validate, format, and convert — all in your browser, nothing is uploaded.",
+    jsonLdName: "CSV/TSV Formatter & Validator",
+    jsonLdDescription:
+      "Free online CSV/TSV formatter, validator, and converter with auto delimiter detection and JSON/TypeScript/YAML/SQL output.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "Is my CSV data uploaded anywhere?",
+        a: "No. All parsing, validation, formatting, and conversion run locally in your browser. The data you paste never leaves your tab, is never sent to a server, and is never logged.",
+      },
+      {
+        q: "What delimiters are supported?",
+        a: "The tool auto-detects commas, semicolons, tabs, and pipes. You can also manually select the delimiter if auto-detection picks the wrong one.",
+      },
+      {
+        q: "How are quoted fields and escaped quotes handled?",
+        a: "Fields containing delimiters, quotes, or newlines are quoted per RFC 4180. Double quotes inside a field are escaped by doubling them (\"\"), and newlines inside quotes stay part of the field instead of starting a new row.",
+      },
+      {
+        q: "What encoding and file size are supported?",
+        a: "Paste or upload UTF-8 text up to 10 MB. A UTF-8 BOM is detected and removed, CRLF/LF/CR line endings are handled, and blank rows are skipped. If the input contains U+FFFD or control characters, the validator warns that it may have been decoded with the wrong encoding.",
+      },
+    ],
+    cta: {
+      headline: "Building a data pipeline or migration tool?",
+      sub: "CODERCOPS builds production-grade data pipelines, ETL jobs, and migration tools for startups and enterprises.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get a free quote",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
+  {
+    slug: "markdown-preview",
+    path: "/markdown-preview",
+    title: "Markdown Live Preview",
+    tagline: "Markdown",
+    cardDescription: "Write Markdown and see sanitized, GitHub-flavored HTML rendered live. Copy HTML or download the source without leaving your browser.",
+    features: ["GFM", "Live preview", "Sanitized HTML", "Stats", "Export"],
+    accentVar: "--cyan",
+    accentHex: "#00E5C7",
+    metaTitle: "Markdown Live Preview - GFM Editor & HTML Export",
+    metaDescription: "Write GitHub-flavored Markdown and preview sanitized HTML live. Copy HTML, download Markdown, and track words, characters, lines, and reading time in your browser.",
+    ogTitle: "Markdown Live Preview - CODERCOPS Tools",
+    ogDescription: "A private, client-side Markdown editor with GFM preview, sanitized HTML export, and writing stats.",
+    heroBreadcrumb: "Write · Preview · Export",
+    heroHeading: "Markdown Live Preview",
+    heroDim: "Live",
+    heroDescription: "Write GitHub-flavored Markdown on the left and preview sanitized HTML on the right — privately, in your browser.",
+    jsonLdName: "Markdown Live Preview",
+    jsonLdDescription: "A browser-based GitHub-flavored Markdown editor with sanitized live HTML preview, writing statistics, and Markdown or HTML export.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      { q: "Is my Markdown uploaded?", a: "No. Parsing, sanitizing, previewing, and exporting all happen locally in your browser. Your document never leaves this tab." },
+      { q: "Is the preview safe for untrusted Markdown?", a: "Yes. The generated HTML is sanitized with DOMPurify before it is rendered or copied, so unsafe markup and scripts are removed." },
+      { q: "Which Markdown features are supported?", a: "The preview supports GitHub-flavored Markdown including tables, task lists, strikethrough, autolinks, headings, links, images, and fenced code blocks." },
+    ],
+    cta: { headline: "Need a content editor in your product?", sub: "CODERCOPS builds polished developer tools, content workflows, and full-stack applications for startups and businesses.", primaryLabel: "View our work", primaryHref: CTA_PROJECTS, secondaryLabel: "Get a free quote", secondaryHref: CTA_CONTACT },
+    sitemapPriority: 0.9,
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {

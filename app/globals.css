@@ -240,6 +240,19 @@ kbd,
   font-feature-settings: "calt", "liga" 0;
 }
 
+/* Markdown preview typography is intentionally scoped to the rendered document. */
+.markdown-preview { font-family: var(--font-ibm-plex-sans), sans-serif; line-height: 1.7; }
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { font-weight: 700; line-height: 1.25; margin: 0 0 .7em; }
+.markdown-preview h1 { font-size: 2em; }.markdown-preview h2 { font-size: 1.5em; }.markdown-preview h3 { font-size: 1.25em; }
+.markdown-preview p, .markdown-preview ul, .markdown-preview ol, .markdown-preview blockquote, .markdown-preview pre, .markdown-preview table { margin: 0 0 1em; }
+.markdown-preview ul, .markdown-preview ol { padding-left: 1.5em; }.markdown-preview li + li { margin-top: .2em; }
+.markdown-preview a { color: #087f8c; text-decoration: underline; }.markdown-preview blockquote { border-left: 3px solid currentColor; opacity: .75; padding-left: 1em; }
+.markdown-preview code { background: rgba(127,127,127,.16); border-radius: 4px; padding: .15em .35em; font-family: var(--font-jetbrains), monospace; font-size: .88em; }
+.markdown-preview pre { background: rgba(127,127,127,.14); border-radius: 8px; padding: 1em; overflow-x: auto; }.markdown-preview pre code { background: transparent; padding: 0; }
+.markdown-preview pre code[class*="language-"] { color: inherit; }.markdown-preview .token.comment, .markdown-preview .token.prolog, .markdown-preview .token.doctype { color: #7f8c98; }.markdown-preview .token.keyword, .markdown-preview .token.boolean { color: #9b72ff; }.markdown-preview .token.string, .markdown-preview .token.char, .markdown-preview .token.attr-value { color: #159570; }.markdown-preview .token.number, .markdown-preview .token.function { color: #b86b00; }.markdown-preview .token.operator, .markdown-preview .token.punctuation { color: #687080; }
+.markdown-preview table { border-collapse: collapse; width: 100%; }.markdown-preview th, .markdown-preview td { border: 1px solid rgba(127,127,127,.35); padding: .45em .7em; text-align: left; }.markdown-preview th { background: rgba(127,127,127,.12); }
+.markdown-preview img { max-width: 100%; height: auto; }.markdown-preview input[type="checkbox"] { margin-right: .5em; }
+
 textarea.editor,
 .editor-input {
   width: 100%;
