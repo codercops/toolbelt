@@ -23,6 +23,7 @@ body:
         - UUID Generator & Inspector
         - Cron Expression Explainer
         - CSV/TSV Formatter & Validator
+        - Regex Tester
         - Shell (theme, command palette, header)
         - Other / not sure
     validations:

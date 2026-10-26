@@ -686,6 +686,59 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+  {
+    slug: "regex-tester",
+    path: "/regex-tester",
+    title: "Regex Tester",
+    tagline: "Patterns",
+    cardDescription:
+      "Test a JavaScript regular expression against sample text with highlighted matches, capture groups, named groups and a replace preview.",
+    features: ["Live matches", "Flags", "Capture groups", "Named groups", "Replace"],
+    accentVar: "--cyan",
+    accentHex: "#00E5C7",
+    metaTitle: "Regex Tester - Free Online JavaScript Regex Tool",
+    metaDescription:
+      "Test JavaScript regular expressions online. See highlighted matches, capture groups and named groups, toggle flags and preview replacements in your browser.",
+    ogTitle: "Regex Tester - CODERCOPS Tools",
+    ogDescription:
+      "Test JavaScript regular expressions with highlighted matches, capture groups and a replace preview. Free and private.",
+    heroBreadcrumb: "Patterns",
+    heroHeading: "Regex Tester",
+    heroDim: "",
+    heroDescription:
+      "Write a pattern, paste some text and see every match highlighted, with its capture groups and a preview of the replacement. Everything runs in your browser.",
+    jsonLdName: "Regex Tester",
+    jsonLdDescription:
+      "A browser-based JavaScript regular expression tester with highlighted matches, capture and named groups, flag toggles and a replace preview.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "Which regex flavor does it use?",
+        a: "JavaScript, through your browser's own RegExp engine, so a pattern behaves here exactly as it does in your code. The flags g, i, m, s, u and y can be switched on and off. PCRE, Python and other flavors are not supported, and some of their syntax, such as possessive quantifiers, is not valid here.",
+      },
+      {
+        q: "How do I use capture groups in the replacement?",
+        a: "Use $1, $2 and so on for numbered groups, $<name> for a named group such as (?<year>\\d{4}), and $& for the whole match. Without the g flag only the first match is replaced, just like String.replace.",
+      },
+      {
+        q: "Why can a pattern freeze the page?",
+        a: "Some patterns, such as (a+)+$ on a long line of a's, make the engine try an exponential number of paths. This is called catastrophic backtracking. The tester runs the pattern in the page itself, so a pattern like that can hang the tab until it finishes. Test text is capped at 100,000 characters and at most 1,000 matches are listed.",
+      },
+      {
+        q: "Is my text sent to a server?",
+        a: "No. Matching and replacing happen in your browser, and nothing you type is uploaded.",
+      },
+    ],
+    cta: {
+      headline: "Need help with parsing or validation logic?",
+      sub: "CODERCOPS builds reliable backends, data pipelines, and full-stack applications for startups and enterprises.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get in touch",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {
