@@ -7,6 +7,25 @@ import { getMarkdownStats, insertMarkdown, renderMarkdown } from "@/lib/markdown
 
 const starter = `# Hello, Markdown!\n\nWrite on the left and see **GitHub-flavored Markdown** rendered here.\n\n- [x] Live preview\n- [ ] Copy sanitized HTML\n\n| Feature | Status |\n| --- | --- |\n| Tables | Ready |\n| Code | \`const answer = 42\` |\n\n~~~ts\nconst greeting = "Hello, world!";\n~~~`;
 
+function sanitizePreviewHtml(markdown: string) {
+  const clean = DOMPurify.sanitize(renderMarkdown(markdown), {
+    FORBID_TAGS: ["script"],
+    FORBID_ATTR: ["onerror", "onload", "onclick"],
+  });
+  const template = document.createElement("template");
+  template.innerHTML = clean;
+  template.content.querySelectorAll("script").forEach((element) => element.remove());
+  template.content.querySelectorAll("*").forEach((element) => {
+    for (const attribute of Array.from(element.attributes)) {
+      const name = attribute.name.toLowerCase();
+      if (name.startsWith("on") || ((name === "href" || name === "src") && /^\s*javascript:/i.test(attribute.value))) {
+        element.removeAttribute(attribute.name);
+      }
+    }
+  });
+  return template.innerHTML;
+}
+
 export function MarkdownPreviewClient() {
   const [markdown, setMarkdown] = useState(starter);
   const [darkPreview, setDarkPreview] = useState(false);
@@ -14,12 +33,7 @@ export function MarkdownPreviewClient() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => setMounted(true), []);
   const html = useMemo(() => {
-    return mounted
-      ? DOMPurify.sanitize(renderMarkdown(markdown), {
-          FORBID_TAGS: ["script"],
-          FORBID_ATTR: ["onerror", "onload", "onclick"],
-        })
-      : "";
+    return mounted ? sanitizePreviewHtml(markdown) : "";
   }, [markdown, mounted]);
   const { words, chars, lines, readingMinutes } = getMarkdownStats(markdown);
 
