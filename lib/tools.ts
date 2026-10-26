@@ -712,6 +712,9 @@ export const TOOLS: Tool[] = [
       { q: "Which Markdown features are supported?", a: "The preview supports GitHub-flavored Markdown including tables, task lists, strikethrough, autolinks, headings, links, images, and fenced code blocks." },
     ],
     cta: { headline: "Need a content editor in your product?", sub: "CODERCOPS builds polished developer tools, content workflows, and full-stack applications for startups and businesses.", primaryLabel: "View our work", primaryHref: CTA_PROJECTS, secondaryLabel: "Get a free quote", secondaryHref: CTA_CONTACT },
+    sitemapPriority: 0.9,
+  },
+  {
     slug: "regex-tester",
     path: "/regex-tester",
     title: "Regex Tester",
