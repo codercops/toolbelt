@@ -108,6 +108,11 @@ CI also builds the Cloudflare Worker and requests every page from it in local wo
 2. Create `app/(tools)/<slug>/page.tsx`, a `<Name>Client.tsx` client component, and `opengraph-image.tsx`. Copying `page.tsx` and `opengraph-image.tsx` from `app/(tools)/base64/` and changing the slug is the easiest start.
 3. Put pure logic in `lib/<name>.ts` with tests in `lib/__tests__/<name>.test.ts`. Tests can import with `@/` like the app does.
 4. Add the tool to the "Which tool?" dropdown in `.github/ISSUE_TEMPLATE/bug_report.yml`.
+5. Add the tool to the hand-written lists that the registry doesn't feed:
+   - `README.md`: an image in the "Tools" gallery and a line in the list under it.
+   - `.github/assets/`: the tool's share image as `og-<slug>.png` (1200 x 630). Run `npm run dev`, find the `og:image` path in the tool page's source (it has a suffix, such as `/<slug>/opengraph-image-190rzf`) and save the PNG from it.
+   - The home share card: name the tool in the description in `renderHomeOgImage` in `lib/og.tsx`, keep it to two lines (check `http://localhost:3000/opengraph-image`), and save the new card over `.github/assets/og-home.png`.
+   - `package.json`: the tool in `description` and a keyword in `keywords`.
 
 The home page, metadata, JSON-LD, sitemap, manifest and command palette pick the new tool up from the registry automatically. Several people may be adding tools at the same time, so rebase on `develop` before asking for review.
 

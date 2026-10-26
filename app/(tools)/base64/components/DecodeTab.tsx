@@ -104,6 +104,7 @@ export function DecodeTab() {
               <button
                 className={cn("btn", showHex && "bg-white/[0.06] border-[var(--hairline-strong)]")}
                 onClick={() => setShowHex((v) => !v)}
+                aria-pressed={showHex}
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span>Hex</span>
@@ -129,7 +130,7 @@ export function DecodeTab() {
             </div>
           )}
           {result && !result.ok && (
-            <div className="flex items-start gap-2 text-[var(--rose)] text-[13px]">
+            <div role="alert" className="flex items-start gap-2 text-[var(--rose)] text-[13px]">
               <AlertCircle className="w-4 h-4 mt-0.5" />
               <span>{result.error}</span>
             </div>

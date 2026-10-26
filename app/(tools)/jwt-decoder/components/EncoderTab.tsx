@@ -36,9 +36,15 @@ export function EncoderTab() {
 
   async function generate() {
     setError(null);
+    setToken("");
     const v = validateJson(payload);
     if (!v.ok) {
       setError(`Payload is not valid JSON — ${v.error.message}`);
+      return;
+    }
+    const payloadObj: unknown = JSON.parse(payload);
+    if (typeof payloadObj !== "object" || payloadObj === null || Array.isArray(payloadObj)) {
+      setError("The payload must be a JSON object");
       return;
     }
     if (!keyMaterial) {
@@ -47,8 +53,7 @@ export function EncoderTab() {
     }
     try {
       setLoading(true);
-      const payloadObj = JSON.parse(payload);
-      const t = await encodeJwt({}, payloadObj, keyMaterial, alg);
+      const t = await encodeJwt({}, payloadObj as Record<string, unknown>, keyMaterial, alg);
       setToken(t);
       push("Token generated ✓", "success");
     } catch (e) {
@@ -200,7 +205,7 @@ export function EncoderTab() {
           <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--cyan)]">
             Generated token
           </span>
-          <CopyButton value={token} disabled={!token} className="py-1" />
+          <CopyButton value={token} ariaLabel="Copy token" disabled={!token} className="py-1" />
         </div>
         {token ? (
           <div className="p-4 font-mono text-[12.5px] leading-[1.75] break-all">

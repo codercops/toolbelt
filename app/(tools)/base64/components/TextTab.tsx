@@ -292,10 +292,15 @@ export function TextTab() {
             <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--amber)]">
               {direction === "encode" ? "Base64 output" : "Decoded text"}
             </span>
-            <CopyButton value={output} disabled={!output} className="py-1" />
+            <CopyButton
+              value={output}
+              ariaLabel={direction === "encode" ? "Copy Base64 output" : "Copy decoded text"}
+              disabled={!output}
+              className="py-1"
+            />
           </div>
           {error ? (
-            <div className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
+            <div role="alert" className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
               <AlertCircle className="w-4 h-4 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -323,14 +328,17 @@ export function TextTab() {
             type="button"
             onClick={() => setShowLang((v) => !v)}
             className="w-full flex items-center justify-between px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)]"
+            aria-expanded={showLang}
+            aria-controls="base64-code-literal-panel"
           >
             <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)] flex items-center gap-1.5">
               <FileCode className="w-3 h-3" />
-              Copy as code literal {showLang ? "" : "— click to expand"}
+              Copy as code literal
+              {!showLang && <span aria-hidden="true">click to expand</span>}
             </span>
           </button>
           {showLang && (
-            <div className="p-3 space-y-2">
+            <div id="base64-code-literal-panel" className="p-3 space-y-2">
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value as LangTarget)}
@@ -348,7 +356,11 @@ export function TextTab() {
                 <pre className="flex-1 p-2.5 rounded-md border border-[var(--hairline)] bg-[var(--bg-soft)] font-mono text-[12px] text-[var(--amber)] whitespace-pre-wrap break-all max-h-32 overflow-auto">
                   {toLanguageLiteral(output, lang)}
                 </pre>
-                <CopyButton value={toLanguageLiteral(output, lang)} className="py-1 shrink-0" />
+                <CopyButton
+                  value={toLanguageLiteral(output, lang)}
+                  ariaLabel={`Copy ${lang} code literal`}
+                  className="py-1 shrink-0"
+                />
               </div>
             </div>
           )}

@@ -71,6 +71,7 @@ describe("UrlEncoderClient tabs", () => {
     fireEvent.change(input, { target: { value: "Save 50% today" } });
 
     expect(await screen.findByText(/Malformed percent-encoding/)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/Malformed percent-encoding/);
     expect(screen.getByRole("button", { name: "Swap direction" })).toBeDisabled();
 
     commandRegistry.commands.find((command) => command.id === "url:swap")?.run();
@@ -92,5 +93,21 @@ describe("UrlEncoderClient tabs", () => {
     expect(tab("Encode")).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("textbox", { name: "Text or URL to encode" })).toHaveValue("Hello world");
     await waitFor(() => expect(screen.getByText("Hello%20world")).toBeInTheDocument());
+  });
+
+  it("names the output copy button by direction and each query parameter copy button", () => {
+    render(<UrlEncoderClient />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Text or URL to encode" }), {
+      target: { value: "https://example.com/?page=2&q=hello" },
+    });
+
+    expect(screen.getByRole("button", { name: "Copy encoded output" })).toHaveTextContent("Copy");
+    expect(screen.getByRole("button", { name: "Copy value of page" })).toHaveTextContent("Copy");
+    expect(screen.getByRole("button", { name: "Copy value of q" })).toHaveTextContent("Copy");
+
+    fireEvent.click(tab("Decode"));
+
+    expect(screen.queryByRole("button", { name: "Copy encoded output" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy decoded output" })).toHaveTextContent("Copy");
   });
 });

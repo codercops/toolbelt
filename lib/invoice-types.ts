@@ -89,7 +89,8 @@ export function roundTo(value: number, digits: number): number {
   const preciseScaled = Number(scaled.toPrecision(15));
   
   // Round half away from zero and restore the original sign
-  return (Math.round(preciseScaled) / f) * sign;
+  const result = (Math.round(preciseScaled) / f) * sign;
+  return result === 0 ? 0 : result;
 }
 
 export function computeTotals(

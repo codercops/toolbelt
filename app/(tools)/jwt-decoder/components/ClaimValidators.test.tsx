@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClaimValidators } from "./ClaimValidators";
 
 const decoded = {
@@ -49,5 +49,32 @@ describe("ClaimValidators accessible labels", () => {
     expect(inputs).toHaveLength(6);
     expect(inputs.every((input) => input.id !== "")).toBe(true);
     expect(new Set(inputs.map((input) => input.id)).size).toBe(6);
+  });
+});
+describe("ClaimValidators deltas", () => {
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it("carries a rounded delta into the next unit", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const now = new Date("2026-10-23T12:00:00Z");
+    vi.setSystemTime(now);
+    const nowSeconds = Math.floor(now.getTime() / 1000);
+    const withClaims = {
+      ...decoded,
+      payload: {
+        exp: nowSeconds + 3580, // 59.7 minutes: "in 1h", not "in 60m"
+        nbf: nowSeconds + 86000, // 23.9 hours: "in 1d", not "in 24h"
+        iat: nowSeconds - 3580, // "1h ago", not "60m ago"
+      },
+    };
+
+    render(<ClaimValidators decoded={withClaims} />);
+
+    expect(screen.getByText(/actual: \d+ \(in 1h\)/)).toBeInTheDocument();
+    expect(screen.getByText(/actual: \d+ \(in 1d\)/)).toBeInTheDocument();
+    expect(screen.getByText(/actual: \d+ \(1h ago\)/)).toBeInTheDocument();
   });
 });

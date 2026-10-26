@@ -56,7 +56,8 @@ describe("JSON Tree view", () => {
   it("still collapses real containers", () => {
     const html = renderTree('{"id":12345678901234567890,"items":[]}', false);
 
-    expect(html).toContain('aria-label="Expand"');
+    expect(html).toContain('aria-label="root"');
+    expect(html).toContain('aria-expanded="false"');
     expect(html).toContain("2 keys");
     expect(html).not.toContain('class="tok-number"');
   });

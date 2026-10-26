@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import {
   decodeJwt,
+  stringifyJwtJson,
   describeAlg,
   SAMPLE_JWT,
   securityAudit,
@@ -116,9 +117,8 @@ export function JwtDecoderClient() {
 
   const downloadJson = useCallback(() => {
     if (!decoded) return;
-    const json = JSON.stringify(
+    const json = stringifyJwtJson(
       { header: decoded.header, payload: decoded.payload, signature: decoded.signature },
-      null,
       2
     );
     downloadBlob(json, "decoded-jwt.json", "application/json");
@@ -217,6 +217,8 @@ export function JwtDecoderClient() {
                     className="btn"
                     onClick={() => setCurlOpen((v) => !v)}
                     disabled={!decoded}
+                    aria-expanded={curlOpen}
+                    aria-controls="jwt-curl-panel"
                     title="Generate a cURL snippet that uses this token"
                   >
                     <Terminal className="w-3.5 h-3.5" />
@@ -280,12 +282,16 @@ export function JwtDecoderClient() {
             </div>
 
             {curlOpen && decoded && (
-              <div className="mt-3 card overflow-hidden animate-slide-down">
+              <div id="jwt-curl-panel" className="mt-3 card overflow-hidden animate-slide-down">
                 <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)]">
                   <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
                     cURL snippet
                   </span>
-                  <CopyButton value={curlWithToken(token, curlEndpoint)} className="py-1" />
+                  <CopyButton
+                    value={curlWithToken(token, curlEndpoint)}
+                    ariaLabel="Copy cURL command"
+                    className="py-1"
+                  />
                 </div>
                 <div className="p-3 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -497,7 +503,7 @@ function SignatureCard({
             Signature
           </span>
         </div>
-        <CopyButton value={signature} className="py-1" />
+        <CopyButton value={signature} ariaLabel="Copy signature" className="py-1" />
       </div>
       <pre className="px-4 py-3 font-mono text-[12px] leading-[1.6] break-all whitespace-pre-wrap text-[var(--lime)]">
         {signature}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { toolJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/jsonLd";
+import { getGuidesForTool } from "@/lib/guides";
 import { getRelatedTools, type Tool } from "@/lib/tools";
 import { CtaBanner } from "./CtaBanner";
 import { Faq } from "./Faq";
@@ -24,6 +25,7 @@ export function ToolPageLayout({
   // Keep both literals in source so Tailwind generates them.
   const faqCols = tool.faqs.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
   const related = getRelatedTools(tool.slug);
+  const guides = getGuidesForTool(tool.slug);
 
   return (
     <>
@@ -89,6 +91,31 @@ export function ToolPageLayout({
               <Faq key={f.q} q={f.q} a={f.a} />
             ))}
           </div>
+        </section>
+      )}
+
+      {guides.length > 0 && (
+        <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-8">
+          <h2 className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-5">
+            &#47;&#47; Guides
+          </h2>
+          <nav aria-label="Related guides">
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {guides.map((g) => (
+                <li key={g.slug} className="card p-5">
+                  <Link
+                    href={g.path}
+                    className="font-display text-[15px] font-semibold text-[var(--fg)] hover:text-[var(--cyan)] focus-visible:outline-none focus-visible:text-[var(--cyan)] transition-colors"
+                  >
+                    {g.title}
+                  </Link>
+                  <p className="mt-1.5 text-[13.5px] text-[var(--fg-muted)] leading-relaxed line-clamp-2">
+                    {g.cardDescription}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </section>
       )}
 

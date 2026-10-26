@@ -87,6 +87,16 @@ describe("TextTab switches", () => {
     expect(screen.getByRole("button", { name: "Base64 → Text" })).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("exposes invalid base64 through an alert", async () => {
+    renderTab();
+    fireEvent.click(screen.getByRole("button", { name: "Base64 → Text" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Base64 to decode" }), {
+      target: { value: "SGVs!bG8=" },
+    });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Invalid base64/i);
+  });
+
   it("swaps a valid conversion result", async () => {
     renderTab();
     fireEvent.change(screen.getByRole("textbox", { name: "Text to encode" }), {
@@ -99,5 +109,44 @@ describe("TextTab switches", () => {
     expect(screen.getByRole("button", { name: "Base64 → Text" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("textbox", { name: "Base64 to decode" })).toHaveValue("SGVsbG8gd29ybGQ=");
     await waitFor(() => expect(screen.getByText("Hello world")).toBeInTheDocument());
+  });
+
+  it("names the output copy buttons by what they copy", async () => {
+    renderTab();
+    fireEvent.change(screen.getByRole("textbox", { name: "Text to encode" }), {
+      target: { value: "Hello world" },
+    });
+
+    expect(await screen.findByText("SGVsbG8gd29ybGQ=")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy Base64 output" })).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Copy as code literal/).closest("button")!);
+    expect(screen.getByRole("button", { name: "Copy javascript code literal" })).toBeInTheDocument();
+  });
+});
+
+describe("TextTab code-literal disclosure", () => {
+  afterEach(cleanup);
+
+  it("keeps its name stable and connects both states to the controlled panel", async () => {
+    render(
+      <ToastProvider>
+        <TextTab />
+      </ToastProvider>,
+    );
+    fireEvent.change(screen.getByRole("textbox", { name: "Text to encode" }), { target: { value: "Hello" } });
+    const toggle = await screen.findByRole("button", { name: "Copy as code literal" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveAttribute("aria-controls", "base64-code-literal-panel");
+    expect(screen.getByText("click to expand")).toHaveAttribute("aria-hidden", "true");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByText("click to expand")).not.toBeInTheDocument();
+    const panel = document.getElementById("base64-code-literal-panel");
+    expect(panel).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-controls", panel?.id);
+    expect(screen.getByRole("button", { name: "Copy as code literal" })).toBe(toggle);
+    fireEvent.click(toggle);
+    await waitFor(() => expect(toggle).toHaveAttribute("aria-expanded", "false"));
+    expect(document.getElementById("base64-code-literal-panel")).not.toBeInTheDocument();
   });
 });

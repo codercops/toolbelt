@@ -194,7 +194,11 @@ export function FileTab() {
                   Single line
                 </button>
               </div>
-              <CopyButton value={displayed} className="py-1" />
+              <CopyButton
+                value={displayed}
+                ariaLabel={`Copy ${info.name} as Base64`}
+                className="py-1"
+              />
               <button className="btn" onClick={downloadB64}>
                 <Download className="w-3.5 h-3.5" />
                 <span>.b64</span>
@@ -233,7 +237,12 @@ export function FileTab() {
                       {b.mime} · {formatBytes(b.size)}
                     </div>
                   </div>
-                  <CopyButton value={b.base64} label="Copy" className="!py-1 !text-[11px]" />
+                  <CopyButton
+                    value={b.base64}
+                    ariaLabel={`Copy ${b.name} as Base64`}
+                    label="Copy"
+                    className="!py-1 !text-[11px]"
+                  />
                 </div>
                 <pre className="mt-1 font-mono text-[11px] text-[var(--amber)] max-h-12 overflow-hidden opacity-80 truncate">
                   {b.base64.slice(0, 160)}...

@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 interface CopyButtonProps {
   value: string | (() => string);
   label?: string;
+  ariaLabel?: string;
   successMessage?: string;
   className?: string;
   iconOnly?: boolean;
@@ -17,6 +18,7 @@ interface CopyButtonProps {
 export function CopyButton({
   value,
   label = "Copy",
+  ariaLabel,
   successMessage = "Copied to clipboard",
   className,
   iconOnly,
@@ -44,7 +46,7 @@ export function CopyButton({
       onClick={handleCopy}
       disabled={disabled}
       className={cn("btn", className)}
-      aria-label={label}
+      aria-label={ariaLabel ?? label}
     >
       {copied ? (
         <Check className="w-3.5 h-3.5 text-[var(--cyan)]" />

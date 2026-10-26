@@ -8,7 +8,9 @@ import {
   describeAlg,
   isStandardClaim,
   securityAudit,
+  stringifyJwtJson,
   uint8ToBase64Url,
+  relativeTime,
   SAMPLE_JWT,
   type DecodedJwt,
   type JwksKey,
@@ -81,6 +83,82 @@ describe("decodeJwt", () => {
     const r = decodeJwt(`${h}.${p}.$(id)`);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toContain("signature");
+  });
+});
+
+describe("numbers too big for a JS number", () => {
+  const part = (s: string) => uint8ToBase64Url(new TextEncoder().encode(s));
+  const token = (payload: string, header = '{"alg":"HS256","typ":"JWT"}') => `${part(header)}.${part(payload)}.c2ln`;
+  const decodeText = (payload: string, header?: string) => {
+    const r = decodeJwt(token(payload, header));
+    if (!r.ok) throw new Error(r.error);
+    return stringifyJwtJson(r.value.payload, 2);
+  };
+
+  it("shows 12345678901234567890 exactly, not 12345678901234567000", () => {
+    const text = decodeText('{"account_id":12345678901234567890}');
+    expect(text).toContain("12345678901234567890");
+    expect(text).not.toContain("12345678901234567000");
+  });
+
+  it("shows 9007199254740993 exactly, not 9007199254740992", () => {
+    const text = decodeText('{"id":9007199254740993}');
+    expect(text).toContain("9007199254740993");
+    expect(text).not.toContain("9007199254740992");
+  });
+
+  it("keeps big numbers exact inside arrays and nested objects", () => {
+    const text = decodeText('{"ids":[9007199254740993],"user":{"snowflake":1234567890123456789012}}');
+    expect(text).toContain("9007199254740993");
+    expect(text).toContain("1234567890123456789012");
+  });
+
+  it("keeps long decimals exact", () => {
+    expect(decodeText('{"pi":3.14159265358979323846264338327950288}')).toContain("3.14159265358979323846264338327950288");
+  });
+
+  it("keeps a number too large for a JS number as written", () => {
+    expect(decodeText('{"n":1e400}')).toContain("1e400");
+  });
+
+  it("keeps big numbers in the header exact too", () => {
+    const r = decodeJwt(token("{}", '{"alg":"HS256","kid":9007199254740993}'));
+    if (!r.ok) throw new Error(r.error);
+    expect(stringifyJwtJson(r.value.header)).toContain("9007199254740993");
+  });
+
+  it("leaves ordinary numbers as plain JS numbers, so exp, nbf and iat still compare", () => {
+    const r = decodeJwt(token('{"exp":1893456000,"nbf":1700000000,"iat":1700000000.5,"id":9007199254740993}'));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.value.payload.exp).toBe(1893456000);
+    expect(r.value.payload.nbf).toBe(1700000000);
+    expect(r.value.payload.iat).toBe(1700000000.5);
+    expect(typeof r.value.payload.id).not.toBe("number");
+  });
+
+  it("still works out expiry and health when another claim is a big number", () => {
+    const exp = Math.floor(Date.now() / 1000) + 3600;
+    const r = decodeJwt(token(`{"exp":${exp},"iss":"me","aud":"you","id":12345678901234567890}`));
+    if (!r.ok) throw new Error(r.error);
+    expect(computeHealth(r.value).exp).toBe(exp);
+    expect(securityAudit(r.value, false).some((f) => /exp/i.test(f.title))).toBe(false);
+  });
+
+  it("writes ordinary values the way JSON.stringify does", () => {
+    const value = { a: 1, b: "x", c: [true, null, 1.5], d: { e: -2 } };
+    expect(stringifyJwtJson(value)).toBe(JSON.stringify(value));
+    expect(stringifyJwtJson(value, 2)).toBe(JSON.stringify(value, null, 2));
+  });
+
+  it("still decodes a payload that repeats a claim, as it did before (the last one wins)", () => {
+    const r = decodeJwt(token('{"sub":"a","sub":"b","id":9007199254740993}'));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.value.payload.sub).toBe("b");
+  });
+
+  it("still rejects text that is not JSON", () => {
+    expect(decodeJwt(token("{12345678901234567890}")).ok).toBe(false);
+    expect(decodeJwt(token("[12345678901234567890]")).ok).toBe(false);
   });
 });
 
@@ -207,5 +285,35 @@ describe("securityAudit", () => {
       false
     );
     expect(findings.some((f) => f.level === "critical")).toBe(true);
+  });
+});
+
+describe("relativeTime", () => {
+  const nowMs = 1_000_000_000_000;
+  const nowSec = nowMs / 1000;
+
+  it("rolls up 59.6 seconds to 1 minute", () => {
+    expect(relativeTime(nowSec - 59.6, nowMs)).toBe("1 minute ago");
+    expect(relativeTime(nowSec + 59.6, nowMs)).toBe("in 1 minute");
+  });
+
+  it("rolls up 59.5 minutes to 1 hour", () => {
+    expect(relativeTime(nowSec - 3570, nowMs)).toBe("1 hour ago");
+    expect(relativeTime(nowSec + 3570, nowMs)).toBe("in 1 hour");
+  });
+
+  it("rolls up 23.6 hours to 1 day", () => {
+    expect(relativeTime(nowSec - 23.6 * 3600, nowMs)).toBe("1 day ago");
+    expect(relativeTime(nowSec + 23.6 * 3600, nowMs)).toBe("in 1 day");
+  });
+
+  it("rolls up 29.6 days to 1 month", () => {
+    expect(relativeTime(nowSec - 29.6 * 86400, nowMs)).toBe("1 month ago");
+    expect(relativeTime(nowSec + 29.6 * 86400, nowMs)).toBe("in 1 month");
+  });
+
+  it("rolls up 360 days to 1 year", () => {
+    expect(relativeTime(nowSec - 360 * 86400, nowMs)).toBe("1 year ago");
+    expect(relativeTime(nowSec + 360 * 86400, nowMs)).toBe("in 1 year");
   });
 });

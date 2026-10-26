@@ -10,7 +10,6 @@ import {
   ArrowDownAZ,
   GitCompare,
   BarChart3,
-  FileQuestion,
   Search,
 } from "lucide-react";
 import { CopyButton } from "@/components/shared/CopyButton";
@@ -134,7 +133,12 @@ export function Toolbar({
 
       <span className="flex-1" />
 
-      <button type="button" className="btn" onClick={onLoadSample}>
+      <button
+        type="button"
+        className="btn"
+        onClick={onLoadSample}
+        aria-label="Load example"
+      >
         <Sparkles className="w-3.5 h-3.5" />
         <span className="hidden sm:inline">Load example</span>
       </button>
@@ -158,9 +162,6 @@ export function Toolbar({
           { keys: [modKey, "K"], label: "Command palette" },
         ]}
       />
-      <span className="sr-only">
-        <FileQuestion className="w-3 h-3" /> legend placeholder
-      </span>
     </div>
   );
 }

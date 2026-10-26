@@ -88,6 +88,7 @@ export function Base64Client() {
             ))}
           </div>
           <ShortcutsLegend
+            align="left"
             shortcuts={[
               { keys: [modKey, "Enter"], label: "Encode/Decode" },
               { keys: [modKey, shiftKey, "S"], label: "Swap direction" },

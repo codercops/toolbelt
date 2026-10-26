@@ -91,26 +91,54 @@ export function validate(raw: string): Result<true> {
   return { ok: true, value: true };
 }
 
+// Re-emit already-validated JSON, changing only the whitespace between tokens.
+// Parsing into an object would move integer-like keys ("2024", "10") to the
+// front, so keys, strings and numbers are copied through exactly as typed.
+function reindent(raw: string, indent: number): string {
+  const isSpace = (c: string | undefined) => c === " " || c === "\t" || c === "\n" || c === "\r";
+  let out = "";
+  let depth = 0;
+  const newline = () => (indent ? "\n" + " ".repeat(indent * depth) : "");
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (c === '"') {
+      const start = i;
+      for (i++; raw[i] !== '"'; i++) if (raw[i] === "\\") i++;
+      out += raw.slice(start, i + 1);
+    } else if (c === "{" || c === "[") {
+      let j = i + 1;
+      while (isSpace(raw[j])) j++;
+      if (raw[j] === "}" || raw[j] === "]") {
+        out += c + raw[j];
+        i = j;
+      } else {
+        depth++;
+        out += c + newline();
+      }
+    } else if (c === "}" || c === "]") {
+      depth--;
+      out += newline() + c;
+    } else if (c === ",") {
+      out += c + newline();
+    } else if (c === ":") {
+      out += indent ? ": " : ":";
+    } else if (!isSpace(c)) {
+      out += c;
+    }
+  }
+  return out;
+}
+
 export function format(raw: string, indent: 2 | 4 = 2): Result<string> {
   const v = validate(raw);
   if (!v.ok) return v;
-  // Lossless parse/stringify so large integers and high-precision decimals are
-  // preserved exactly rather than coerced through IEEE-754 doubles.
-  try {
-    return { ok: true, value: llStringify(llParse(raw), null, indent) as string };
-  } catch (e) {
-    return { ok: false, error: parseSyntaxError(raw, e) };
-  }
+  return { ok: true, value: reindent(raw, indent) };
 }
 
 export function minify(raw: string): Result<string> {
   const v = validate(raw);
   if (!v.ok) return v;
-  try {
-    return { ok: true, value: llStringify(llParse(raw)) as string };
-  } catch (e) {
-    return { ok: false, error: parseSyntaxError(raw, e) };
-  }
+  return { ok: true, value: reindent(raw, 0) };
 }
 
 function suggestFix(raw: string): string | undefined {
@@ -363,14 +391,24 @@ function needsQuote(s: string): boolean {
   if (/^[+-]?\.(inf|nan)$/i.test(s)) return true;
   if (/^\d{4}-\d{1,2}-\d{1,2}(?:[Tt ].*)?$/.test(s)) return true;
   if (/[:#]\s|\s#/.test(s)) return true;
-  if (/[\n\t\r"]/.test(s)) return true;
+  if (/[\x00-\x1f\x7f-\x9f\u2028\u2029\ufffe\uffff"]/.test(s)) return true;
   return false;
 }
 
-
 function yamlString(s: string): string {
   if (!needsQuote(s)) return s;
-  const escaped = s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\t/g, "\\t").replace(/\r/g, "\\r");
+  const escaped = s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\t/g, "\\t")
+    .replace(/\r/g, "\\r")
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f\u2028\u2029\ufffe\uffff]/g, (c) => {
+      const code = c.charCodeAt(0);
+      return code < 0x100
+        ? `\\x${code.toString(16).toUpperCase().padStart(2, "0")}`
+        : `\\u${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    });
   return `"${escaped}"`;
 }
 
@@ -527,10 +565,11 @@ export function sortKeys(raw: string, indent: 2 | 4 = 2): Result<string> {
   function walk(node: unknown): unknown {
     if (Array.isArray(node)) return node.map(walk);
     if (isContainer(node)) {
-      const keys = Object.keys(node as Record<string, unknown>).sort();
-      const out: Record<string, unknown> = {};
-      for (const k of keys) out[k] = walk((node as Record<string, unknown>)[k]);
-      return out;
+      const record = node as Record<string, unknown>;
+      const entries = Object.keys(record)
+        .sort()
+        .map((k) => [k, walk(record[k])] as [string, unknown]);
+      return Object.fromEntries(entries);
     }
     return node;
   }
@@ -705,7 +744,7 @@ export function escapeForCode(raw: string, lang: EscapeLang): string {
       // Escape backticks and template literal expressions for safety in template strings
       return "`" + minified.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${") + "`";
     case "python":
-      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'''/g, "'\\''") + "'''";
+      return "'''" + minified.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'''";
     case "go":
       return "`" + minified.replace(/`/g, "` + \"`\" + `") + "`";
     case "rust":

@@ -236,7 +236,7 @@ export function renderHomeOgImage() {
     badge: "OPEN SOURCE",
     title: "Sharp, focused tools for shipping software",
     description:
-      "Free, privacy-first developer utilities. JSON formatter, JWT decoder, Base64, invoice generator. Everything runs in your browser.",
+      "Free, privacy-first developer utilities. JSON formatter, JWT decoder, Base64, URL encoder, invoice generator. Runs in your browser.",
     chips: ["No login", "No uploads", "No tracking", "Open source", "MIT"],
     url: "tools.codercops.com",
     accent: "#00E5C7",

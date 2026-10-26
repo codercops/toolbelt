@@ -1,8 +1,9 @@
 "use client";
 
+import { isLosslessNumber } from "lossless-json";
 import { useMemo } from "react";
 import { tokenize } from "@/lib/json-utils";
-import { formatTimestamp, isStandardClaim, relativeTime, STANDARD_CLAIMS } from "@/lib/jwt-utils";
+import { formatTimestamp, isStandardClaim, relativeTime, STANDARD_CLAIMS, stringifyJwtJson } from "@/lib/jwt-utils";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { cn } from "@/lib/cn";
 
@@ -21,7 +22,7 @@ export function DecodedCard({
   algDescription,
   isPayload,
 }: DecodedCardProps) {
-  const formatted = useMemo(() => JSON.stringify(data, null, 2), [data]);
+  const formatted = useMemo(() => stringifyJwtJson(data, 2), [data]);
   const tokens = useMemo(() => tokenize(formatted), [formatted]);
   const claims = useMemo(
     () =>
@@ -61,7 +62,11 @@ export function DecodedCard({
             </span>
           )}
         </div>
-        <CopyButton value={formatted} className="py-1" />
+        <CopyButton
+          value={formatted}
+          ariaLabel={isPayload ? "Copy payload" : "Copy header"}
+          className="py-1"
+        />
       </div>
       <pre className="px-4 py-3 font-mono text-[12.5px] leading-[1.7] whitespace-pre overflow-x-auto">
         {tokens.map((t, i) => {
@@ -157,7 +162,7 @@ function ClaimRow({
         )}
         {description ?? (
           <span className="font-mono text-[12.5px] text-[var(--fg)]">
-            {typeof value === "object" ? JSON.stringify(value) : String(value)}
+            {typeof value === "object" && !isLosslessNumber(value) ? stringifyJwtJson(value) : String(value)}
           </span>
         )}
       </dd>

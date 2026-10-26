@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import {
   parseColor,
+  parseHslComponents,
   toHex,
   toRgbString,
   toHslString,
+  toHslWithAlpha,
   relativeLuminance,
   contrastRatio,
   formatContrastRatio,
@@ -94,10 +96,14 @@ export function ColorConverterClient() {
   function handleAlphaChange(newAlpha: number) {
     if (!parsed.ok) return;
     const updated = { ...parsed.value, a: newAlpha };
-    if (colorInput.trim().startsWith("rgb")) {
+    const input = colorInput.trim();
+    if (/^rgb/i.test(input)) {
       setColorInput(toRgbString(updated));
-    } else if (colorInput.trim().startsWith("hsl")) {
-      setColorInput(toHslString(updated));
+    } else if (/^hsl/i.test(input)) {
+      const hsl = parseHslComponents(input);
+      if (hsl.ok) {
+        setColorInput(toHslWithAlpha(hsl.value, newAlpha));
+      }
     } else {
       setColorInput(toHex(updated));
     }

@@ -18,6 +18,7 @@ import {
   guideFaqJsonLd,
 } from "@/lib/jsonLd";
 import { Faq } from "@/components/shared/Faq";
+import { GuideToolCta } from "@/components/shared/GuideToolCta";
 
 const guide = getGuide("decode-jwt")!;
 const relatedGuides = getRelatedGuides(guide.slug);
@@ -110,27 +111,7 @@ export default function DecodeJwtGuidePage() {
             {guide.cardDescription}
           </p>
 
-          <div className="mt-6 p-4 rounded-lg border border-[var(--hairline-strong)] bg-[var(--bg-raise)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded border border-[var(--hairline-strong)] bg-[var(--bg-base)] flex items-center justify-center font-mono font-bold text-[var(--violet)]">
-                JWT
-              </div>
-              <div>
-                <div className="font-display text-sm font-semibold text-[var(--fg)]">
-                  Decode a token with the JWT Decoder &amp; Inspector
-                </div>
-                <div className="text-xs text-[var(--fg-muted)]">
-                  100% client-side header, payload, claim, and expiry inspection.
-                </div>
-              </div>
-            </div>
-            <Link
-              href="/jwt-decoder"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-mono font-medium bg-[var(--violet)] text-black hover:opacity-90 transition-opacity whitespace-nowrap"
-            >
-              Open Tool <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+          <GuideToolCta guide={guide} />
         </header>
 
         <div className="space-y-12">

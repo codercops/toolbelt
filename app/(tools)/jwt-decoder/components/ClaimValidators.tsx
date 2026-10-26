@@ -167,10 +167,33 @@ function InputRow({
 
 function formatDelta(seconds: number): string {
   const abs = Math.abs(seconds);
-  const unit =
-    abs < 60 ? `${Math.round(abs)}s` :
-    abs < 3600 ? `${Math.round(abs / 60)}m` :
-    abs < 86400 ? `${Math.round(abs / 3600)}h` :
-    `${Math.round(abs / 86400)}d`;
-  return seconds >= 0 ? `in ${unit}` : `${unit} ago`;
+  let value: number;
+  let unit: string;
+  if (abs < 60) {
+    value = Math.round(abs);
+    unit = "s";
+  } else if (abs < 3600) {
+    value = Math.round(abs / 60);
+    unit = "m";
+  } else if (abs < 86400) {
+    value = Math.round(abs / 3600);
+    unit = "h";
+  } else {
+    value = Math.round(abs / 86400);
+    unit = "d";
+  }
+  // Rounding can reach the next unit: 59.7 minutes is "1h", 23.9 hours is
+  // "1d", the way relativeTime carries after rounding (#317).
+  if (unit === "s" && value >= 60) {
+    value = 1;
+    unit = "m";
+  } else if (unit === "m" && value >= 60) {
+    value = 1;
+    unit = "h";
+  } else if (unit === "h" && value >= 24) {
+    value = 1;
+    unit = "d";
+  }
+  const deltas = `${value}${unit}`;
+  return seconds >= 0 ? `in ${deltas}` : `${deltas} ago`;
 }

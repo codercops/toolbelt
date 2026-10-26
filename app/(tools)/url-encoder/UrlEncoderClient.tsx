@@ -171,10 +171,15 @@ export function UrlEncoderClient() {
               <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--cyan)]">
                 {direction === "encode" ? "Encoded output" : "Decoded output"}
               </span>
-              <CopyButton value={output} disabled={!output} className="py-1" />
+              <CopyButton
+                value={output}
+                ariaLabel={direction === "encode" ? "Copy encoded output" : "Copy decoded output"}
+                disabled={!output}
+                className="py-1"
+              />
             </div>
             {error ? (
-              <div className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
+              <div role="alert" className="flex-1 p-4 flex items-start gap-2 text-[13px] text-[var(--rose)]">
                 <AlertCircle className="w-4 h-4 mt-0.5" />
                 <span>{error}</span>
               </div>
@@ -211,7 +216,11 @@ export function UrlEncoderClient() {
                       <span className="text-[var(--fg-muted)] break-all">
                         {key} = <span className="text-[var(--fg)]">{value}</span>
                       </span>
-                      <CopyButton value={value} className="py-0.5 shrink-0" />
+                      <CopyButton
+                        value={value}
+                        ariaLabel={`Copy value of ${key}`}
+                        className="py-0.5 shrink-0"
+                      />
                     </div>
                   ))}
                 </div>

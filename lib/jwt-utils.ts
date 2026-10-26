@@ -1,3 +1,5 @@
+import { isSafeNumber, LosslessNumber, parse as llParse, stringify as llStringify } from "lossless-json";
+
 export interface DecodedJwt {
   header: Record<string, unknown>;
   payload: Record<string, unknown>;
@@ -27,6 +29,27 @@ export function uint8ToBase64Url(bytes: Uint8Array): string {
 function base64UrlDecodeToString(input: string): string {
   const bytes = base64UrlToUint8(input);
   return new TextDecoder("utf-8").decode(bytes);
+}
+
+/**
+ * Parses header or payload JSON without rounding. A number that a JS number can
+ * hold safely (every exp, nbf and iat in practice) stays a plain number, so the
+ * claim checks work as before. One that it can't (an ID like 12345678901234567890)
+ * is kept as a LosslessNumber, which shows and copies exactly as written.
+ */
+function parseJwtJson(text: string): unknown {
+  try {
+    return llParse(text, undefined, (value) => (isSafeNumber(value) ? Number(value) : new LosslessNumber(value)));
+  } catch {
+    // The exact parser also rejects things JSON.parse accepts, such as a repeated key.
+    // Those still decode, as they always did.
+    return JSON.parse(text);
+  }
+}
+
+/** JSON.stringify for decoded header and payload values, writing big numbers exactly as they were. */
+export function stringifyJwtJson(value: unknown, indent?: number): string {
+  return llStringify(value, null, indent) ?? "";
 }
 
 export function decodeJwt(token: string): DecodeResult {
@@ -63,7 +86,7 @@ export function decodeJwt(token: string): DecodeResult {
   }
   let parsedHeader: unknown;
   try {
-    parsedHeader = JSON.parse(headerText);
+    parsedHeader = parseJwtJson(headerText);
   } catch {
     return {
       ok: false,
@@ -79,7 +102,7 @@ export function decodeJwt(token: string): DecodeResult {
   header = parsedHeader as Record<string, unknown>;
   let parsedPayload: unknown;
   try {
-    parsedPayload = JSON.parse(payloadText);
+    parsedPayload = parseJwtJson(payloadText);
   } catch {
     return {
       ok: false,
@@ -175,7 +198,23 @@ export function relativeTime(unixSeconds: number, nowMs = Date.now()): string {
       break;
     }
   }
-  const n = Math.round(abs / divisor);
+  let n = Math.round(abs / divisor);
+  if (unit === "second" && n >= 60) {
+    unit = "minute";
+    n = 1;
+  } else if (unit === "minute" && n >= 60) {
+    unit = "hour";
+    n = 1;
+  } else if (unit === "hour" && n >= 24) {
+    unit = "day";
+    n = 1;
+  } else if (unit === "day" && n >= 30) {
+    unit = "month";
+    n = 1;
+  } else if (unit === "month" && n >= 12) {
+    unit = "year";
+    n = 1;
+  }
   const label = n === 1 ? unit : `${unit}s`;
   return future ? `in ${n} ${label}` : `${n} ${label} ago`;
 }

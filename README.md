@@ -57,13 +57,59 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
       <a href="https://tools.codercops.com/invoice-generator"><img src="./.github/assets/og-invoice-generator.png" alt="Invoice Generator"></a>
     </td>
   </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/url-encoder"><img src="./.github/assets/og-url-encoder.png" alt="URL Encoder and Decoder"></a>
+    </td>
+    <td width="50%">
+      <a href="https://tools.codercops.com/timestamp-converter"><img src="./.github/assets/og-timestamp-converter.png" alt="Unix Timestamp Converter"></a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/color-converter"><img src="./.github/assets/og-color-converter.png" alt="Color Converter and Contrast Checker"></a>
+    </td>
+    <td width="50%">
+      <a href="https://tools.codercops.com/case-converter"><img src="./.github/assets/og-case-converter.png" alt="Text Case Converter"></a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/number-base-converter"><img src="./.github/assets/og-number-base-converter.png" alt="Number Base Converter"></a>
+    </td>
+    <td width="50%">
+      <a href="https://tools.codercops.com/uuid-generator"><img src="./.github/assets/og-uuid-generator.png" alt="UUID Generator and Inspector"></a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/cron-explainer"><img src="./.github/assets/og-cron-explainer.png" alt="Cron Expression Explainer"></a>
+    </td>
+    <td width="50%">
+      <a href="https://tools.codercops.com/csv-formatter"><img src="./.github/assets/og-csv-formatter.png" alt="CSV/TSV Formatter and Validator"></a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/regex-tester"><img src="./.github/assets/og-regex-tester.png" alt="Regex Tester"></a>
+    </td>
+    <td width="50%"></td>
+  </tr>
 </table>
 
 - **[JSON formatter and validator](https://tools.codercops.com/json-formatter).** Format, minify, validate, collapsible tree view, and JSON to CSV / TypeScript / YAML / XML / query string. Large numbers are preserved losslessly.
 - **[JWT decoder and inspector](https://tools.codercops.com/jwt-decoder).** Decode header, payload, and claims; verify HS/RS/PS/ES signatures via WebCrypto; security audit; HS256/384/512 encoder.
 - **[Base64 encoder and decoder](https://tools.codercops.com/base64).** Text, images, and files; URL-safe variant; data URIs; magic-byte detection; Base32/58/85 and hashes.
 - **[Invoice generator](https://tools.codercops.com/invoice-generator).** Live preview, vector PDF export with Unicode currency support, a reusable sender profile, all saved locally.
+- **[URL encoder and decoder](https://tools.codercops.com/url-encoder).** Percent-encode or decode a URL, a query value, or form data, as a component or a full URL, with plus as space, and every query param broken out with duplicates kept in order.
+- **[Unix timestamp converter](https://tools.codercops.com/timestamp-converter).** Convert Unix timestamps and dates with automatic unit detection, UTC, local time, ISO 8601, and relative time.
 - **[Color converter & contrast checker](https://tools.codercops.com/color-converter).** Convert between HEX, RGB, and HSL with alpha channel support, live swatch, and WCAG AA/AAA contrast ratios for normal and large text.
+- **[Text case converter](https://tools.codercops.com/case-converter).** Convert text between camelCase, snake_case, kebab-case, and 7 more naming conventions. Handles acronyms, digits, and multi-line input.
+- **[Number base converter](https://tools.codercops.com/number-base-converter).** Convert integers between binary, octal, decimal, hex and any base from 2 to 36, with two's complement for 8, 16, 32 and 64 bits.
+- **[UUID Generator & Inspector](https://tools.codercops.com/uuid-generator).** Generate UUID v4 and v7 identifiers locally, create batches, customize formatting, and inspect version, variant, and v7 timestamps.
+- **[Cron expression explainer](https://tools.codercops.com/cron-explainer).** Paste a crontab line and get a plain-English description, a field-by-field breakdown and the next run times in UTC or your local time.
+- **[CSV/TSV formatter & validator](https://tools.codercops.com/csv-formatter).** Parse, validate, and pretty-print CSV/TSV. Auto-detect delimiters, convert to JSON, TypeScript, YAML, SQL, and fix common formatting issues.
+- **[Regex tester](https://tools.codercops.com/regex-tester).** Test a JavaScript regular expression against sample text with highlighted matches, capture groups, named groups and a replace preview.
 
 ## Why it exists
 

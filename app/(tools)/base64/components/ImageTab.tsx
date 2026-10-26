@@ -153,10 +153,10 @@ export function ImageTab() {
 
       {info ? (
         <div className="space-y-3 animate-fade-in">
-          <OutputBlock label="Full data URI" value={info.dataUri} wrap />
-          <OutputBlock label="Base64 only (no prefix)" value={info.base64Only} wrap />
-          <OutputBlock label="HTML <img> tag" value={htmlSnippet} full={`<img src="${info.dataUri}" alt="${info.name}" width="${info.width}" height="${info.height}" />`} />
-          <OutputBlock label="CSS background-image" value={cssSnippet} full={`background-image: url("${info.dataUri}");`} />
+          <OutputBlock label="Full data URI" value={info.dataUri} copyLabel="Copy full data URI" wrap />
+          <OutputBlock label="Base64 only (no prefix)" value={info.base64Only} copyLabel="Copy Base64 only" wrap />
+          <OutputBlock label="HTML <img> tag" value={htmlSnippet} copyLabel="Copy HTML img tag" full={`<img src="${info.dataUri}" alt="${info.name}" width="${info.width}" height="${info.height}" />`} />
+          <OutputBlock label="CSS background-image" value={cssSnippet} copyLabel="Copy CSS background-image" full={`background-image: url("${info.dataUri}");`} />
         </div>
       ) : (
         <div className="card p-6 flex items-center justify-center min-h-[280px]">
@@ -176,11 +176,13 @@ export function ImageTab() {
 function OutputBlock({
   label,
   value,
+  copyLabel,
   full,
   wrap,
 }: {
   label: string;
   value: string;
+  copyLabel: string;
   full?: string;
   wrap?: boolean;
 }) {
@@ -190,7 +192,7 @@ function OutputBlock({
         <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
           {label}
         </span>
-        <CopyButton value={full ?? value} className="py-1" />
+        <CopyButton value={full ?? value} ariaLabel={copyLabel} className="py-1" />
       </div>
       <pre
         className={cn(
