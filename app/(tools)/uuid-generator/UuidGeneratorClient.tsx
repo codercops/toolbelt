@@ -16,6 +16,13 @@ const VARIANT_LABELS = {
   future: "Future (reserved)",
 } as const;
 
+function compareUuidBytes(a: Uint8Array, b: Uint8Array): number {
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
+
 function InspectionResult({ result }: { result: UuidInspection }) {
   if (!result.ok) {
     return (
@@ -81,13 +88,6 @@ export function UuidGeneratorClient() {
     return inspectUuid(input);
   }, [input]);
 
-  function compareUuidBytes(a: Uint8Array, b: Uint8Array): number {
-  for (let i = 0; i < a.length; i += 1) {
-    if (a[i] !== b[i]) return a[i] - b[i];
-  }
-  return 0;
-}
-
   function generate() {
     const amount = Number(count);
     if (!Number.isInteger(amount) || amount < 1 || amount > 100) {
@@ -102,7 +102,6 @@ export function UuidGeneratorClient() {
         return version === "v4" ? uuidV4(random) : uuidV7(Date.now(), random);
       });
       if (version === "v7") uuids.sort(compareUuidBytes);
-      setGenerated(uuids);
       setGenerated(uuids);
       setGenerationError("");
     } catch (error) {
