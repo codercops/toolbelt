@@ -59,7 +59,7 @@
     "json5": "^2.2.3",
     "jsonpath-plus": "^10.4.0",
     "jspdf": "^4.2.1",
-    "lossless-json": "^4.3.2",
+    "lossless-json": "^4.3.3",
     "lucide-react": "^0.468.0",
     "marked": "^18.1.1",
     "next": "^16.4.2",
