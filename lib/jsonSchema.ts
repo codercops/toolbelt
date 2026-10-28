@@ -39,7 +39,7 @@ export function validateSchema(jsonRaw: string, schemaRaw: string): SchemaValida
     };
   }
   try {
-    const validator = new Validator(schema as object, "2020-12");
+    const validator = new Validator(schema as object, "2020-12", false);
     const result = validator.validate(data);
     return {
       ok: true,

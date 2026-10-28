@@ -94,4 +94,22 @@ describe("validateSchema", () => {
       ]),
     });
   });
+
+  it("reports every failing field in one pass", () => {
+    const data = JSON.parse(SAMPLE_JSON);
+    data.user = { id: 1, name: "", email: "x", age: -1 };
+
+    const { errors } = validateSchema(JSON.stringify(data), SAMPLE_SCHEMA);
+    expect(errors.map((e) => `${e.instanceLocation} ${e.keyword}`)).toEqual([
+      "# properties",
+      "#/user properties",
+      "#/user/id type",
+      "#/user properties",
+      "#/user/name minLength",
+      "#/user properties",
+      "#/user/email format",
+      "#/user properties",
+      "#/user/age minimum",
+    ]);
+  });
 });
