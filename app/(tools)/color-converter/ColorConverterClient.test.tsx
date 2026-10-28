@@ -17,6 +17,26 @@ function failingPair() {
 }
 
 describe("accessible foreground suggestions", () => {
+  it.each(["#F26DF0", "rgb(242, 109, 240)"])("shows and applies HEX for %s input", (input) => {
+    const { foreground, background } = failingPair();
+    fireEvent.change(foreground, { target: { value: input } });
+    fireEvent.click(screen.getByRole("button", { name: "Suggest accessible foreground" }));
+    expect(screen.getByText("#d013ce", { selector: "code" })).toBeInTheDocument();
+    expect(foreground).toHaveValue(input);
+    fireEvent.click(screen.getByRole("button", { name: "Apply suggested foreground" }));
+    expect(foreground).toHaveValue("#d013ce");
+    expect(background).toHaveValue("#ffffff");
+  });
+
+  it("keeps typed HSL hue and saturation when showing and applying a suggestion", () => {
+    const { foreground } = failingPair();
+    fireEvent.change(foreground, { target: { value: "HSL(210.5, 40.5%, 60.5%)" } });
+    fireEvent.click(screen.getByRole("button", { name: "Suggest accessible foreground" }));
+    const suggested = screen.getByText(/^hsl\(210\.5, 40\.5%,/, { selector: "code" }).textContent;
+    fireEvent.click(screen.getByRole("button", { name: "Apply suggested foreground" }));
+    expect(foreground).toHaveValue(suggested);
+  });
+
   it("previews without changing inputs, then applies only the foreground", () => {
     const { foreground, background } = failingPair();
     fireEvent.click(screen.getByRole("button", { name: "Suggest accessible foreground" }));

@@ -582,7 +582,7 @@ export function ColorConverterClient() {
             {suggestion.status === "passing" && <p>No adjustment needed: this pair already meets WCAG AA for normal text (4.5:1).</p>}
             {suggestionFor?.fg === fgInput && suggestionFor?.bg === bgInput && suggestion.status === "suggested" && (
               <>
-                <p>Suggested foreground: <code className="break-all">{suggestion.color}</code> ({suggestion.hex})</p>
+                <p>Suggested foreground: <code className="break-all">{suggestion.color}</code>{suggestion.color !== suggestion.hex && ` (${suggestion.hex})`}</p>
                 <p>Contrast: {formatContrastRatio(suggestion.ratio)}:1 — meets WCAG AA for normal text.</p>
                 <p className="rounded-lg p-4" style={{ color: suggestion.hex, backgroundColor: parsedBg.ok ? toHex(parsedBg.value) : undefined }}>
                   Sample text with the suggested foreground.

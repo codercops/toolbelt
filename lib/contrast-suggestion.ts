@@ -23,7 +23,7 @@ export function suggestAccessibleForeground(foreground: string, background: stri
     const rgb = hslToRgb({ ...hsl, l });
     return {
       status: "suggested" as const,
-      color: `hsl(${hsl.h}, ${hsl.s}%, ${l}%)`,
+      color: typedHsl.ok ? `hsl(${hsl.h}, ${hsl.s}%, ${l}%)` : toHex(rgb),
       hex: toHex(rgb),
       ratio: contrastRatio(rgb, bg.value),
       lightnessChange: Math.abs(l - hsl.l),
