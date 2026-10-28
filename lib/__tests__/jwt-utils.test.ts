@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  cleanJwtInput,
   decodeJwt,
   encodeJwt,
   verifyJwt,
@@ -83,6 +84,26 @@ describe("decodeJwt", () => {
     const r = decodeJwt(`${h}.${p}.$(id)`);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toContain("signature");
+  });
+});
+
+describe("cleanJwtInput", () => {
+  it.each([
+    ["a plain token", SAMPLE_JWT],
+    ["a Bearer prefix", `Bearer ${SAMPLE_JWT}`],
+    ["a lowercase bearer prefix", `bearer ${SAMPLE_JWT}`],
+    ["an Authorization header", `Authorization: Bearer ${SAMPLE_JWT}`],
+    ["double quotes", `"${SAMPLE_JWT}"`],
+    ["single quotes", `'${SAMPLE_JWT}'`],
+    ["a quoted Bearer value", `"Bearer ${SAMPLE_JWT}"`],
+    ["line breaks and spaces", `  ${SAMPLE_JWT.slice(0, 20)}\n${SAMPLE_JWT.slice(20)}  `],
+  ])("leaves only the token for %s", (_, input) => {
+    expect(cleanJwtInput(input)).toBe(SAMPLE_JWT);
+    expect(decodeJwt(cleanJwtInput(input)).ok).toBe(true);
+  });
+
+  it("keeps a quote that isn't part of a matching pair", () => {
+    expect(cleanJwtInput(`"${SAMPLE_JWT}`)).toBe(`"${SAMPLE_JWT}`);
   });
 });
 

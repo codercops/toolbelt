@@ -52,6 +52,16 @@ export function stringifyJwtJson(value: unknown, indent?: number): string {
   return llStringify(value, null, indent) ?? "";
 }
 
+export function cleanJwtInput(input: string): string {
+  const trimmed = input.trim();
+  const quoted = /^(["'])([\s\S]*)\1$/.exec(trimmed);
+  return (quoted ? quoted[2] : trimmed)
+    .trim()
+    .replace(/^authorization:\s*/i, "")
+    .replace(/^bearer\s+/i, "")
+    .replace(/\s/g, "");
+}
+
 export function decodeJwt(token: string): DecodeResult {
   const trimmed = token.trim();
   if (!trimmed) return { ok: false, error: "Paste a JWT to decode it" };

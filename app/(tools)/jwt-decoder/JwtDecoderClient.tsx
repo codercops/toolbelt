@@ -15,6 +15,7 @@ import {
   Terminal,
 } from "lucide-react";
 import {
+  cleanJwtInput,
   decodeJwt,
   stringifyJwtJson,
   describeAlg,
@@ -257,7 +258,7 @@ export function JwtDecoderClient() {
                   ref={inputRef}
                   aria-label="Encoded JWT"
                   value={token}
-                  onChange={(e) => setToken(e.target.value.replace(/\s/g, ""))}
+                  onChange={(e) => setToken(cleanJwtInput(e.target.value))}
                   spellCheck={false}
                   autoCapitalize="off"
                   autoCorrect="off"
