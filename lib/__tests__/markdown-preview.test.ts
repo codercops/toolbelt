@@ -1,7 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
+import { createStandaloneHtml, getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
 
 describe("markdown preview", () => {
+  it("creates a complete light HTML document with sanitized content", () => {
+    const document = createStandaloneHtml('<h1>Safe</h1><p>Text</p>', "light", "A <title>");
+    expect(document).toContain("<!doctype html>");
+    expect(document).toContain('<meta charset="utf-8">');
+    expect(document).toContain('name="viewport"');
+    expect(document).toContain("<title>A &lt;title&gt;</title>");
+    expect(document).toContain('<h1>Safe</h1>');
+    expect(document).not.toContain("<script");
+    expect(document).not.toContain("http://");
+    expect(document.startsWith('<!doctype html>\n<html lang="en">')).toBe(true);
+  });
+
+  it("selects the dark export theme", () => {
+    const document = createStandaloneHtml("<p>Dark</p>", "dark");
+    expect(document).toContain('<html lang="en" data-theme="dark">');
+    expect(document).toContain("color-scheme: dark");
+  });
+
   it("renders GFM and highlights fenced code", () => {
     const html = renderMarkdown("- [x] done\n\n| A | B |\n| - | - |\n| 1 | 2 |\n\n```ts\nconst value = 1;\n```");
     expect(html).toContain("type=\"checkbox\"");

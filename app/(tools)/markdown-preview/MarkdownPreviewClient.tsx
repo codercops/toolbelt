@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import DOMPurify from "dompurify";
 import { CopyButton } from "@/components/shared/CopyButton";
-import { getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
+import { createStandaloneHtml, getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
 
 const starter = `# Hello, Markdown!\n\nWrite on the left and see **GitHub-flavored Markdown** rendered here.\n\n- [x] Live preview\n- [ ] Copy sanitized HTML\n\n| Feature | Status |\n| --- | --- |\n| Tables | Ready |\n| Code | \`const answer = 42\` |\n\n~~~ts\nconst greeting = "Hello, world!";\n~~~`;
 const MAX_IMPORT_BYTES = 1024 * 1024;
@@ -56,6 +56,16 @@ export function MarkdownPreviewClient() {
     const link = document.createElement("a"); link.href = url; link.download = "document.md"; link.click(); URL.revokeObjectURL(url);
   }
 
+  function downloadHtml() {
+    const documentHtml = createStandaloneHtml(html, darkPreview ? "dark" : "light");
+    const url = URL.createObjectURL(new Blob([documentHtml], { type: "text/html" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "document.html";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
   function insertImage() {
     insert("![alt text](", ")", "https://example.com/image.png");
   }
@@ -100,6 +110,7 @@ export function MarkdownPreviewClient() {
       <button type="button" className="btn ml-auto" onClick={() => setDarkPreview((v) => !v)}>{darkPreview ? "Light preview" : "Dark preview"}</button>
       <CopyButton value={html} label="Copy HTML" successMessage="Sanitized HTML copied" disabled={!markdown} />
       <CopyButton value={markdown} label="Copy Markdown" disabled={!markdown} />
+      <button type="button" className="btn" onClick={downloadHtml} disabled={!markdown}>Download HTML</button>
       <button type="button" className="btn" onClick={download} disabled={!markdown}>Download .md</button>
     </div>
     {importError && <p role="alert" className="rounded-md border border-[var(--rose)]/30 bg-[var(--rose)]/5 px-3 py-2 text-[13px] text-[var(--rose)]">{importError}</p>}

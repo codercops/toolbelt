@@ -9,6 +9,39 @@ import "prismjs/components/prism-bash";
 
 export interface MarkdownStats { words: number; chars: number; lines: number; readingMinutes: number; }
 
+export type MarkdownExportTheme = "light" | "dark";
+
+const EXPORT_STYLES = `
+:root { color-scheme: light; --bg: #fff; --fg: #17191f; --muted: #5f6368; --border: #d9dde3; --code-bg: #f3f4f6; }
+:root[data-theme="dark"] { color-scheme: dark; --bg: #17191f; --fg: #f4f4f5; --muted: #b4b8c0; --border: #3b404a; --code-bg: #22252d; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+h1, h2, h3, h4, h5, h6 { line-height: 1.25; margin: 1.5em 0 .6em; }
+h1 { font-size: 2.25rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.4rem; }
+p, ul, ol, table, blockquote, pre { margin: 1em 0; }
+table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; }
+blockquote { border-left: 4px solid var(--border); color: var(--muted); margin-left: 0; padding-left: 1rem; }
+pre, code { background: var(--code-bg); border-radius: .35rem; } code { padding: .15em .3em; } pre { overflow-x: auto; padding: 1rem; } pre code { padding: 0; }
+img { max-width: 100%; height: auto; } a { color: inherit; } input[type="checkbox"] { margin-right: .4rem; }
+/* Prism token colors remain local to the exported document. */
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: #708090; }
+.token.punctuation { color: #999; } .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol { color: #905; }
+.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #690; }
+.token.operator, .token.entity, .token.url, .language-css .token.string { color: #9a6e3a; }
+.token.atrule, .token.attr-value, .token.keyword { color: #07a; }
+.token.function, .token.class-name { color: #DD4A68; } .token.regex, .token.important, .token.variable { color: #e90; }
+`;
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+}
+
+export function createStandaloneHtml(content: string, theme: MarkdownExportTheme, title = "Markdown Preview") {
+  const themeAttribute = theme === "dark" ? ' data-theme="dark"' : "";
+  return `<!doctype html>\n<html lang="en"${themeAttribute}>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${escapeHtml(title)}</title>\n<style>${EXPORT_STYLES}</style>\n</head>\n<body>\n<main>${content}</main>\n</body>\n</html>\n`;
+}
+
 export function renderMarkdown(markdown: string): string {
   return marked.parse(markdown) as string;
 }
