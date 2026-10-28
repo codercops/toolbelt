@@ -28,6 +28,7 @@ import { useToast } from "@/components/shared/Toast";
 import { useRegisterCommands } from "@/components/shared/CommandPalette";
 import { ShortcutsLegend } from "@/components/shared/ShortcutsLegend";
 import { cn } from "@/lib/cn";
+import { suggestAccessibleForeground } from "@/lib/contrast-suggestion";
 
 const isMac =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -44,6 +45,7 @@ export function ColorConverterClient() {
   const [colorInput, setColorInput] = useState("#F26DF0");
   const [fgInput, setFgInput] = useState("#FFFFFF");
   const [bgInput, setBgInput] = useState("#0A0B0F");
+  const [suggestionFor, setSuggestionFor] = useState<{ fg: string; bg: string } | null>(null);
   const { push } = useToast();
 
   const colorInputId = useId();
@@ -71,6 +73,10 @@ export function ColorConverterClient() {
   // Contrast calculations
   const parsedFg = useMemo(() => parseColor(fgInput), [fgInput]);
   const parsedBg = useMemo(() => parseColor(bgInput), [bgInput]);
+  const suggestion = useMemo(
+    () => suggestAccessibleForeground(fgInput, bgInput),
+    [fgInput, bgInput],
+  );
 
   const contrastResult = useMemo(() => {
     if (!parsedFg.ok || !parsedBg.ok) return null;
@@ -559,6 +565,35 @@ export function ColorConverterClient() {
                 <span className="sr-only">Choose background color</span>
               </label>
             </div>
+          </div>
+        </div>
+
+        <div className="card p-5 space-y-3">
+          {suggestion.status === "suggested" && (
+            <button type="button" className="btn" onClick={() => setSuggestionFor({ fg: fgInput, bg: bgInput })}>
+              Suggest accessible foreground
+            </button>
+          )}
+          <div role="status" className="space-y-3 text-[var(--fg)]">
+            {suggestion.status === "invalid" && <p>Enter valid foreground and background colors to get a suggestion.</p>}
+            {suggestion.status === "transparent" && (
+              <p>Suggestions require opaque foreground and background colors. Transparency changes contrast depending on the surface behind the colors; set both alpha values to 100%.</p>
+            )}
+            {suggestion.status === "passing" && <p>No adjustment needed: this pair already meets WCAG AA for normal text (4.5:1).</p>}
+            {suggestionFor?.fg === fgInput && suggestionFor?.bg === bgInput && suggestion.status === "suggested" && (
+              <>
+                <p>Suggested foreground: <code className="break-all">{suggestion.color}</code> ({suggestion.hex})</p>
+                <p>Contrast: {formatContrastRatio(suggestion.ratio)}:1 — meets WCAG AA for normal text.</p>
+                <p className="rounded-lg p-4" style={{ color: suggestion.hex, backgroundColor: parsedBg.ok ? toHex(parsedBg.value) : undefined }}>
+                  Sample text with the suggested foreground.
+                </p>
+                <button type="button" className="btn" aria-label="Apply suggested foreground" onClick={() => {
+                  setFgInput(suggestion.color);
+                  setSuggestionFor(null);
+                  push("Applied accessible foreground", "success");
+                }}>Apply</button>
+              </>
+            )}
           </div>
         </div>
 

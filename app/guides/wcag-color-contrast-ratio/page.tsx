@@ -300,8 +300,11 @@ const contrast = (a, b) => {
             <h2 className={h2}>How to fix a pair that fails</h2>
             <div className={body}>
               <p>
-                The checker reports pass or fail and does not suggest replacements, so the fix is
-                yours to make. These changes work in roughly this order:
+                For opaque colors that fail AA for normal text, choose “Suggest accessible
+                foreground” to preview a passing alternative. It adjusts HSL lightness while
+                keeping hue, saturation, and the background fixed. Choose “Apply” to update the
+                foreground; neither input changes before then. Suggestions are unavailable for
+                transparent colors. You can also make these manual adjustments:
               </p>
               <ul className="list-disc list-inside space-y-2">
                 <li>

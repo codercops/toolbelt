@@ -67,7 +67,7 @@ export const GUIDES: Guide[] = [
     ogDescription:
       "How WCAG contrast is calculated from relative luminance, which ratios text and UI need, what counts as large text, and how to fix a failing pair.",
     publishedAt: "2026-10-27",
-    updatedAt: "2026-10-27",
+    updatedAt: "2026-10-28",
     readingTime: "6 min read",
     totalTime: "PT6M",
     steps: [

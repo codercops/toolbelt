@@ -82,6 +82,12 @@ export function hslToRgb(hsl: HslColor): RgbaColor {
  * Converts an RGBA color to HSL.
  */
 export function rgbToHsl(color: RgbaColor): HslColor {
+  const hsl = rgbToHslExact(color);
+  return { ...hsl, h: Math.round(hsl.h) % 360, s: Math.round(hsl.s), l: Math.round(hsl.l) };
+}
+
+/** Converts without rounding, for lightness adjustments that preserve hue and saturation. */
+export function rgbToHslExact(color: RgbaColor): HslColor {
   const rNorm = Math.max(0, Math.min(255, color.r)) / 255;
   const gNorm = Math.max(0, Math.min(255, color.g)) / 255;
   const bNorm = Math.max(0, Math.min(255, color.b)) / 255;
@@ -113,9 +119,9 @@ export function rgbToHsl(color: RgbaColor): HslColor {
   }
 
   return {
-    h: Math.round(h) % 360,
-    s: Math.round(s * 100),
-    l: Math.round(l * 100),
+    h,
+    s: s * 100,
+    l: l * 100,
     a: aNorm,
   };
 }
