@@ -3,6 +3,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import { DiffPanel } from "./DiffPanel";
 afterEach(cleanup);
 describe("JSON diff panel", () => {
+  it("follows the formatter input until Original JSON is edited", () => {
+    const { rerender } = render(<DiffPanel leftInput="1" />);
+    rerender(<DiffPanel leftInput="2" />);
+    const original = screen.getByRole("textbox", { name: "Original JSON" });
+    expect(original).toHaveValue("2");
+    fireEvent.change(original, { target: { value: "3" } });
+    rerender(<DiffPanel leftInput="4" />);
+    expect(original).toHaveValue("3");
+  });
   it("compares, swaps and clears stale results on invalid input", () => {
     render(<DiffPanel leftInput={'{"count":1}'} />);
     const updated = screen.getByRole("textbox", { name: "Updated JSON" });

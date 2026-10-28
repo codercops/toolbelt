@@ -2,6 +2,17 @@ import { describe, expect, it } from "vitest";
 import { compareJson, DIFF_INPUT_LIMIT } from "../json-diff";
 
 describe("structural JSON diff", () => {
+  it("compares shared key order even when keys are added or removed", () => {
+    for (const [a, b] of [
+      ['{"a":1,"b":2}', '{"b":2,"a":1,"c":3}'],
+      ['{"a":1,"b":2,"c":3}', '{"b":2,"a":1}'],
+    ]) {
+      expect(compareJson(a, b, false).changes[0]).toMatchObject({ type: "Changed", path: "$" });
+    }
+    expect(compareJson('{"a":1,"b":2}', '{"a":1,"c":3,"b":2}', false).changes).toEqual([
+      { type: "Added", path: "$.c", after: "3" },
+    ]);
+  });
   it("ignores formatting, key order and equivalent numeric representations", () => {
     expect(compareJson('{"a":1,"b":1.00}', '{ "b":1e0, "a":1 }').changes).toEqual([]);
     expect(compareJson('{"a":1,"b":2}', '{"b":2,"a":1}', false).changes[0].path).toBe("$");

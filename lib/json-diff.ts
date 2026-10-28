@@ -31,7 +31,9 @@ export function compareJson(original: string, updated: string, ignoreKeyOrder = 
     }
     if (!kind && object(a) && object(b)) {
       const ak = Object.keys(a), bk = Object.keys(b);
-      if (ignoreKeyOrder || ak.length !== bk.length || ak.some(k => !Object.hasOwn(b, k)) || ak.every((k, i) => k === bk[i])) {
+      const sharedA = ak.filter(k => Object.hasOwn(b, k));
+      const sharedB = bk.filter(k => Object.hasOwn(a, k));
+      if (ignoreKeyOrder || sharedA.every((k, i) => k === sharedB[i])) {
         const keys = [...ak, ...bk.filter(k => !Object.hasOwn(a, k))];
         for (let i = keys.length - 1; i >= 0; i--) {
           const key = keys[i];
