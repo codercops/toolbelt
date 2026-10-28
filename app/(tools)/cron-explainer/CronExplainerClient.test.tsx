@@ -211,4 +211,53 @@ describe("CronExplainerClient", () => {
       await waitFor(() => expect(mockWriteText).toHaveBeenCalledWith("At 09:00 on weekdays"));
     });
   });
+
+  describe("monthly calendar", () => {
+    async function openCalendar() {
+      renderClient();
+      await runsList();
+      fireEvent.click(screen.getByRole("checkbox", { name: "Show monthly calendar" }));
+      return screen.findByRole("region", { name: "Schedule calendar" });
+    }
+
+    it("is optional and exposes labeled dates, selection, and run times", async () => {
+      const calendar = await openCalendar();
+      const friday = within(calendar).getByRole("button", { name: "23 October 2026, has scheduled runs" });
+      const saturday = within(calendar).getByRole("button", { name: "24 October 2026, no scheduled runs" });
+      expect(friday).toHaveAttribute("aria-current", "date");
+      friday.focus();
+      expect(friday).toHaveFocus();
+      fireEvent.click(friday);
+      expect(friday).toHaveAttribute("aria-pressed", "true");
+      expect(within(calendar).getByRole("list", { name: "Selected date run times" })).toHaveTextContent("09:00 UTC");
+      fireEvent.click(saturday);
+      expect(within(calendar).getByText("No scheduled runs on this date.")).toBeInTheDocument();
+    });
+
+    it("navigates months, returns to today, and follows the timezone toggle", async () => {
+      const calendar = await openCalendar();
+      fireEvent.click(within(calendar).getByRole("button", { name: "Next month" }));
+      expect(within(calendar).getByRole("heading", { level: 2 })).toHaveTextContent("November 2026 — UTC");
+      fireEvent.click(within(calendar).getByRole("button", { name: "Previous month" }));
+      expect(within(calendar).getByRole("heading", { level: 2 })).toHaveTextContent("October 2026 — UTC");
+      fireEvent.click(within(calendar).getByRole("button", { name: "Today" }));
+      expect(within(calendar).getByRole("button", { name: "23 October 2026, has scheduled runs" })).toHaveAttribute("aria-pressed", "true");
+      fireEvent.click(screen.getByRole("button", { name: "Local" }));
+      expect(within(calendar).getByRole("heading", { level: 2 })).toHaveTextContent("Local (");
+      expect(within(calendar).getByRole("list", { name: "Selected date run times" }).querySelector("time")?.dateTime).toBe(new Date(2026, 9, 23, 9).toISOString());
+    });
+
+    it("bounds frequent runs and clears results for an invalid expression", async () => {
+      const calendar = await openCalendar();
+      type("* * * * *");
+      fireEvent.click(within(calendar).getByRole("button", { name: "23 October 2026, has scheduled runs" }));
+      expect(within(calendar).getByText(/first 50 runs/)).toHaveTextContent(/truncated/);
+      expect(within(within(calendar).getByRole("list", { name: "Selected date run times" })).getAllByRole("listitem")).toHaveLength(50);
+      type("invalid");
+      expect(screen.queryByRole("region", { name: "Schedule calendar" })).not.toBeInTheDocument();
+      type("@monthly");
+      const restored = screen.getByRole("region", { name: "Schedule calendar" });
+      expect(within(restored).queryByRole("list", { name: "Selected date run times" })).not.toBeInTheDocument();
+    });
+  });
 });

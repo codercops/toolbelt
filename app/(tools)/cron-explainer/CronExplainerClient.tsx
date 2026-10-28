@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/shared/CopyButton";
+import { CronCalendar } from "./CronCalendar";
 import {
   describeCron,
   describeField,
@@ -53,6 +54,7 @@ function formatRun(date: Date, utc: boolean): string {
 export function CronExplainerClient() {
   const [expression, setExpression] = useState("0 9 * * 1-5");
   const [utc, setUtc] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
   // The current time is only read in the browser, so the server and the first render agree.
   const [now, setNow] = useState<number | null>(null);
 
@@ -221,6 +223,11 @@ export function CronExplainerClient() {
               </ol>
             )}
           </div>
+          <label className="flex items-center gap-2 text-sm text-[var(--fg)]">
+            <input type="checkbox" checked={showCalendar} onChange={(event) => setShowCalendar(event.target.checked)} />
+            Show monthly calendar
+          </label>
+          {showCalendar && now !== null && <CronCalendar expression={expression} utc={utc} now={now} />}
         </>
       )}
     </section>

@@ -361,11 +361,28 @@ export function noRunsMessage(cron: ParsedCron): string {
   return "No run was found in the next ten years.";
 }
 
+/** Scheduled times on one calendar date, using cron's shared day matching and DST rules. */
+export function* runsOnCronDay(
+  cron: ParsedCron, year: number, month: number, date: number, utc = true,
+): Generator<Date> {
+  const day = new Date(Date.UTC(year, month, date));
+  if (!cron.month.values.includes(month + 1)) return;
+  const dom = cron.dayOfMonth.values.includes(date);
+  const dow = cron.dayOfWeek.values.includes(day.getUTCDay());
+  if (!(!cron.dayOfMonth.star && !cron.dayOfWeek.star ? dom || dow : dom && dow)) return;
+  for (const hour of cron.hour.values) {
+    for (const minute of cron.minute.values) {
+      const candidate = utc ? new Date(Date.UTC(year, month, date, hour, minute)) : new Date(year, month, date, hour, minute);
+      if (!utc && (candidate.getHours() !== hour || candidate.getDate() !== date)) continue;
+      yield candidate;
+    }
+  }
+}
+
 /**
  * The next `count` times the schedule fires after `from`, in UTC or in the local time zone.
- * Cron's rule for the day: when both day of month and day of week are restricted, a day
- * matches if either one does. Otherwise both must match (an unrestricted one always does).
- * Local times that do not exist (the hour skipped by daylight saving time) are left out.
+ * When both day fields are restricted, either may match; otherwise both must match.
+ * Local times skipped by daylight saving time are left out.
  */
 export function nextRuns(
   cron: ParsedCron,
@@ -376,12 +393,6 @@ export function nextRuns(
   const wanted = Math.min(Math.max(Math.floor(count), 0), MAX_RUNS);
   const runs: Date[] = [];
   if (wanted === 0 || !canEverRun(cron)) return runs;
-
-  const domRestricted = !cron.dayOfMonth.star;
-  const dowRestricted = !cron.dayOfWeek.star;
-  const months = new Set(cron.month.values);
-  const monthDays = new Set(cron.dayOfMonth.values);
-  const weekdays = new Set(cron.dayOfWeek.values);
 
   // Walk the calendar one day at a time. The calendar itself is the same in every time
   // zone, so a UTC date is used to step through it.
@@ -395,20 +406,10 @@ export function nextRuns(
     const month = day.getUTCMonth();
     const date = day.getUTCDate();
 
-    if (!months.has(month + 1)) continue;
-    const domMatch = monthDays.has(date);
-    const dowMatch = weekdays.has(day.getUTCDay());
-    const dayMatches = domRestricted && dowRestricted ? domMatch || dowMatch : domMatch && dowMatch;
-    if (!dayMatches) continue;
-
-    for (const hour of cron.hour.values) {
-      for (const minute of cron.minute.values) {
-        const candidate = utc ? new Date(Date.UTC(year, month, date, hour, minute)) : new Date(year, month, date, hour, minute);
-        if (!utc && (candidate.getHours() !== hour || candidate.getDate() !== date)) continue;
-        if (candidate.getTime() > from.getTime()) {
-          runs.push(candidate);
-          if (runs.length === wanted) return runs;
-        }
+    for (const candidate of runsOnCronDay(cron, year, month, date, utc)) {
+      if (candidate.getTime() > from.getTime()) {
+        runs.push(candidate);
+        if (runs.length === wanted) return runs;
       }
     }
   }
