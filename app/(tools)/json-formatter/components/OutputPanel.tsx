@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { parse, LosslessNumber } from "lossless-json";
 import { ChevronDown, ChevronRight, List, TreePine, FoldVertical, UnfoldVertical } from "lucide-react";
 import { tokenize } from "@/lib/json-utils";
+import { buildJsonTreePath, type JsonPathSegment } from "@/lib/json-tree-path";
 import { cn } from "@/lib/cn";
+import { CopyButton } from "@/components/shared/CopyButton";
 
 interface OutputPanelProps {
   output: string;
@@ -152,6 +154,11 @@ function CodeView({ output, theme }: { output: string; theme: "dark" | "light" }
 
 /* Tree view */
 export function TreeView({ output, forceOpen }: { output: string; forceOpen: boolean | null }) {
+  return <TreeViewContent key={output} output={output} forceOpen={forceOpen} />;
+}
+
+function TreeViewContent({ output, forceOpen }: { output: string; forceOpen: boolean | null }) {
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const data = useMemo(() => {
     try {
       return { ok: true, value: parse(output) } as const;
@@ -164,7 +171,33 @@ export function TreeView({ output, forceOpen }: { output: string; forceOpen: boo
   }
   return (
     <div className="p-3 font-mono text-[13px] leading-[1.65]">
-      <TreeNode value={data.value} name={null} depth={0} isLast forceOpen={forceOpen} />
+      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-[var(--hairline)] bg-[var(--bg-card)] px-3 py-2">
+        <span className="text-[var(--fg-muted)]">JSON path</span>
+        {selectedPath ? (
+          <output className="min-w-0 flex-1 break-all text-[var(--fg)]" aria-label="Selected JSON path">
+            {selectedPath}
+          </output>
+        ) : (
+          <span className="min-w-0 flex-1 text-[var(--fg-dim)]">Select a value in the tree</span>
+        )}
+        <CopyButton
+          value={selectedPath ?? ""}
+          label="Copy JSON path"
+          ariaLabel="Copy JSON path"
+          disabled={!selectedPath}
+          className="!py-1 !text-[11px]"
+        />
+      </div>
+      <TreeNode
+        value={data.value}
+        name={null}
+        path={[]}
+        selectedPath={selectedPath}
+        onSelect={setSelectedPath}
+        depth={0}
+        isLast
+        forceOpen={forceOpen}
+      />
     </div>
   );
 }
@@ -173,6 +206,9 @@ function TreeNode({
   value,
   name,
   index,
+  path,
+  selectedPath,
+  onSelect,
   depth,
   isLast,
   forceOpen,
@@ -180,6 +216,9 @@ function TreeNode({
   value: unknown;
   name: string | null;
   index?: number;
+  path: JsonPathSegment[];
+  selectedPath: string | null;
+  onSelect: (path: string) => void;
   depth: number;
   isLast: boolean;
   forceOpen: boolean | null;
@@ -195,6 +234,12 @@ function TreeNode({
     ? (value as unknown[]).map((v, i) => [String(i), v] as const)
     : [];
   const count = entries.length;
+  const jsonPath = buildJsonTreePath(path);
+  const isSelected = selectedPath === jsonPath;
+  const selectButtonClass = cn(
+    "rounded px-1 -mx-1 text-left transition-colors hover:bg-[var(--bg-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyan)]",
+    isSelected && "bg-[var(--bg-card)] ring-1 ring-inset ring-[var(--cyan)]"
+  );
 
   const key =
     name !== null ? (
@@ -208,11 +253,17 @@ function TreeNode({
     return (
       <div style={{ paddingLeft: depth * 18 }} className="flex items-start">
         <span className="w-4 shrink-0" />
-        <span>
+        <button
+          type="button"
+          className={selectButtonClass}
+          onClick={() => onSelect(jsonPath)}
+          aria-label={`Select JSON path ${jsonPath}`}
+          aria-pressed={isSelected}
+        >
           {key}
           <ValueToken value={value} />
-          {!isLast && <span className="tok-punct">,</span>}
-        </span>
+        </button>
+        {!isLast && <span className="tok-punct">,</span>}
       </div>
     );
   }
@@ -229,7 +280,13 @@ function TreeNode({
         >
           {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </button>
-        <span>
+        <button
+          type="button"
+          className={selectButtonClass}
+          onClick={() => onSelect(jsonPath)}
+          aria-label={`Select JSON path ${jsonPath}`}
+          aria-pressed={isSelected}
+        >
           {key}
           <span className="tok-brace">{isArr ? "[" : "{"}</span>
           {!open && (
@@ -239,7 +296,7 @@ function TreeNode({
           )}
           {!open && <span className="tok-brace">{isArr ? "]" : "}"}</span>}
           {!open && !isLast && <span className="tok-punct">,</span>}
-        </span>
+        </button>
       </div>
       {open && (
         <>
@@ -258,6 +315,12 @@ function TreeNode({
                 key={k}
                 name={isArr ? null : k}
                 index={isArr ? i : undefined}
+                path={[
+                  ...path,
+                  isArr ? { type: "index", index: i } : { type: "property", key: k },
+                ]}
+                selectedPath={selectedPath}
+                onSelect={onSelect}
                 value={v}
                 depth={depth + 1}
                 isLast={i === entries.length - 1}

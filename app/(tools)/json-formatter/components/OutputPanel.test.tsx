@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { OutputPanel, TreeView } from "./OutputPanel";
+import { ToastProvider } from "@/components/shared/Toast";
 
 describe("OutputPanel view switch", () => {
   // Vitest globals are off, so Testing Library does not clean up on its own.
@@ -53,5 +54,102 @@ describe("tree view accessible names", () => {
 
     expect(screen.getByRole("button", { name: "Expand all" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Collapse all" })).toBeInTheDocument();
+  });
+});
+
+describe("JSON tree path selection", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("selects root, containers and primitive nodes without toggling expansion", () => {
+    render(<TreeView output={'{"users":[{"email":"a@example.com"}]}'} forceOpen={null} />);
+
+    const rootSelection = screen.getByRole("button", { name: "Select JSON path $" });
+    const usersSelection = screen.getByRole("button", { name: "Select JSON path $.users" });
+    const itemSelection = screen.getByRole("button", { name: "Select JSON path $.users[0]" });
+    const usersToggle = screen.getByRole("button", { name: "users" });
+
+    fireEvent.click(usersSelection);
+    expect(usersSelection).toHaveAttribute("aria-pressed", "true");
+    expect(rootSelection).toHaveAttribute("aria-pressed", "false");
+    expect(usersToggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent("$.users");
+
+    const itemToggle = screen.getByRole("button", { name: "item 0" });
+    fireEvent.click(itemToggle);
+    expect(itemToggle).toHaveAttribute("aria-expanded", "true");
+    const emailSelection = screen.getByRole("button", { name: "Select JSON path $.users[0].email" });
+    fireEvent.click(emailSelection);
+    expect(emailSelection).toHaveAttribute("aria-pressed", "true");
+    expect(usersSelection).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(itemSelection);
+    expect(itemSelection).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(rootSelection);
+    expect(rootSelection).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("shows and copies the selected path exactly", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(
+      <ToastProvider>
+        <TreeView output={'{"users":[{"email":"a@example.com"}]}'} forceOpen={null} />
+      </ToastProvider>
+    );
+
+    const copy = screen.getByRole("button", { name: "Copy JSON path" });
+    expect(copy).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "item 0" }));
+    fireEvent.click(screen.getByRole("button", { name: "Select JSON path $.users[0].email" }));
+    expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent(
+      "$.users[0].email"
+    );
+    expect(copy).toBeEnabled();
+
+    fireEvent.click(copy);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("$.users[0].email"));
+  });
+
+  it("clears the selected path when the document changes", () => {
+    const { rerender } = render(<TreeView output={'{"value":1}'} forceOpen={null} />);
+    fireEvent.click(screen.getByRole("button", { name: "Select JSON path $.value" }));
+    expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent("$.value");
+
+    rerender(<TreeView output={'{"value":2}'} forceOpen={null} />);
+
+    expect(screen.queryByRole("status", { name: "Selected JSON path" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy JSON path" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Select JSON path $.value" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+
+    rerender(<TreeView output={'{"value":1}'} forceOpen={null} />);
+    expect(screen.queryByRole("status", { name: "Selected JSON path" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy JSON path" })).toBeDisabled();
+  });
+
+  it("selects and displays escaped paths for special object keys", () => {
+    render(<TreeView output={'{"a.b":{"0":["value"]}}'} forceOpen={null} />);
+    const numericKeyToggle = screen.getByRole("button", { name: "0" });
+    fireEvent.click(numericKeyToggle);
+    const selected = screen.getByRole("button", {
+      name: 'Select JSON path $["a.b"]["0"][0]',
+    });
+
+    fireEvent.click(selected);
+
+    expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent(
+      '$["a.b"]["0"][0]'
+    );
   });
 });

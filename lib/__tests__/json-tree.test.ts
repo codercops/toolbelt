@@ -14,7 +14,7 @@ describe("JSON Tree view", () => {
     expect(html).toContain('<span class="tok-number">12345678901234567890</span>');
     expect(html).toContain('<span class="tok-number">3.141592653589793238</span>');
     // Only the enclosing object should have an expand/collapse control.
-    expect(html.match(/<button /g)).toHaveLength(1);
+    expect(html.match(/aria-expanded=/g)).toHaveLength(1);
     expect(html).not.toContain("isLosslessNumber");
   });
 
@@ -31,7 +31,7 @@ describe("JSON Tree view", () => {
     const html = renderTree(number, false);
 
     expect(html).toContain(`<span class="tok-number">${number}</span>`);
-    expect(html).not.toContain("<button");
+    expect(html).not.toContain("aria-expanded=");
   });
 
   it("preserves exact numeric leaves in nested arrays and objects", () => {
@@ -40,7 +40,7 @@ describe("JSON Tree view", () => {
     expect(html).toContain('<span class="tok-number">12345678901234567890</span>');
     expect(html).toContain('<span class="tok-number">3.141592653589793238</span>');
     // Root object, items array and nested object — never the numbers themselves.
-    expect(html.match(/<button /g)).toHaveLength(3);
+    expect(html.match(/aria-expanded=/g)).toHaveLength(3);
   });
 
   it("keeps strings, booleans and null distinct from numeric leaves", () => {
@@ -65,7 +65,7 @@ describe("JSON Tree view", () => {
   it("does not mistake user objects with LosslessNumber-like fields for numbers", () => {
     const html = renderTree('{"isLosslessNumber":true,"value":"test","toString":"text"}');
 
-    expect(html.match(/<button /g)).toHaveLength(1);
+    expect(html.match(/aria-expanded=/g)).toHaveLength(1);
     expect(html).toContain('<span class="tok-key">&quot;isLosslessNumber&quot;</span>');
     expect(html).toContain('<span class="tok-string">&quot;test&quot;</span>');
     expect(html).toContain('<span class="tok-string">&quot;text&quot;</span>');
