@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { formatTimestamp, relativeTime } from "@/lib/jwt-utils";
 import { detectUnit, fromEpoch, toEpoch, type TimestampUnit } from "@/lib/time-utils";
+import { TimeDifference } from "./TimeDifference";
 
 const UNIT_OPTIONS: { value: TimestampUnit; label: string }[] = [
   { value: "s", label: "Seconds" },
@@ -71,6 +72,7 @@ export function TimestampConverterClient() {
         </div>
       </section>
 
+      <TimeDifference />
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-4 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] p-4 sm:p-6">
           <div>
