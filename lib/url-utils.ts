@@ -37,6 +37,26 @@ export interface ParsedUrl {
   params: [string, string][];
 }
 
+export interface QueryParamOccurrence {
+  key: string;
+  value: string;
+  repeated: boolean;
+}
+
+/** Marks every occurrence of each repeated decoded name without changing order or values. */
+export function analyzeQueryParams(params: readonly [string, string][]): {
+  occurrences: QueryParamOccurrence[];
+  repeatedKeys: string[];
+} {
+  const counts = new Map<string, number>();
+  for (const [key] of params) counts.set(key, (counts.get(key) ?? 0) + 1);
+  const repeatedKeys = [...counts].filter(([, count]) => count > 1).map(([key]) => key);
+  return {
+    occurrences: params.map(([key, value]) => ({ key, value, repeated: counts.get(key)! > 1 })),
+    repeatedKeys,
+  };
+}
+
 export function parseUrl(text: string): { ok: true; value: ParsedUrl } | { ok: false; error: string } {
   try {
     const url = new URL(text);

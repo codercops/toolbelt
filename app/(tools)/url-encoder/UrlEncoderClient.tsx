@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { AlertCircle, ArrowLeftRight } from "lucide-react";
-import { encodeUrl, decodeUrl, parseUrl, type UrlEncodeMode } from "@/lib/url-utils";
+import { analyzeQueryParams, encodeUrl, decodeUrl, parseUrl, type UrlEncodeMode } from "@/lib/url-utils";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { useRegisterCommands } from "@/components/shared/CommandPalette";
 
@@ -40,6 +40,7 @@ export function UrlEncoderClient() {
     }
     return null;
   }, [input, output]);
+  const queryParams = useMemo(() => analyzeQueryParams(parsed?.params ?? []), [parsed]);
 
   function onTabKeyDown(e: React.KeyboardEvent, index: number) {
     let next = index;
@@ -211,14 +212,20 @@ export function UrlEncoderClient() {
               {parsed.hash && <Row label="Hash" value={parsed.hash} />}
               {parsed.params.length > 0 && (
                 <div className="pt-2 mt-1 border-t border-[var(--hairline)] space-y-1.5">
-                  {parsed.params.map(([key, value], i) => (
+                  {queryParams.repeatedKeys.length > 0 && (
+                    <div role="status" className="rounded-lg border border-[var(--amber)]/40 bg-[var(--amber)]/10 p-2 text-[var(--fg)]">
+                      {queryParams.repeatedKeys.length} repeated {queryParams.repeatedKeys.length === 1 ? "key" : "keys"}: {queryParams.repeatedKeys.map((key) => key || "(empty name)").join(", ")}. Repeated parameters are not necessarily errors; applications may interpret them differently.
+                    </div>
+                  )}
+                  {queryParams.occurrences.map(({ key, value, repeated }, i) => (
                     <div key={`${key}-${i}`} className="flex items-center justify-between gap-2">
                       <span className="text-[var(--fg-muted)] break-all">
-                        {key} = <span className="text-[var(--fg)]">{value}</span>
+                        {key || "(empty name)"} = <span className="text-[var(--fg)]">{value}</span>
+                        {repeated && <span className="ml-2 inline-block rounded border border-[var(--amber)]/50 bg-[var(--amber)]/10 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-[var(--fg)]">Repeated key</span>}
                       </span>
                       <CopyButton
                         value={value}
-                        ariaLabel={`Copy value of ${key}`}
+                        ariaLabel={`Copy value of ${key || "(empty name)"}`}
                         className="py-0.5 shrink-0"
                       />
                     </div>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encodeUrl, decodeUrl, parseUrl } from "../url-utils";
+import { analyzeQueryParams, encodeUrl, decodeUrl, parseUrl } from "../url-utils";
 
 describe("encodeUrl / decodeUrl round-trip", () => {
   it("round-trips unicode text", () => {
@@ -79,5 +79,26 @@ describe("parseUrl", () => {
   it("returns ok: false for an invalid URL", () => {
     const r = parseUrl("not a url");
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("analyzeQueryParams", () => {
+  it("marks every same-valued and different-valued repeat and reports distinct repeated names", () => {
+    const result = analyzeQueryParams([["tag", "react"], ["tag", "typescript"], ["sort", "a"], ["sort", "a"]]);
+    expect(result.occurrences.map(({ repeated }) => repeated)).toEqual([true, true, true, true]);
+    expect(result.repeatedKeys).toEqual(["tag", "sort"]);
+  });
+  it("groups decoded names, preserves case sensitivity, empty names, values, and order", () => {
+    const result = analyzeQueryParams([["tag", "a"], ["tag", "b"], ["Tag", "c"], ["tag", ""], ["", ""], ["", "x"]]);
+    expect(result.occurrences).toEqual([
+      { key: "tag", value: "a", repeated: true }, { key: "tag", value: "b", repeated: true },
+      { key: "Tag", value: "c", repeated: false }, { key: "tag", value: "", repeated: true },
+      { key: "", value: "", repeated: true }, { key: "", value: "x", repeated: true },
+    ]);
+    expect(result.repeatedKeys).toEqual(["tag", ""]);
+  });
+  it("leaves unique and empty parameter lists unflagged", () => {
+    expect(analyzeQueryParams([["a", ""], ["b", "2"]]).repeatedKeys).toEqual([]);
+    expect(analyzeQueryParams([])).toEqual({ occurrences: [], repeatedKeys: [] });
   });
 });

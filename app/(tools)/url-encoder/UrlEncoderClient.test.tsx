@@ -110,4 +110,43 @@ describe("UrlEncoderClient tabs", () => {
     expect(screen.queryByRole("button", { name: "Copy encoded output" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Copy decoded output" })).toHaveTextContent("Copy");
   });
+
+  it.each([
+    ["?tag=react&tag=typescript", ["react", "typescript"]],
+    ["?tag=react&tag=react", ["react", "react"]],
+    ["?tag=&tag=typescript", ["", "typescript"]],
+    ["?tag=a&%74ag=b", ["a", "b"]],
+  ])("flags repeated parameters in %s", (query, values) => {
+    render(<UrlEncoderClient />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Text or URL to encode" }), {
+      target: { value: `https://example.com/${query}` },
+    });
+    expect(screen.getAllByText("Repeated key")).toHaveLength(2);
+    expect(screen.getByRole("status")).toHaveTextContent("1 repeated key: tag.");
+    expect(screen.getByText(/not necessarily errors/)).toBeInTheDocument();
+    const rows = screen.getAllByRole("button", { name: "Copy value of tag" });
+    expect(rows.map((button) => button.parentElement?.querySelector("span.text-\\[var\\(--fg\\)\\]")?.textContent)).toEqual(values);
+  });
+
+  it("keeps case-sensitive and unique keys unflagged and labels empty names", () => {
+    render(<UrlEncoderClient />);
+    const input = screen.getByRole("textbox", { name: "Text or URL to encode" });
+    fireEvent.change(input, { target: { value: "https://example.com/?Tag=a&tag=b&=empty" } });
+    expect(screen.queryByText("Repeated key")).not.toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy value of (empty name)" }).parentElement).toHaveTextContent("(empty name) = empty");
+    fireEvent.change(input, { target: { value: "https://example.com/?=first&=second" } });
+    expect(screen.getAllByText("Repeated key")).toHaveLength(2);
+    expect(screen.getByRole("status")).toHaveTextContent("1 repeated key: (empty name).");
+  });
+
+  it("updates repeated-key indicators when the URL changes", () => {
+    render(<UrlEncoderClient />);
+    const input = screen.getByRole("textbox", { name: "Text or URL to encode" });
+    fireEvent.change(input, { target: { value: "https://example.com/?tag=a&tag=b" } });
+    expect(screen.getAllByText("Repeated key")).toHaveLength(2);
+    fireEvent.change(input, { target: { value: "https://example.com/?tag=a&sort=b" } });
+    expect(screen.queryByText("Repeated key")).not.toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
 });
