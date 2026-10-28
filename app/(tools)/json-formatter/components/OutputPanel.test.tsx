@@ -66,9 +66,12 @@ describe("JSON tree path selection", () => {
   it("selects root, containers and primitive nodes without toggling expansion", () => {
     render(<TreeView output={'{"users":[{"email":"a@example.com"}]}'} forceOpen={null} />);
 
-    const rootSelection = screen.getByRole("button", { name: "Select JSON path $" });
-    const usersSelection = screen.getByRole("button", { name: "Select JSON path $.users" });
-    const itemSelection = screen.getByRole("button", { name: "Select JSON path $.users[0]" });
+    const selectionButtons = screen
+      .getAllByRole("button")
+      .filter((button) => button.hasAttribute("aria-pressed"));
+    const [rootSelection, usersSelection, itemSelection] = selectionButtons;
+    expect(rootSelection).toHaveAccessibleName("{");
+    expect(usersSelection).toHaveAccessibleName(/users.*\[/);
     const usersToggle = screen.getByRole("button", { name: "users" });
 
     fireEvent.click(usersSelection);
@@ -80,7 +83,8 @@ describe("JSON tree path selection", () => {
     const itemToggle = screen.getByRole("button", { name: "item 0" });
     fireEvent.click(itemToggle);
     expect(itemToggle).toHaveAttribute("aria-expanded", "true");
-    const emailSelection = screen.getByRole("button", { name: "Select JSON path $.users[0].email" });
+    const emailSelection = screen.getByRole("button", { name: /email.*a@example\.com/ });
+    expect(emailSelection).toHaveAccessibleName(/email.*a@example\.com/);
     fireEvent.click(emailSelection);
     expect(emailSelection).toHaveAttribute("aria-pressed", "true");
     expect(usersSelection).toHaveAttribute("aria-pressed", "false");
@@ -109,7 +113,7 @@ describe("JSON tree path selection", () => {
     expect(copy).toBeDisabled();
 
     fireEvent.click(screen.getByRole("button", { name: "item 0" }));
-    fireEvent.click(screen.getByRole("button", { name: "Select JSON path $.users[0].email" }));
+    fireEvent.click(screen.getByRole("button", { name: /email.*a@example\.com/ }));
     expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent(
       "$.users[0].email"
     );
@@ -121,20 +125,21 @@ describe("JSON tree path selection", () => {
 
   it("clears the selected path when the document changes", () => {
     const { rerender } = render(<TreeView output={'{"value":1}'} forceOpen={null} />);
-    fireEvent.click(screen.getByRole("button", { name: "Select JSON path $.value" }));
+    fireEvent.click(screen.getByRole("button", { name: /value.*1/ }));
     expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent("$.value");
 
     rerender(<TreeView output={'{"value":2}'} forceOpen={null} />);
 
-    expect(screen.queryByRole("status", { name: "Selected JSON path" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Copy JSON path" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Select JSON path $.value" })).toHaveAttribute(
-      "aria-pressed",
-      "false"
+    expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent(
+      "Select a value in the tree"
     );
+    expect(screen.getByRole("button", { name: "Copy JSON path" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /value.*2/ })).toHaveAttribute("aria-pressed", "false");
 
     rerender(<TreeView output={'{"value":1}'} forceOpen={null} />);
-    expect(screen.queryByRole("status", { name: "Selected JSON path" })).not.toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Selected JSON path" })).toHaveTextContent(
+      "Select a value in the tree"
+    );
     expect(screen.getByRole("button", { name: "Copy JSON path" })).toBeDisabled();
   });
 
@@ -142,9 +147,8 @@ describe("JSON tree path selection", () => {
     render(<TreeView output={'{"a.b":{"0":["value"]}}'} forceOpen={null} />);
     const numericKeyToggle = screen.getByRole("button", { name: "0" });
     fireEvent.click(numericKeyToggle);
-    const selected = screen.getByRole("button", {
-      name: 'Select JSON path $["a.b"]["0"][0]',
-    });
+    const selected = screen.getByRole("button", { name: /value/ });
+    expect(selected).toHaveAttribute("aria-pressed", "false");
 
     fireEvent.click(selected);
 

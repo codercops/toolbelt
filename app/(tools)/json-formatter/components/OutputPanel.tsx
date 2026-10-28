@@ -173,13 +173,15 @@ function TreeViewContent({ output, forceOpen }: { output: string; forceOpen: boo
     <div className="p-3 font-mono text-[13px] leading-[1.65]">
       <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-[var(--hairline)] bg-[var(--bg-card)] px-3 py-2">
         <span className="text-[var(--fg-muted)]">JSON path</span>
-        {selectedPath ? (
-          <output className="min-w-0 flex-1 break-all text-[var(--fg)]" aria-label="Selected JSON path">
-            {selectedPath}
-          </output>
-        ) : (
-          <span className="min-w-0 flex-1 text-[var(--fg-dim)]">Select a value in the tree</span>
-        )}
+        <output
+          className={cn(
+            "min-w-0 flex-1 break-all",
+            selectedPath ? "text-[var(--fg)]" : "text-[var(--fg-dim)]"
+          )}
+          aria-label="Selected JSON path"
+        >
+          {selectedPath ?? "Select a value in the tree"}
+        </output>
         <CopyButton
           value={selectedPath ?? ""}
           label="Copy JSON path"
@@ -257,7 +259,6 @@ function TreeNode({
           type="button"
           className={selectButtonClass}
           onClick={() => onSelect(jsonPath)}
-          aria-label={`Select JSON path ${jsonPath}`}
           aria-pressed={isSelected}
         >
           {key}
@@ -284,7 +285,6 @@ function TreeNode({
           type="button"
           className={selectButtonClass}
           onClick={() => onSelect(jsonPath)}
-          aria-label={`Select JSON path ${jsonPath}`}
           aria-pressed={isSelected}
         >
           {key}
