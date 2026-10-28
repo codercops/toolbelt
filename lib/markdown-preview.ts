@@ -31,6 +31,13 @@ img { max-width: 100%; height: auto; } a { color: inherit; } input[type="checkbo
 .token.operator, .token.entity, .token.url, .language-css .token.string { color: #9a6e3a; }
 .token.atrule, .token.attr-value, .token.keyword { color: #07a; }
 .token.function, .token.class-name { color: #DD4A68; } .token.regex, .token.important, .token.variable { color: #e90; }
+/* Dark exports use colors from the in-app preview palette. */
+:root[data-theme="dark"] .token.comment, :root[data-theme="dark"] .token.prolog, :root[data-theme="dark"] .token.doctype, :root[data-theme="dark"] .token.cdata { color: #7f8c98; }
+:root[data-theme="dark"] .token.keyword, :root[data-theme="dark"] .token.boolean, :root[data-theme="dark"] .token.atrule { color: #9b72ff; }
+:root[data-theme="dark"] .token.string, :root[data-theme="dark"] .token.char, :root[data-theme="dark"] .token.attr-value, :root[data-theme="dark"] .token.selector, :root[data-theme="dark"] .token.attr-name, :root[data-theme="dark"] .token.builtin, :root[data-theme="dark"] .token.inserted { color: #159570; }
+:root[data-theme="dark"] .token.number, :root[data-theme="dark"] .token.function, :root[data-theme="dark"] .token.property, :root[data-theme="dark"] .token.tag, :root[data-theme="dark"] .token.constant, :root[data-theme="dark"] .token.symbol, :root[data-theme="dark"] .token.class-name { color: #b86b00; }
+:root[data-theme="dark"] .token.operator, :root[data-theme="dark"] .token.punctuation, :root[data-theme="dark"] .token.entity, :root[data-theme="dark"] .token.url { color: #7f8c98; }
+:root[data-theme="dark"] .token.regex, :root[data-theme="dark"] .token.important, :root[data-theme="dark"] .token.variable { color: #e90; }
 `;
 
 function escapeHtml(value: string) {

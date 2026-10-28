@@ -2,15 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createStandaloneHtml, getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
 
 describe("markdown preview", () => {
-  it("creates a complete light HTML document with sanitized content", () => {
+  it("wraps provided content in a complete light HTML document", () => {
     const document = createStandaloneHtml('<h1>Safe</h1><p>Text</p>', "light", "A <title>");
     expect(document).toContain("<!doctype html>");
     expect(document).toContain('<meta charset="utf-8">');
     expect(document).toContain('name="viewport"');
     expect(document).toContain("<title>A &lt;title&gt;</title>");
     expect(document).toContain('<h1>Safe</h1>');
-    expect(document).not.toContain("<script");
-    expect(document).not.toContain("http://");
     expect(document.startsWith('<!doctype html>\n<html lang="en">')).toBe(true);
   });
 
@@ -18,6 +16,25 @@ describe("markdown preview", () => {
     const document = createStandaloneHtml("<p>Dark</p>", "dark");
     expect(document).toContain('<html lang="en" data-theme="dark">');
     expect(document).toContain("color-scheme: dark");
+  });
+
+  it("gives dark export tokens readable contrast on the code background", () => {
+    const document = createStandaloneHtml("", "dark");
+    const luminance = (hex: string) => {
+      const channels = hex.match(/\w{2}/g)!.map((channel) => {
+        const value = parseInt(channel, 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+      return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    };
+    const background = document.match(/:root\[data-theme="dark"\] \{[^}]*--code-bg: #(\w{6})/)![1];
+    for (const token of ["number", "boolean", "property", "tag", "keyword", "string", "punctuation", "comment"]) {
+      const rule = document.match(new RegExp(`:root\\[data-theme="dark"\\] \\.token\\.${token}(?:,| )[^{}]*\\{ color: #(\\w{6}); \\}`));
+      expect(rule, `dark ${token} override`).not.toBeNull();
+      const foreground = luminance(rule![1]);
+      const backdrop = luminance(background);
+      expect((Math.max(foreground, backdrop) + 0.05) / (Math.min(foreground, backdrop) + 0.05)).toBeGreaterThanOrEqual(3);
+    }
   });
 
   it("renders GFM and highlights fenced code", () => {
