@@ -1,111 +1,38 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { diffLines, format } from "@/lib/json-utils";
-import { cn } from "@/lib/cn";
+import { compareJson } from "@/lib/json-diff";
 
-interface DiffPanelProps {
-  leftInput: string;
-}
-
-export function DiffPanel({ leftInput }: DiffPanelProps) {
-  const [right, setRight] = useState("");
-
-  const leftFormatted = useMemo(() => {
-    const r = format(leftInput, 2);
-    return r.ok ? r.value : leftInput;
-  }, [leftInput]);
-  const rightFormatted = useMemo(() => {
-    const r = format(right, 2);
-    return r.ok ? r.value : right;
-  }, [right]);
-
-  const rows = useMemo(() => diffLines(leftFormatted, rightFormatted), [leftFormatted, rightFormatted]);
-  const stats = useMemo(() => {
-    let add = 0;
-    let del = 0;
-    rows.forEach((r) => {
-      if (r.type === "add") add++;
-      else if (r.type === "del") del++;
-    });
-    return { add, del };
-  }, [rows]);
-
+export function DiffPanel({ leftInput }: { leftInput: string }) {
+  const [original, setOriginal] = useState(leftInput);
+  const [updated, setUpdated] = useState("");
+  const [ignoreKeyOrder, setIgnoreKeyOrder] = useState(true);
+  const result = useMemo(() => compareJson(original, updated, ignoreKeyOrder), [original, updated, ignoreKeyOrder]);
   return (
-    <div className="card overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)]">
-        <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
-          JSON diff
-        </span>
-        <span className="flex items-center gap-3 font-mono text-[11px]">
-          <span className="text-[var(--cyan)]">+{stats.add}</span>
-          <span className="text-[var(--rose)]">-{stats.del}</span>
-        </span>
+    <section className="card p-4 space-y-4" aria-label="JSON diff">
+      <h2 className="text-[var(--fg)]">JSON diff</h2>
+      <p className="text-sm text-[var(--fg-muted)]">Arrays are compared by index; inserting an element may change subsequent indexes. Limit: 500,000 characters per input and 500 displayed changes.</p>
+      <div className="flex flex-wrap gap-4 items-center">
+        <label><input type="checkbox" checked={ignoreKeyOrder} onChange={e => setIgnoreKeyOrder(e.target.checked)} /> Ignore key order</label>
+        <button type="button" className="btn" onClick={() => { setOriginal(updated); setUpdated(original); }}>Swap inputs</button>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[var(--hairline)]">
-        <div className="p-3 bg-[var(--bg-soft)]">
-          <div className="font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-2">
-            Left (input)
-          </div>
-          <pre className="font-mono text-[12px] leading-[1.65] whitespace-pre-wrap break-all max-h-48 overflow-auto text-[var(--fg-muted)]">
-            {leftFormatted || "(empty)"}
-          </pre>
-        </div>
-        <div className="p-3">
-          <div
-            id="diff-right-label"
-            className="font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--fg-dim)] mb-2"
-          >
-            Right (paste to compare)
-          </div>
-          <textarea
-            value={right}
-            onChange={(e) => setRight(e.target.value)}
-            spellCheck={false}
-            aria-labelledby="diff-right-label"
-            placeholder="Paste a second JSON to compare with the left side..."
-            className="editor-input w-full text-[12px]"
-            style={{ minHeight: 120 }}
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <label>Original JSON<textarea className="editor-input w-full min-h-40" value={original} onChange={e => setOriginal(e.target.value)} spellCheck={false} /></label>
+        <label>Updated JSON<textarea className="editor-input w-full min-h-40" value={updated} onChange={e => setUpdated(e.target.value)} spellCheck={false} /></label>
       </div>
-      {right && (
-        <div className="border-t border-[var(--hairline)] max-h-[460px] overflow-auto animate-fade-in">
-          <table className="w-full font-mono text-[12.5px] leading-[1.55]">
-            <tbody>
-              {rows.map((row, i) => {
-                const bg =
-                  row.type === "add"
-                    ? "bg-[rgba(0,229,199,0.08)]"
-                    : row.type === "del"
-                    ? "bg-[rgba(255,77,109,0.08)]"
-                    : "";
-                const text =
-                  row.type === "add"
-                    ? "text-[var(--cyan)]"
-                    : row.type === "del"
-                    ? "text-[var(--rose)]"
-                    : "text-[var(--fg)]";
-                const sigil = row.type === "add" ? "+" : row.type === "del" ? "-" : " ";
-                return (
-                  <tr key={i} className={cn(bg)}>
-                    <td className="px-2 py-0.5 text-[var(--fg-dim)] text-right select-none w-10">
-                      {row.aLine ?? ""}
-                    </td>
-                    <td className="px-2 py-0.5 text-[var(--fg-dim)] text-right select-none w-10">
-                      {row.bLine ?? ""}
-                    </td>
-                    <td className={cn("px-2 py-0.5 whitespace-pre-wrap break-all", text)}>
-                      <span className="inline-block w-3 text-[var(--fg-dim)]">{sigil}</span>
-                      {row.a ?? row.b ?? ""}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {result.errors.length > 0 ? <div role="alert">{result.errors.map(error => <p key={error}>{error}</p>)}</div> : (
+        <div>
+          <p role="status">{result.changes.length ? `${result.changes.length}${result.truncated ? "+" : ""} differences` : "Documents are equivalent"}</p>
+          {result.truncated && <p role="status">Results truncated: only the first 500 changes are displayed.</p>}
+          <ol className="max-h-[460px] overflow-auto space-y-3">
+            {result.changes.map((change, i) => <li key={i} className="border border-[var(--hairline)] rounded p-3 bg-[var(--bg-soft)] text-[var(--fg)]">
+              <strong>{change.type}</strong> <code className="break-all">{change.path}</code>
+              {change.before !== undefined && <div>Before: <pre className="whitespace-pre-wrap break-all">{change.before}</pre></div>}
+              {change.after !== undefined && <div>After: <pre className="whitespace-pre-wrap break-all">{change.after}</pre></div>}
+            </li>)}
+          </ol>
         </div>
       )}
-    </div>
+    </section>
   );
 }
