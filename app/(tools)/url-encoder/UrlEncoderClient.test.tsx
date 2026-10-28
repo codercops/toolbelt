@@ -122,7 +122,9 @@ describe("UrlEncoderClient tabs", () => {
       target: { value: `https://example.com/${query}` },
     });
     expect(screen.getAllByText("Repeated key")).toHaveLength(2);
+    expect(screen.getByRole("status")).toHaveClass("border-[var(--amber)]", "text-[var(--amber)]");
     expect(screen.getByRole("status")).toHaveTextContent("1 repeated key: tag.");
+    expect(screen.getAllByText("Repeated key")[0]).toHaveClass("border-[var(--amber)]", "text-[var(--amber)]");
     expect(screen.getByText(/not necessarily errors/)).toBeInTheDocument();
     const rows = screen.getAllByRole("button", { name: "Copy value of tag" });
     expect(rows.map((button) => button.parentElement?.querySelector("span.text-\\[var\\(--fg\\)\\]")?.textContent)).toEqual(values);
