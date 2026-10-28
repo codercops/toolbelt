@@ -47,6 +47,21 @@ describe("markdown preview", () => {
 
   it("calculates writing stats", () => expect(getMarkdownStats("one two\nthree")).toEqual({ words: 3, chars: 13, lines: 2, readingMinutes: 1 }));
 
+  it.each([
+    ["headings", "# Hello\n## World", 2],
+    ["lists", "- one\n- two\n* three\n1. four", 4],
+    ["task lists", "- [ ] write\n- [x] ship", 2],
+    ["quotes", "> quoted text", 2],
+    ["rules", "above\n\n---\n\nbelow", 2],
+    ["tables", "| a | b |\n| --- | --- |\n| c | d |", 4],
+    ["nested quotes and lists", ">  - 2. [x] done", 1],
+    ["prose with numbers and brackets", "I have 3. Pick option [x] now", 7],
+  ])("counts only words, not markdown markers, in %s", (_label, markdown, words) => {
+    expect(getMarkdownStats(markdown).words).toBe(words);
+  });
+
+  it("counts no words in whitespace-only text", () => expect(getMarkdownStats("  \n\t ").words).toBe(0));
+
   it("inserts formatting around the selection", () => expect(insertMarkdown("hello", 0, 5, "**")).toEqual({ value: "**hello**", selectionStart: 2, selectionEnd: 7 }));
 });
 

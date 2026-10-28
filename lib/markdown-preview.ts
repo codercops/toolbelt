@@ -53,8 +53,11 @@ export function renderMarkdown(markdown: string): string {
   return marked.parse(markdown) as string;
 }
 
+// List numbers and task boxes at the start of a line, which have digits or letters but aren't words.
+const LINE_MARKERS = /^[ \t]*(?:[>*+-][ \t]+)*(?:\d+[.)][ \t]+)?(?:\[[ xX]\][ \t]+)?/gm;
+
 export function getMarkdownStats(markdown: string): MarkdownStats {
-  const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
+  const words = markdown.replace(LINE_MARKERS, "").split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
   return { words, chars: markdown.length, lines: markdown ? markdown.split("\n").length : 0, readingMinutes: Math.max(1, Math.ceil(words / 200)) };
 }
 
