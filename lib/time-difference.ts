@@ -19,8 +19,8 @@ export function parseInstant({ value, format }: InstantInput): ParsedInstant {
     if (format === "s") milliseconds += BigInt((match[3] ?? "").padEnd(3, "0"));
     if (match[1] === "-") milliseconds = -milliseconds;
   } else {
-    const match = /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:\d{2})$/.exec(input);
-    if (!match) return { ok: false, error: "Enter ISO 8601 with Z or an offset (e.g. +05:30), at millisecond precision." };
+    const match = /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?(Z|[+-]\d{2}:\d{2})$/.exec(input);
+    if (!match) return { ok: false, error: "Enter ISO 8601 with Z or an offset (e.g. +05:30)." };
     const [, year, month, day, hour, minute, second, , zone] = match;
     const y = Number(year), m = Number(month), d = Number(day);
     const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
@@ -29,7 +29,8 @@ export function parseInstant({ value, format }: InstantInput): ParsedInstant {
       (zone !== "Z" && (Number(zone.slice(1, 3)) > 23 || Number(zone.slice(4)) > 59))) {
       return { ok: false, error: "Enter a valid ISO 8601 date, time, and timezone offset." };
     }
-    const parsed = Date.parse(input);
+    // Discard sub-millisecond digits explicitly for consistent browser parsing.
+    const parsed = Date.parse(input.replace(/\.(\d+)/, (_, fraction: string) => `.${fraction.slice(0, 3)}`));
     if (!Number.isFinite(parsed)) return { ok: false, error: "Date is outside the supported range." };
     milliseconds = BigInt(parsed);
   }
@@ -43,11 +44,18 @@ export function calculateTimeDifference(start: InstantInput, end: InstantInput) 
   const difference = to.milliseconds - from.milliseconds;
   const absolute = difference < ZERO ? -difference : difference;
   const fraction = (absolute % THOUSAND).toString().padStart(3, "0").replace(/0+$/, "");
+  const parts: [bigint, string][] = [
+    [absolute / BigInt(86400000), "day"],
+    [(absolute / BigInt(3600000)) % BigInt(24), "hour"],
+    [(absolute / BigInt(60000)) % BigInt(60), "minute"],
+    [(absolute / THOUSAND) % BigInt(60), "second"],
+    [absolute % THOUSAND, "millisecond"],
+  ];
   return {
     ok: true,
     milliseconds: difference.toString(),
     seconds: `${difference < ZERO ? "-" : ""}${absolute / THOUSAND}${fraction ? `.${fraction}` : ""}`,
     earlier: difference < ZERO,
-    duration: `${absolute / BigInt(86400000)} days, ${(absolute / BigInt(3600000)) % BigInt(24)} hours, ${(absolute / BigInt(60000)) % BigInt(60)} minutes, ${(absolute / THOUSAND) % BigInt(60)} seconds, ${absolute % THOUSAND} milliseconds`,
+    duration: parts.map(([value, unit]) => `${value} ${unit}${value === BigInt(1) ? "" : "s"}`).join(", "),
   } as const;
 }

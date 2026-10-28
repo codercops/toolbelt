@@ -13,7 +13,7 @@ export function TimeDifference() {
   return (
     <section aria-labelledby="time-difference-heading" className="space-y-4 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] p-4 sm:p-6">
       <h2 id="time-difference-heading" className="text-xl font-semibold text-[var(--fg)]">Time difference</h2>
-      <p className="text-sm text-[var(--fg-muted)]">End minus start, at millisecond precision. ISO dates require Z or a timezone offset. One day means 24 hours of elapsed time.</p>
+      <p className="text-sm text-[var(--fg-muted)]">End minus start, at millisecond precision. ISO dates require Z or a timezone offset; fractional digits beyond milliseconds are discarded. One day means 24 hours of elapsed time.</p>
       <div className="grid gap-4 md:grid-cols-2">
         {([
           { name: "Start", input: start, setInput: setStart, error: result.ok ? undefined : result.startError },

@@ -15,13 +15,31 @@ describe("time difference", () => {
     expect(forward).toMatchObject({ ok: true, milliseconds: "90061002", seconds: "90061.002", earlier: false });
     expect(backward).toMatchObject({ ok: true, milliseconds: "-90061002", seconds: "-90061.002", earlier: true });
     if (forward.ok && backward.ok) {
-      expect(forward.duration).toBe("1 days, 1 hours, 1 minutes, 1 seconds, 2 milliseconds");
+      expect(forward.duration).toBe("1 day, 1 hour, 1 minute, 1 second, 2 milliseconds");
       expect(backward.duration).toBe(forward.duration);
     }
   });
 
   it("compares different offsets representing the same instant", () => {
     expect(calculateTimeDifference(instant("2024-01-01T05:30:00+05:30", "iso"), instant("2024-01-01T00:00:00Z", "iso"))).toMatchObject({ ok: true, milliseconds: "0" });
+  });
+
+  it.each([
+    ["2026-10-28T14:33:27.123456+00:00", "2026-10-28T14:33:27.123Z"],
+    ["2026-10-28T14:33:27.123456789Z", "2026-10-28T14:33:27.123Z"],
+    ["2026-10-28T20:03:27.999999999999999999+05:30", "2026-10-28T14:33:27.999Z"],
+    ["1969-12-31T23:59:59.999999Z", "1969-12-31T23:59:59.999Z"],
+    ["2026-10-28T14:33:27.1Z", "2026-10-28T14:33:27.100Z"],
+  ])("truncates ISO fractions to milliseconds: %s", (start, end) => {
+    expect(calculateTimeDifference(instant(start, "iso"), instant(end, "iso"))).toMatchObject({ ok: true, milliseconds: "0" });
+  });
+
+  it.each([
+    ["86400000", "1 day, 0 hours, 0 minutes, 0 seconds, 0 milliseconds"],
+    ["90061001", "1 day, 1 hour, 1 minute, 1 second, 1 millisecond"],
+    ["180122002", "2 days, 2 hours, 2 minutes, 2 seconds, 2 milliseconds"],
+  ])("pluralizes each duration component for %s ms", (value, duration) => {
+    expect(calculateTimeDifference(instant("0"), instant(value))).toMatchObject({ ok: true, duration });
   });
 
   it.each([

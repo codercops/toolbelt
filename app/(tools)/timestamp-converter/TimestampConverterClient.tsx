@@ -72,7 +72,6 @@ export function TimestampConverterClient() {
         </div>
       </section>
 
-      <TimeDifference />
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-4 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] p-4 sm:p-6">
           <div>
@@ -127,6 +126,7 @@ export function TimestampConverterClient() {
           <p className="text-xs text-[var(--fg-muted)]">For reliable results, include a timezone such as Z or an explicit UTC offset.</p>
         </section>
       </div>
+      <TimeDifference />
     </div>
   );
 }
