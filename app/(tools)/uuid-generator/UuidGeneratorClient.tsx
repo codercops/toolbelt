@@ -59,6 +59,26 @@ function InspectionResult({ result }: { result: UuidInspection }) {
           </dd>
         </div>
       )}
+      {result.v1 && (
+        <>
+          {[
+            ["UUID v1 UTC date (millisecond precision)", result.v1.utc],
+            ["Unix milliseconds (floored to the containing millisecond)", result.v1.unixMilliseconds.toString()],
+            ["UUID timestamp (100-nanosecond intervals since 1582-10-15)", result.v1.timestamp100ns],
+            ["Clock sequence (14 bits)", result.v1.clockSequence.toString()],
+            ["Node identifier (48-bit hexadecimal)", result.v1.node],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-xl border border-[var(--hairline)] bg-[var(--bg-soft)] p-3">
+              <dt className="text-xs text-[var(--fg-muted)]">{label}</dt>
+              <dd className="mt-1 font-mono text-sm break-all text-[var(--fg)]">{value}</dd>
+            </div>
+          ))}
+          <div className="sm:col-span-2 text-sm text-[var(--fg-muted)]">
+            <dt>About the node identifier</dt>
+            <dd>The node identifier may be randomly generated. Do not assume it identifies a physical device.</dd>
+          </div>
+        </>
+      )}
       {result.special && (
         <p className="sm:col-span-2 text-sm text-[var(--fg-muted)]">
           {result.special === "nil"

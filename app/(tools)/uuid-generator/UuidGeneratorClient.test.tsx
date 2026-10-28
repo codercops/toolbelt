@@ -156,6 +156,20 @@ describe("UuidGeneratorClient", () => {
     expect(screen.getByText("Future (reserved)")).toBeInTheDocument();
   });
 
+  it("shows labeled v1 fields and removes them for unsupported variants", () => {
+    renderClient();
+    const input = screen.getByLabelText("Inspect a UUID");
+    fireEvent.change(input, { target: { value: "C232AB00-9414-11EC-B3C8-9F6BDECED846" } });
+    expect(screen.getByText("UUID v1 UTC date (millisecond precision)")).toBeInTheDocument();
+    expect(screen.getByText("2022-02-22T19:22:22.000Z")).toBeInTheDocument();
+    expect(screen.getByText("138648505420000000")).toBeInTheDocument();
+    expect(screen.getByText("13256")).toBeInTheDocument();
+    expect(screen.getByText("9f6bdeced846")).toBeInTheDocument();
+    expect(screen.getByText(/may be randomly generated/)).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: "C232AB00-9414-11EC-C3C8-9F6BDECED846" } });
+    expect(screen.queryByText("138648505420000000")).not.toBeInTheDocument();
+  });
+
   it("inspects v7 timestamps and malformed input", () => {
     renderClient();
     fireEvent.change(screen.getByLabelText("Inspect a UUID"), {

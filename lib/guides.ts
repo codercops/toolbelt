@@ -836,7 +836,7 @@ export const GUIDES: Guide[] = [
       },
       {
         name: "Inspect a UUID you already have",
-        text: "Paste a UUID, with or without hyphens and in any case, into the inspector to see its version, its variant, whether it is the nil or max UUID, and for version 7 the timestamp in milliseconds and as an ISO date.",
+        text: "Paste a UUID, with or without hyphens and in any case, into the inspector to see its version, its variant, whether it is the nil or max UUID, and for versions 1 and 7 the timestamp in milliseconds and as an ISO date. Version 1 also shows the raw 100-nanosecond timestamp, clock sequence, and node identifier; the node may be randomly generated.",
         url: "#step-5",
       },
     ],

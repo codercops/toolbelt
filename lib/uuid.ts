@@ -16,6 +16,13 @@ export type UuidInspection =
       version: number;
       variant: UuidVariant;
       timestampMs?: number;
+      v1?: {
+        timestamp100ns: string;
+        unixMilliseconds: number;
+        utc: string;
+        clockSequence: number;
+        node: string;
+      };
       special?: "nil" | "max";
     }
   | { ok: false };
@@ -95,6 +102,24 @@ export function inspectUuid(text: string): UuidInspection {
     ...(isNil ? { special: "nil" as const } : {}),
     ...(isMax ? { special: "max" as const } : {}),
   };
+  if (version === 1 && variant === "rfc") {
+    const timestamp = BigInt(`0x${normalized.slice(13, 16)}${normalized.slice(8, 12)}${normalized.slice(0, 8)}`);
+    const unixTicks = timestamp - BigInt("122192928000000000");
+    const ticksPerMs = BigInt(10000);
+    // Floor negative times too, so the displayed millisecond contains the instant.
+    const milliseconds = unixTicks / ticksPerMs - (unixTicks < BigInt(0) && unixTicks % ticksPerMs !== BigInt(0) ? BigInt(1) : BigInt(0));
+    const unixMilliseconds = Number(milliseconds);
+    return {
+      ...result,
+      v1: {
+        timestamp100ns: timestamp.toString(),
+        unixMilliseconds,
+        utc: new Date(unixMilliseconds).toISOString(),
+        clockSequence: ((bytes[8] & 0x3f) << 8) | bytes[9],
+        node: normalized.slice(20).toLowerCase(),
+      },
+    };
+  }
   if (version === 7) {
     let timestampMs = 0;
     for (let i = 0; i < 6; i += 1) {
