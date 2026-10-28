@@ -2,6 +2,7 @@ const UUID_BYTES = 16;
 const MAX_TIMESTAMP = 0xffffffffffff;
 const UUID_PATTERN =
   /^(?:[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+const URN_PREFIX = /^urn:uuid:/i;
 
 export interface UuidFormatOptions {
   uppercase?: boolean;
@@ -73,9 +74,16 @@ export function formatUuid(
   return uppercase ? formatted.toUpperCase() : formatted;
 }
 
+function unwrapUuid(text: string): string {
+  const trimmed = text.trim();
+  if (URN_PREFIX.test(trimmed)) return trimmed.replace(URN_PREFIX, "");
+  return trimmed.startsWith("{") && trimmed.endsWith("}") ? trimmed.slice(1, -1) : trimmed;
+}
+
 export function inspectUuid(text: string): UuidInspection {
-  const normalized = text.trim().replace(/-/g, "");
-  if (!UUID_PATTERN.test(text.trim())) return { ok: false };
+  const uuid = unwrapUuid(text);
+  const normalized = uuid.replace(/-/g, "");
+  if (!UUID_PATTERN.test(uuid)) return { ok: false };
 
   const bytes = new Uint8Array(UUID_BYTES);
   for (let i = 0; i < UUID_BYTES; i += 1) {

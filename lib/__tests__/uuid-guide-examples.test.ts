@@ -155,8 +155,9 @@ describe("uuid guide: the inspector's input rules", () => {
     expect(inspectUuid("550E8400E29B41D4A716446655440000")).toEqual({ ok: true, version: 4, variant: "rfc" });
   });
 
-  it("rejects a UUID wrapped in braces", () => {
-    expect(inspectUuid("{550e8400-e29b-41d4-a716-446655440000}")).toEqual({ ok: false });
+  it("accepts a UUID wrapped in braces or with a urn:uuid: prefix", () => {
+    expect(inspectUuid("{550e8400-e29b-41d4-a716-446655440000}")).toEqual({ ok: true, version: 4, variant: "rfc" });
+    expect(inspectUuid("urn:uuid:550e8400-e29b-41d4-a716-446655440000")).toEqual({ ok: true, version: 4, variant: "rfc" });
     expect(inspectUuid("550e8400-e29b-41d4-a716")).toEqual({ ok: false });
   });
 });

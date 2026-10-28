@@ -100,6 +100,26 @@ describe("inspectUuid", () => {
     });
   });
 
+  it.each([
+    ["braces", "{3f2504e0-4f89-41d3-9a0c-0305e82c3301}"],
+    ["a urn:uuid: prefix", "urn:uuid:3f2504e0-4f89-41d3-9a0c-0305e82c3301"],
+    ["an upper case URN:UUID: prefix", "URN:UUID:3F2504E0-4F89-41D3-9A0C-0305E82C3301"],
+    ["surrounding whitespace", "  {3f2504e0-4f89-41d3-9a0c-0305e82c3301}\n"],
+  ])("inspects a UUID with %s the same as the bare value", (_label, text) => {
+    expect(inspectUuid(text)).toEqual(inspectUuid("3f2504e0-4f89-41d3-9a0c-0305e82c3301"));
+    expect(inspectUuid(text)).toMatchObject({ ok: true, version: 4, variant: "rfc" });
+  });
+
+  it.each([
+    "{3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+    "3f2504e0-4f89-41d3-9a0c-0305e82c3301}",
+    "{{3f2504e0-4f89-41d3-9a0c-0305e82c3301}}",
+    "urn:uuid:{3f2504e0-4f89-41d3-9a0c-0305e82c3301}",
+    "uuid:3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+  ])("rejects %s", (text) => {
+    expect(inspectUuid(text)).toEqual({ ok: false });
+  });
+
   it("does not report a timestamp for non-v7 UUIDs", () => {
     expect(inspectUuid("00000000-0000-4000-8000-000000000000")).not.toHaveProperty("timestampMs");
   });
