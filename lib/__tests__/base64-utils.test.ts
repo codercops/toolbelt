@@ -381,6 +381,9 @@ describe("formatting helpers", () => {
     [1023, "1023 B"],
     [1024, "1.0 KB"],
     [1536, "1.5 KB"],
+    [1048524, "1023.9 KB"],
+    [1048525, "1.00 MB"],
+    [1048575, "1.00 MB"],
     [1024 * 1024, "1.00 MB"],
     [1536 * 1024, "1.50 MB"],
   ] as const)("formats %i bytes as %s", (bytes, expected) => {

@@ -604,6 +604,7 @@ export function bytesToHexSpaced(bytes: Uint8Array): string {
 
 export function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  const kb = (n / 1024).toFixed(1);
+  if (Number(kb) < 1024) return `${kb} KB`;
   return `${(n / (1024 * 1024)).toFixed(2)} MB`;
 }
