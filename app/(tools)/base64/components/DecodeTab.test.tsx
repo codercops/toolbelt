@@ -50,6 +50,15 @@ describe("DecodeTab data URIs", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/Invalid base64/i);
   });
+
+  it("reports an invalid character position in the original data URI", async () => {
+    const input = "  data:text/plain;base64,SGV!bG8=";
+    decode(input);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      `position ${input.indexOf("!") + 1}`,
+    );
+  });
 });
 
 describe("DecodeTab hex toggle", () => {

@@ -27,7 +27,10 @@ export function DecodeTab() {
 
   const result = useMemo(() => {
     if (!effectiveInput.trim()) return null;
-    const r = base64ToBytes(effectiveInput);
+    const inputOffset = autoStripped
+      ? input.length - input.trimStart().length + autoStripped.prefix.length
+      : 0;
+    const r = base64ToBytes(effectiveInput, { originalInput: input, inputOffset });
     if (!r.ok) return { ok: false as const, error: r.error };
     const bytes = r.value;
     let mime = getMimeFromMagicBytes(bytes);
@@ -56,7 +59,7 @@ export function DecodeTab() {
         return null;
       })(),
     };
-  }, [effectiveInput, autoStripped]);
+  }, [effectiveInput, autoStripped, input]);
 
   function download() {
     if (!result?.ok) return;

@@ -35,41 +35,130 @@ export function bytesToBase64(bytes: Uint8Array, opts: EncodeOptions = { urlSafe
   return b64;
 }
 
-export function base64ToBytes(
-  s: string
-): { ok: true; value: Uint8Array } | { ok: false; error: string } {
-  const clean = s.trim().replace(/\s+/g, "");
-  if (clean.length === 0) return { ok: true, value: new Uint8Array(0) };
-  // URL-safe → standard
-  let normalized = clean.replace(/-/g, "+").replace(/_/g, "/");
-  // Pad
-  while (normalized.length % 4 !== 0) normalized += "=";
-  // Validate the original input so whitespace removal doesn't shift error positions.
+export type Base64Alphabet = "standard" | "url-safe" | "auto";
+
+export interface Base64DecodeOptions {
+  /** The accepted alphabet; auto accepts either alphabet but rejects mixed input. */
+  alphabet?: Base64Alphabet;
+  /** Full user input when `s` is only a payload, such as a data URI payload. */
+  originalInput?: string;
+  /** Zero-based offset of `s` within `originalInput`. */
+  inputOffset?: number;
+}
+
+function describeBase64Position(source: string, index: number): string {
   let line = 1;
   let column = 1;
-  for (let i = 0; i < s.length; i++) {
-    const char = s[i];
-    if (char === "\n") {
+  for (let i = 0; i < index && i < source.length; i++) {
+    if (source[i] === "\n") {
       line++;
       column = 1;
-      continue;
+    } else if (source[i] !== "\r") {
+      column++;
     }
-    if (char === "\r") continue;
-    if (!/\s/.test(char) && !/[A-Za-z0-9+/=_-]/.test(char)) {
-      return {
-        ok: false,
-        error: `Invalid base64 string: illegal character "${char}" at position ${i + 1} (line ${line}, column ${column})`,
-      };
-    }
-    column++;
   }
+  return `position ${index + 1} (line ${line}, column ${column})`;
+}
+
+export function base64ToBytes(
+  s: string,
+  options: Base64DecodeOptions = {},
+): { ok: true; value: Uint8Array } | { ok: false; error: string } {
+  const alphabet = options.alphabet ?? "auto";
+  const source = options.originalInput ?? s;
+  const offset = options.inputOffset ?? 0;
+  const location = (index: number) => describeBase64Position(source, offset + index);
+  const chars: { char: string; index: number }[] = [];
+
+  for (let i = 0; i < s.length; i++) {
+    const char = s[i];
+    if (/\s/.test(char)) continue;
+    chars.push({ char, index: i });
+  }
+  if (chars.length === 0) return { ok: true, value: new Uint8Array(0) };
+
+  const invalid = chars.find(({ char }) => !/[A-Za-z0-9+/=_-]/.test(char));
+  if (invalid) {
+    const accepted = alphabet === "standard"
+      ? "Standard Base64 accepts A-Z, a-z, 0-9, +, /, and optional = padding."
+      : alphabet === "url-safe"
+        ? "URL-safe Base64 accepts A-Z, a-z, 0-9, -, _, and optional = padding."
+        : "Base64 accepts A-Z, a-z, 0-9, and either +/ or -_ (use only one alphabet).";
+    return {
+      ok: false,
+      error: `Invalid base64 string: illegal character "${invalid.char}" at ${location(invalid.index)}. ${accepted}`,
+    };
+  }
+
+  const standardMarker = chars.find(({ char }) => char === "+" || char === "/");
+  const urlSafeMarker = chars.find(({ char }) => char === "-" || char === "_");
+  if (standardMarker && urlSafeMarker) {
+    const offending = standardMarker.index > urlSafeMarker.index ? standardMarker : urlSafeMarker;
+    const mode = alphabet === "auto"
+      ? "Choose either Standard Base64 (+, /) or URL-safe Base64 (-, _)."
+      : `The selected ${alphabet === "standard" ? "Standard" : "URL-safe"} Base64 mode requires a single alphabet.`;
+    return {
+      ok: false,
+      error: `Invalid base64: input mixes standard (+, /) and URL-safe (-, _) alphabets at ${location(offending.index)}. ${mode}`,
+    };
+  }
+
+  const wrongAlphabet = alphabet === "standard" ? urlSafeMarker : alphabet === "url-safe" ? standardMarker : undefined;
+  if (wrongAlphabet) {
+    const mode = alphabet === "standard" ? "Standard" : "URL-safe";
+    const rejected = alphabet === "standard" ? "URL-safe" : "standard";
+    const allowed = alphabet === "standard" ? "+ and /" : "- and _";
+    return {
+      ok: false,
+      error: `Invalid base64: the selected ${mode} Base64 mode does not accept ${rejected} character "${wrongAlphabet.char}" at ${location(wrongAlphabet.index)}. It accepts ${allowed}; choose the other mode for the rejected alphabet.`,
+    };
+  }
+
+  const firstPadding = chars.findIndex(({ char }) => char === "=");
+  const dataChars = firstPadding === -1 ? chars : chars.slice(0, firstPadding);
+  const paddingChars = firstPadding === -1 ? [] : chars.slice(firstPadding);
+  const misplaced = paddingChars.find(({ char }) => char !== "=");
+  if (misplaced) {
+    return {
+      ok: false,
+      error: `Invalid base64 padding: padding may only appear at the end; found "${misplaced.char}" at ${location(misplaced.index)}.`,
+    };
+  }
+  if (paddingChars.length > 2) {
+    return {
+      ok: false,
+      error: `Invalid base64 padding: more than two '=' characters are not allowed; the third padding character is at ${location(paddingChars[2].index)}.`,
+    };
+  }
+
+  const requiredPadding = (4 - (dataChars.length % 4)) % 4;
+  if (paddingChars.length > 0 && (requiredPadding > 2 || paddingChars.length !== requiredPadding)) {
+    return {
+      ok: false,
+      error: `Invalid base64 padding: expected ${requiredPadding} '=' character(s) after ${dataChars.length} data characters, found ${paddingChars.length} at ${location(paddingChars[0].index)}.`,
+    };
+  }
+  if (paddingChars.length === 0 && requiredPadding === 3) {
+    const lastDataChar = dataChars[dataChars.length - 1];
+    return {
+      ok: false,
+      error: `Invalid base64 length: one data character cannot form a complete Base64 group; input ends at ${location(lastDataChar.index)}.`,
+    };
+  }
+
+  let normalized = dataChars.map(({ char }) => char).join("");
+  normalized = normalized.replace(/-/g, "+").replace(/_/g, "/");
+  normalized += "=".repeat(paddingChars.length || requiredPadding);
   try {
     const bin = atob(normalized);
     const bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     return { ok: true, value: bytes };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Invalid base64 string" };
+  } catch {
+    return {
+      ok: false,
+      error: `Invalid base64 encoding near ${location(chars[chars.length - 1].index)}. Check the alphabet and padding.`,
+    };
   }
 }
 
@@ -83,15 +172,7 @@ export function detectBase64(s: string): boolean {
   // false positives. Real base64 of arbitrary bytes almost always contains a
   // digit, padding, or a base64-specific symbol — require at least one.
   if (!/[0-9+/=_-]/.test(trimmed)) return false;
-  const normalized = trimmed.replace(/-/g, "+").replace(/_/g, "/");
-  let padded = normalized;
-  while (padded.length % 4 !== 0) padded += "=";
-  try {
-    atob(padded);
-    return true;
-  } catch {
-    return false;
-  }
+  return base64ToBytes(trimmed).ok;
 }
 
 /**

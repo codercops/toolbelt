@@ -65,7 +65,7 @@ export function TextTab() {
           setOutput("");
         }
       } else {
-        const r = base64ToBytes(input);
+        const r = base64ToBytes(input, { alphabet: urlSafe ? "url-safe" : "standard" });
         if (!r.ok) {
           setError(r.error);
           setOutput("");
