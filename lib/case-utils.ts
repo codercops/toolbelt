@@ -26,26 +26,37 @@ export const CASE_STYLES: { id: CaseStyle; label: string; example: string }[] = 
   { id: "upper", label: "UPPERCASE", example: "HELLO WORLD" },
 ];
 
+function splitWordsPreservingCase(input: string, separators: RegExp): string[] {
+  const words: string[] = [];
+  for (const chunk of input.split(separators)) {
+    if (!chunk) continue;
+    const spaced = chunk
+      .replace(/([\p{Ll}\d])(\p{Lu})/gu, "$1 $2")
+      .replace(/(\p{Lu}+)(\p{Lu}\p{Ll})/gu, "$1 $2");
+    for (const word of spaced.split(" ")) {
+      if (word) words.push(word);
+    }
+  }
+  return words;
+}
+
 /**
  * Splits identifiers and phrases into lowercase words. Handles separators
  * (spaces, `_`, `-`, `.`, `/` by default), camelCase and PascalCase boundaries,
  * acronyms (`XMLHttpRequest` -> xml, http, request), digits, and non-ASCII letters.
  */
 export function splitWords(input: string, separators = /[_\-./\s]+/): string[] {
-  const words: string[] = [];
-  // Collapse every separator run first so "  Hello   World " behaves.
-  for (const chunk of input.split(separators)) {
-    if (!chunk) continue;
-    // lower-or-digit followed by upper: "userId" -> "user Id"
-    // acronym run followed by a capitalised word: "XMLHttp" -> "XML Http"
-    const spaced = chunk
-      .replace(/([\p{Ll}\d])(\p{Lu})/gu, "$1 $2")
-      .replace(/(\p{Lu}+)(\p{Lu}\p{Ll})/gu, "$1 $2");
-    for (const word of spaced.split(" ")) {
-      if (word) words.push(word.toLowerCase());
-    }
-  }
-  return words;
+  return splitWordsPreservingCase(input, separators).map((word) => word.toLowerCase());
+}
+
+export type DetectedWordsLine = { lineNumber: number; words: string[] };
+
+/** Returns the original-casing word segments for each non-empty input line. */
+export function detectWords(input: string): DetectedWordsLine[] {
+  return input.split("\n").flatMap((line, index) => {
+    const words = splitWordsPreservingCase(line, /[_\-./\s]+/);
+    return words.length ? [{ lineNumber: index + 1, words }] : [];
+  });
 }
 
 // Identifier styles keep only letters and digits; the prose styles keep punctuation.

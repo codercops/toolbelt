@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitWords, toCase } from "@/lib/case-utils";
+import { detectWords, splitWords, toCase } from "@/lib/case-utils";
 
 describe("splitWords", () => {
   it("splits camelCase and PascalCase boundaries", () => {
@@ -28,6 +28,36 @@ describe("splitWords", () => {
 
   it("returns [] for empty input", () => {
     expect(splitWords("")).toEqual([]);
+  });
+});
+
+describe("detectWords", () => {
+  it("preserves casing while splitting identifiers", () => {
+    expect(detectWords("XMLHttpRequest")).toEqual([
+      { lineNumber: 1, words: ["XML", "Http", "Request"] },
+    ]);
+    expect(detectWords("user_id")).toEqual([
+      { lineNumber: 1, words: ["user", "id"] },
+    ]);
+    expect(detectWords("HTTP_status_code")).toEqual([
+      { lineNumber: 1, words: ["HTTP", "status", "code"] },
+    ]);
+  });
+
+  it("keeps the existing digit and Unicode boundary rules", () => {
+    expect(detectWords("version2Update")).toEqual([
+      { lineNumber: 1, words: ["version2", "Update"] },
+    ]);
+    expect(detectWords("ÄpfelBaum\n\nनमस्ते दुनिया")).toEqual([
+      { lineNumber: 1, words: ["Äpfel", "Baum"] },
+      { lineNumber: 3, words: ["नमस्ते", "दुनिया"] },
+    ]);
+  });
+
+  it("ignores repeated separators, whitespace, and empty lines", () => {
+    expect(detectWords("  user__id  \n\n  ")).toEqual([
+      { lineNumber: 1, words: ["user", "id"] },
+    ]);
   });
 });
 

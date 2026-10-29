@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { toCase, CASE_STYLES } from "@/lib/case-utils";
+import { detectWords, toCase, CASE_STYLES } from "@/lib/case-utils";
 import { CopyButton } from "@/components/shared/CopyButton";
 
 export function CaseConverterClient() {
@@ -16,6 +16,7 @@ export function CaseConverterClient() {
       })),
     [input]
   );
+  const detectedLines = useMemo(() => detectWords(input), [input]);
 
   return (
     <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-10 space-y-4">
@@ -40,6 +41,39 @@ export function CaseConverterClient() {
           className="editor-input flex-1 p-4"
           style={{ minHeight: 180 }}
         />
+      </div>
+
+      <div className="card px-4 py-3" aria-live="polite">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
+            Detected words
+          </h2>
+          <span className="text-xs text-[var(--fg-muted)]">Uses the converter&apos;s existing split rules</span>
+        </div>
+        {detectedLines.length ? (
+          <ul className="mt-3 space-y-2" aria-label="Detected words by input line">
+            {detectedLines.map(({ lineNumber, words }) => (
+              <li key={lineNumber} className="flex flex-wrap items-center gap-2">
+                <span className="sr-only">Line {lineNumber}:</span>
+                <span aria-hidden="true" className="w-12 shrink-0 font-mono text-xs text-[var(--fg-muted)]">
+                  Line {lineNumber}
+                </span>
+                {words.map((word, index) => (
+                  <span
+                    key={`${lineNumber}-${index}-${word}`}
+                    className="rounded-md border border-[var(--hairline)] bg-[var(--bg-raise)] px-2 py-1 font-mono text-sm text-[var(--fg)]"
+                  >
+                    {word}
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-[var(--fg-muted)]">
+            Type or paste text above to see its detected words.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
