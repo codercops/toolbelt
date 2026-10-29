@@ -43,7 +43,7 @@ export function CaseConverterClient() {
         />
       </div>
 
-      <div className="card px-4 py-3" aria-live="polite">
+      <div className="card px-4 py-3">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--fg-dim)]">
             Detected words
