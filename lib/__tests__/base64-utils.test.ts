@@ -83,11 +83,11 @@ describe("text round-trip", () => {
     });
   });
 
-  it("reports illegal characters with the selected alphabet guidance", () => {
-    const result = base64ToBytes("SGV!bG8=", { alphabet: "standard" });
+  it("reports illegal characters with accepted alphabet guidance", () => {
+    const result = base64ToBytes("SGV!bG8=");
     expect(result).toEqual({
       ok: false,
-      error: expect.stringMatching(/illegal character "!" at position 4.*Standard Base64 accepts/),
+      error: expect.stringMatching(/illegal character "!" at position 4.*standard.*URL-safe/),
     });
   });
 
@@ -127,26 +127,25 @@ describe("text round-trip", () => {
     expect(base64ToBytes("SGVsbG8")).toEqual({ ok: true, value: new TextEncoder().encode("Hello") });
   });
 
-  it("rejects mixed alphabets and enforces the selected standard or URL-safe alphabet", () => {
-    expect(base64ToBytes("ab+c-_=")).toEqual({
+  it("accepts standard, URL-safe, and mixed alphabet input", () => {
+    const expected = { ok: true, value: new Uint8Array([0xfb, 0xff]) };
+    expect(base64ToBytes("+/8=")).toEqual(expected);
+    expect(base64ToBytes("-_8")).toEqual(expected);
+    expect(base64ToBytes("+_8")).toEqual(expected);
+  });
+
+  it("gives the issue's malformed examples distinct padding and length errors", () => {
+    expect(base64ToBytes("SG=Vsbw==")).toEqual({
       ok: false,
-      error: expect.stringMatching(/mixes standard.*URL-safe.*position 5/),
+      error: expect.stringMatching(/padding may only appear at the end.*position 4/),
     });
-    expect(base64ToBytes("8J-YgA", { alphabet: "standard" })).toEqual({
+    expect(base64ToBytes("SGVsbG8===")).toEqual({
       ok: false,
-      error: expect.stringMatching(/selected Standard Base64 mode.*URL-safe.*position 3/),
+      error: expect.stringMatching(/more than two.*position 10/),
     });
-    expect(base64ToBytes("8J+YgA==", { alphabet: "url-safe" })).toEqual({
+    expect(base64ToBytes("SGVsb")).toEqual({
       ok: false,
-      error: expect.stringMatching(/selected URL-safe Base64 mode.*standard.*position 3/),
-    });
-    expect(base64ToBytes("8J+YgA==", { alphabet: "standard" })).toEqual({
-      ok: true,
-      value: new TextEncoder().encode("😀"),
-    });
-    expect(base64ToBytes("8J-YgA", { alphabet: "url-safe" })).toEqual({
-      ok: true,
-      value: new TextEncoder().encode("😀"),
+      error: expect.stringMatching(/Invalid base64 length.*position 5/),
     });
   });
 

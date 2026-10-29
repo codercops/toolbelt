@@ -35,11 +35,7 @@ export function bytesToBase64(bytes: Uint8Array, opts: EncodeOptions = { urlSafe
   return b64;
 }
 
-export type Base64Alphabet = "standard" | "url-safe" | "auto";
-
 export interface Base64DecodeOptions {
-  /** The accepted alphabet; auto accepts either alphabet but rejects mixed input. */
-  alphabet?: Base64Alphabet;
   /** Full user input when `s` is only a payload, such as a data URI payload. */
   originalInput?: string;
   /** Zero-based offset of `s` within `originalInput`. */
@@ -64,7 +60,6 @@ export function base64ToBytes(
   s: string,
   options: Base64DecodeOptions = {},
 ): { ok: true; value: Uint8Array } | { ok: false; error: string } {
-  const alphabet = options.alphabet ?? "auto";
   const source = options.originalInput ?? s;
   const offset = options.inputOffset ?? 0;
   const location = (index: number) => describeBase64Position(source, offset + index);
@@ -79,38 +74,9 @@ export function base64ToBytes(
 
   const invalid = chars.find(({ char }) => !/[A-Za-z0-9+/=_-]/.test(char));
   if (invalid) {
-    const accepted = alphabet === "standard"
-      ? "Standard Base64 accepts A-Z, a-z, 0-9, +, /, and optional = padding."
-      : alphabet === "url-safe"
-        ? "URL-safe Base64 accepts A-Z, a-z, 0-9, -, _, and optional = padding."
-        : "Base64 accepts A-Z, a-z, 0-9, and either +/ or -_ (use only one alphabet).";
     return {
       ok: false,
-      error: `Invalid base64 string: illegal character "${invalid.char}" at ${location(invalid.index)}. ${accepted}`,
-    };
-  }
-
-  const standardMarker = chars.find(({ char }) => char === "+" || char === "/");
-  const urlSafeMarker = chars.find(({ char }) => char === "-" || char === "_");
-  if (standardMarker && urlSafeMarker) {
-    const offending = standardMarker.index > urlSafeMarker.index ? standardMarker : urlSafeMarker;
-    const mode = alphabet === "auto"
-      ? "Choose either Standard Base64 (+, /) or URL-safe Base64 (-, _)."
-      : `The selected ${alphabet === "standard" ? "Standard" : "URL-safe"} Base64 mode requires a single alphabet.`;
-    return {
-      ok: false,
-      error: `Invalid base64: input mixes standard (+, /) and URL-safe (-, _) alphabets at ${location(offending.index)}. ${mode}`,
-    };
-  }
-
-  const wrongAlphabet = alphabet === "standard" ? urlSafeMarker : alphabet === "url-safe" ? standardMarker : undefined;
-  if (wrongAlphabet) {
-    const mode = alphabet === "standard" ? "Standard" : "URL-safe";
-    const rejected = alphabet === "standard" ? "URL-safe" : "standard";
-    const allowed = alphabet === "standard" ? "+ and /" : "- and _";
-    return {
-      ok: false,
-      error: `Invalid base64: the selected ${mode} Base64 mode does not accept ${rejected} character "${wrongAlphabet.char}" at ${location(wrongAlphabet.index)}. It accepts ${allowed}; choose the other mode for the rejected alphabet.`,
+      error: `Invalid base64 string: illegal character "${invalid.char}" at ${location(invalid.index)}. Base64 accepts standard (+, /) and URL-safe (-, _) alphabet characters, with optional padding.`,
     };
   }
 

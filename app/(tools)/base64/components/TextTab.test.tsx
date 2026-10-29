@@ -97,14 +97,18 @@ describe("TextTab switches", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(/Invalid base64/i);
   });
 
-  it("uses the selected alphabet while decoding", async () => {
+  it("decodes both alphabets regardless of the selected encoding variant", async () => {
     renderTab();
     fireEvent.click(screen.getByRole("button", { name: "Base64 → Text" }));
     const input = screen.getByRole("textbox", { name: "Base64 to decode" });
-    fireEvent.change(input, { target: { value: "8J-YgA" } });
-    expect(await screen.findByRole("alert")).toHaveTextContent(/selected Standard Base64 mode.*URL-safe.*position 3/);
+    expect(screen.getByText(/Decoding accepts standard and URL-safe characters, including mixed alphabets/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "URL-safe" }));
+    fireEvent.change(input, { target: { value: "SGVsbG8=" } });
+    expect(await screen.findByText("Hello")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Standard" }));
+    fireEvent.change(input, { target: { value: "8J-YgA" } });
     expect(await screen.findByText("😀")).toBeInTheDocument();
   });
 
