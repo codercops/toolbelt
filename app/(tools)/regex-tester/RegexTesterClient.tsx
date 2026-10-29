@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { compileRegex, findMatches, replacePreview } from "@/lib/regex-utils";
 
@@ -27,6 +27,8 @@ export function RegexTesterClient() {
   const [text, setText] = useState("Released on 2026-10-01, patched on 2026-10-14.");
   const [replacement, setReplacement] = useState("$3/$2/$<year>");
   const [input, setInput] = useState({ pattern, flags, text, replacement });
+  const [activeMatchIndex, setActiveMatchIndex] = useState(0);
+  const activeMatchRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setInput({ pattern, flags, text, replacement }), DEBOUNCE_MS);
@@ -36,25 +38,33 @@ export function RegexTesterClient() {
   const tooLong = input.text.length > MAX_TEXT_LENGTH;
   const compiled = useMemo(() => compileRegex(input.pattern, input.flags), [input.pattern, input.flags]);
   const regex = compiled.ok && input.pattern !== "" && !tooLong ? compiled.regex : null;
-  const found = useMemo(() => (regex ? findMatches(regex, input.text) : null), [regex, input.text]);
+  const results = useMemo(() => (regex ? findMatches(regex, input.text) : null), [regex, input.text]);
+  const pending = pattern !== input.pattern || flags !== input.flags || text !== input.text;
+  const found = pending ? null : results;
+  const matchCount = found?.matches.length ?? 0;
+  const activeIndex = matchCount > 0 ? Math.min(activeMatchIndex, matchCount - 1) : -1;
+
+  useEffect(() => {
+    activeMatchRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [found, activeIndex]);
   const replaced = useMemo(
     () => (regex ? replacePreview(regex, input.text, input.replacement) : ""),
     [regex, input.text, input.replacement]
   );
 
-  const segments: { text: string; match: boolean }[] = [];
+  const segments: { text: string; matchIndex: number | null }[] = [];
   if (found) {
     let last = 0;
-    for (const match of found.matches) {
-      if (match.end === match.index) continue;
-      segments.push({ text: input.text.slice(last, match.index), match: false });
-      segments.push({ text: match.text, match: true });
+    for (const [matchIndex, match] of found.matches.entries()) {
+      segments.push({ text: input.text.slice(last, match.index), matchIndex: null });
+      segments.push({ text: match.text, matchIndex });
       last = match.end;
     }
-    segments.push({ text: input.text.slice(last), match: false });
+    segments.push({ text: input.text.slice(last), matchIndex: null });
   }
 
   function toggleFlag(flag: string) {
+    setActiveMatchIndex(0);
     setFlags((current) =>
       FLAGS.map((f) => f.flag).filter((f) => (f === flag ? !current.includes(f) : current.includes(f))).join("")
     );
@@ -71,7 +81,10 @@ export function RegexTesterClient() {
               id="regex-pattern"
               type="text"
               value={pattern}
-              onChange={(event) => setPattern(event.target.value)}
+              onChange={(event) => {
+                setPattern(event.target.value);
+                setActiveMatchIndex(0);
+              }}
               placeholder="\d+"
               autoComplete="off"
               autoCapitalize="off"
@@ -110,7 +123,10 @@ export function RegexTesterClient() {
           <textarea
             id="regex-text"
             value={text}
-            onChange={(event) => setText(event.target.value)}
+            onChange={(event) => {
+              setText(event.target.value);
+              setActiveMatchIndex(0);
+            }}
             rows={6}
             spellCheck={false}
             autoCapitalize="off"
@@ -125,27 +141,60 @@ export function RegexTesterClient() {
         </div>
       </div>
 
+      <div className="card overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--hairline)] bg-[var(--bg-raise)] px-3 py-2">
+          <h2 className={headingClass}>
+            {found?.truncated
+              ? "More than 1,000 matches, showing the first 1,000"
+              : `${matchCount.toLocaleString("en-US")} ${matchCount === 1 ? "match" : "matches"}`}
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={matchCount === 0}
+              onClick={() => setActiveMatchIndex((activeIndex + matchCount - 1) % matchCount)}
+            >
+              Previous match
+            </button>
+            <span role="status" aria-label="Match navigation" aria-live="polite" aria-atomic="true" className="text-sm text-[var(--fg-muted)]">
+              {matchCount > 0 ? `Match ${activeIndex + 1} of ${matchCount}` : pending ? "Updating matches…" : "No matches"}
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={matchCount === 0}
+              onClick={() => setActiveMatchIndex((activeIndex + 1) % matchCount)}
+            >
+              Next match
+            </button>
+          </div>
+        </div>
+        <pre aria-label="Highlighted matches" className="max-h-80 overflow-y-auto p-4 sm:p-5 whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-[var(--fg)]">
+          {segments.map((segment, i) =>
+            segment.matchIndex !== null ? (
+              <mark
+                key={i}
+                ref={segment.matchIndex === activeIndex ? activeMatchRef : undefined}
+                aria-label={`Match ${segment.matchIndex + 1}${segment.text === "" ? " (empty)" : ""}`}
+                aria-current={segment.matchIndex === activeIndex ? "true" : undefined}
+                className={segment.text === "" ? "inline-block h-[1em] border-l-2 border-[var(--fg-muted)] align-text-bottom" : undefined}
+                style={{
+                  color: "inherit",
+                  backgroundColor: "color-mix(in srgb, var(--cyan) 25%, transparent)",
+                  outline: segment.matchIndex === activeIndex ? "2px solid var(--cyan)" : undefined,
+                  outlineOffset: "2px",
+                }}
+              >{segment.text}</mark>
+            ) : (
+              segment.text
+            )
+          )}
+        </pre>
+      </div>
+
       {found && (
         <>
-          <div className="card overflow-hidden">
-            <div className="border-b border-[var(--hairline)] bg-[var(--bg-raise)] px-3 py-2">
-              <h2 className={headingClass}>
-                {found.truncated
-                  ? "More than 1,000 matches, showing the first 1,000"
-                  : `${found.matches.length.toLocaleString("en-US")} ${found.matches.length === 1 ? "match" : "matches"}`}
-              </h2>
-            </div>
-            <pre className="p-4 sm:p-5 whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-[var(--fg)]">
-              {segments.map((segment, i) =>
-                segment.match ? (
-                  <mark key={i} style={{ color: "inherit", backgroundColor: "color-mix(in srgb, var(--cyan) 25%, transparent)" }}>{segment.text}</mark>
-                ) : (
-                  segment.text
-                )
-              )}
-            </pre>
-          </div>
-
           {found.matches.length > 0 && (
             <div className="card overflow-hidden">
               <div className="border-b border-[var(--hairline)] bg-[var(--bg-raise)] px-3 py-2">
