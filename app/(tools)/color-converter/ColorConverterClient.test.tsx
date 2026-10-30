@@ -2,10 +2,33 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ColorConverterClient } from "./ColorConverterClient";
 import { contrastRatio, parseColor } from "@/lib/color-utils";
+import { useRegisterCommands } from "@/components/shared/CommandPalette";
+
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 
 vi.mock("@/components/shared/CommandPalette", () => ({ useRegisterCommands: vi.fn() }));
-vi.mock("@/components/shared/Toast", () => ({ useToast: () => ({ push: vi.fn() }) }));
+vi.mock("@/components/shared/Toast", () => ({ useToast: () => ({ push }) }));
 afterEach(cleanup);
+
+describe("palette clipboard feedback", () => {
+  it.each(["hex", "rgb", "hsl"])("reports rejected %s copies", async (format) => {
+    push.mockClear();
+    const writeText = vi.fn().mockRejectedValue(new Error("Clipboard denied"));
+    const clipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    try {
+      render(<ColorConverterClient />);
+      const commands = vi.mocked(useRegisterCommands).mock.calls.at(-1)![1];
+      const command = commands.find(({ id }) => id === `color:copy-${format}`)!;
+      await expect(command.run()).resolves.toBeUndefined();
+      expect(writeText).toHaveBeenCalledOnce();
+      expect(push).toHaveBeenCalledExactlyOnceWith("Could not copy — clipboard blocked", "error");
+    } finally {
+      if (clipboard) Object.defineProperty(navigator, "clipboard", clipboard);
+      else Reflect.deleteProperty(navigator, "clipboard");
+    }
+  });
+});
 
 function failingPair() {
   render(<ColorConverterClient />);

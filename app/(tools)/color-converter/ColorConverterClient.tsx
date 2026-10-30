@@ -162,8 +162,12 @@ export function ColorConverterClient() {
         title: "Copy current color as HEX",
         run: async () => {
           if (hexValue) {
-            await navigator.clipboard.writeText(hexValue);
-            push("Copied HEX to clipboard", "success");
+            try {
+              await navigator.clipboard.writeText(hexValue);
+              push("Copied HEX to clipboard", "success");
+            } catch {
+              push("Could not copy — clipboard blocked", "error");
+            }
           }
         },
       },
@@ -173,8 +177,12 @@ export function ColorConverterClient() {
         title: "Copy current color as RGB",
         run: async () => {
           if (rgbValue) {
-            await navigator.clipboard.writeText(rgbValue);
-            push("Copied RGB to clipboard", "success");
+            try {
+              await navigator.clipboard.writeText(rgbValue);
+              push("Copied RGB to clipboard", "success");
+            } catch {
+              push("Could not copy — clipboard blocked", "error");
+            }
           }
         },
       },
@@ -184,8 +192,12 @@ export function ColorConverterClient() {
         title: "Copy current color as HSL",
         run: async () => {
           if (hslValue) {
-            await navigator.clipboard.writeText(hslValue);
-            push("Copied HSL to clipboard", "success");
+            try {
+              await navigator.clipboard.writeText(hslValue);
+              push("Copied HSL to clipboard", "success");
+            } catch {
+              push("Could not copy — clipboard blocked", "error");
+            }
           }
         },
       },
