@@ -100,3 +100,15 @@ describe("accessible foreground suggestions", () => {
     expect(screen.getByRole("status")).toHaveTextContent(value === "invalid" ? "Enter valid" : "require opaque");
   });
 });
+
+describe("contrast color pickers", () => {
+  it("keep the alpha of the current colors", () => {
+    const { foreground, background } = failingPair();
+    fireEvent.change(foreground, { target: { value: "#00000080" } });
+    fireEvent.change(background, { target: { value: "#ffffff80" } });
+    fireEvent.change(screen.getByLabelText("Foreground color picker"), { target: { value: "#ff0000" } });
+    fireEvent.change(screen.getByLabelText("Background color picker"), { target: { value: "#0000ff" } });
+    expect(foreground).toHaveValue("#ff000080");
+    expect(background).toHaveValue("#0000ff80");
+  });
+});
