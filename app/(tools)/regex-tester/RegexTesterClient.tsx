@@ -28,6 +28,7 @@ export function RegexTesterClient() {
   const [replacement, setReplacement] = useState("$3/$2/$<year>");
   const [input, setInput] = useState({ pattern, flags, text, replacement });
   const [activeMatchIndex, setActiveMatchIndex] = useState(0);
+  const [scrollRequest, setScrollRequest] = useState(0);
   const activeMatchRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -40,13 +41,14 @@ export function RegexTesterClient() {
   const regex = compiled.ok && input.pattern !== "" && !tooLong ? compiled.regex : null;
   const results = useMemo(() => (regex ? findMatches(regex, input.text) : null), [regex, input.text]);
   const pending = pattern !== input.pattern || flags !== input.flags || text !== input.text;
-  const found = pending ? null : results;
+  const found = results;
   const matchCount = found?.matches.length ?? 0;
-  const activeIndex = matchCount > 0 ? Math.min(activeMatchIndex, matchCount - 1) : -1;
+  const canNavigate = !pending && matchCount > 0;
+  const activeIndex = canNavigate ? Math.min(activeMatchIndex, matchCount - 1) : -1;
 
   useEffect(() => {
-    activeMatchRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [found, activeIndex]);
+    if (scrollRequest > 0) activeMatchRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [scrollRequest]);
   const replaced = useMemo(
     () => (regex ? replacePreview(regex, input.text, input.replacement) : ""),
     [regex, input.text, input.replacement]
@@ -68,6 +70,12 @@ export function RegexTesterClient() {
     setFlags((current) =>
       FLAGS.map((f) => f.flag).filter((f) => (f === flag ? !current.includes(f) : current.includes(f))).join("")
     );
+  }
+
+  function goToMatch(step: number) {
+    if (!canNavigate) return;
+    setActiveMatchIndex((activeIndex + step + matchCount) % matchCount);
+    setScrollRequest((request) => request + 1);
   }
 
   return (
@@ -152,19 +160,19 @@ export function RegexTesterClient() {
             <button
               type="button"
               className="btn btn-ghost"
-              disabled={matchCount === 0}
-              onClick={() => setActiveMatchIndex((activeIndex + matchCount - 1) % matchCount)}
+              disabled={!canNavigate}
+              onClick={() => goToMatch(-1)}
             >
               Previous match
             </button>
             <span role="status" aria-label="Match navigation" aria-live="polite" aria-atomic="true" className="text-sm text-[var(--fg-muted)]">
-              {matchCount > 0 ? `Match ${activeIndex + 1} of ${matchCount}` : pending ? "Updating matches…" : "No matches"}
+              {pending ? "Updating matches…" : canNavigate ? `Match ${activeIndex + 1} of ${matchCount}` : "No matches"}
             </span>
             <button
               type="button"
               className="btn btn-ghost"
-              disabled={matchCount === 0}
-              onClick={() => setActiveMatchIndex((activeIndex + 1) % matchCount)}
+              disabled={!canNavigate}
+              onClick={() => goToMatch(1)}
             >
               Next match
             </button>

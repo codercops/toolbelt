@@ -107,12 +107,16 @@ describe("RegexTesterClient match navigation", () => {
   });
 
   it("keeps a single match selected in both directions", () => {
+    const scroll = vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(() => {});
     renderClient();
     changeInput("Pattern", "^Released");
+    expect(scroll).not.toHaveBeenCalled();
     fireEvent.click(next());
     fireEvent.click(previous());
     expect(status()).toHaveTextContent("Match 1 of 1");
     expect(screen.getByLabelText("Match 1")).toHaveAttribute("aria-current", "true");
+    expect(scroll).toHaveBeenCalledTimes(2);
+    expect(scroll.mock.contexts.at(-1)).toBe(screen.getByLabelText("Match 1"));
   });
 
   it.each(["no matches", "empty pattern", "overlong text"])("disables navigation for %s", (scenario) => {
@@ -194,17 +198,20 @@ describe("RegexTesterClient match navigation", () => {
 
   it("navigates only the 1,000 displayed matches when results are truncated", () => {
     renderClient();
+    const position = status();
+    const previousButton = previous();
+    const nextButton = next();
     fireEvent.change(screen.getByLabelText("Pattern"), { target: { value: "a" } });
     fireEvent.change(screen.getByLabelText("Test text"), { target: { value: "a".repeat(1001) } });
     settleInput();
-    expect(status()).toHaveTextContent("Match 1 of 1000");
+    expect(position).toHaveTextContent("Match 1 of 1000");
     expect(screen.getByRole("heading", { name: "More than 1,000 matches, showing the first 1,000" })).toBeInTheDocument();
-    fireEvent.click(previous());
-    expect(status()).toHaveTextContent("Match 1000 of 1000");
+    fireEvent.click(previousButton);
+    expect(position).toHaveTextContent("Match 1000 of 1000");
     expect(screen.getByLabelText("Match 1000")).toHaveAttribute("aria-current", "true");
     expect(screen.queryByLabelText("Match 1001")).not.toBeInTheDocument();
-    fireEvent.click(next());
-    expect(status()).toHaveTextContent("Match 1 of 1000");
+    fireEvent.click(nextButton);
+    expect(position).toHaveTextContent("Match 1 of 1000");
   });
 
   it("scrolls the active highlight without stealing focus or reacting to replacement edits", () => {
@@ -226,5 +233,52 @@ describe("RegexTesterClient match navigation", () => {
     changeInput("Replace with", "updated");
     expect(status()).toHaveTextContent("Match 2 of 2");
     expect(scroll).not.toHaveBeenCalled();
+  });
+
+  it.each(["Pattern", "Test text", "flags"])("scrolls only on navigation, not on mount or a %s edit", (field) => {
+    const scroll = vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(() => {});
+    renderClient();
+    settleInput();
+    expect(scroll).not.toHaveBeenCalled();
+
+    fireEvent.click(next());
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.contexts.at(-1)).toBe(screen.getByLabelText("Match 2"));
+    if (field === "flags") fireEvent.click(screen.getByRole("button", { name: "Ignore case" }));
+    else fireEvent.change(screen.getByLabelText(field), {
+      target: { value: field === "Pattern" ? "\\d{4}" : "2027-01-01 and 2028-02-02" },
+    });
+    expect(scroll).toHaveBeenCalledTimes(1);
+    settleInput();
+    expect(status()).toHaveTextContent("Match 1 of 2");
+    expect(scroll).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(previous());
+    expect(scroll).toHaveBeenCalledTimes(2);
+    expect(scroll.mock.contexts.at(-1)).toBe(screen.getByLabelText("Match 2"));
+  });
+
+  it.each(["Pattern", "Test text"])("keeps match details and replacement mounted while %s is pending", (field) => {
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Pattern"), { target: { value: "a" } });
+    changeInput("Test text", "a a a");
+    const details = screen.getByRole("table");
+    const replacement = screen.getByLabelText("Replace with");
+
+    fireEvent.change(screen.getByLabelText(field), {
+      target: { value: field === "Pattern" ? "a+" : "a a a a" },
+    });
+    expect(status()).toHaveTextContent("Updating matches");
+    expect(next()).toBeDisabled();
+    expect(previous()).toBeDisabled();
+    expect(document.querySelector('[aria-current="true"]')).toBeNull();
+    expect(screen.getByRole("table")).toBe(details);
+    expect(screen.getByLabelText("Replace with")).toBe(replacement);
+    expect(screen.getByRole("heading", { name: "3 matches" })).toBeInTheDocument();
+
+    settleInput();
+    expect(screen.getByRole("table")).toBe(details);
+    expect(screen.getByLabelText("Replace with")).toBe(replacement);
+    expect(status()).toHaveTextContent(field === "Pattern" ? "Match 1 of 3" : "Match 1 of 4");
   });
 });
