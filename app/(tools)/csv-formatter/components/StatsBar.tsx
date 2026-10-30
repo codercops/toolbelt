@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBytes } from "@/lib/base64-utils";
 import { byteLength, delimiterLabel, lineEndingLabel, DELIMITERS, type ParsedCsv } from "@/lib/csv-utils";
 
 export function StatsBar({ parsed, input }: { parsed: ParsedCsv; input: string }) {
@@ -42,10 +43,4 @@ function StatCell({ label, value, sub }: { label: string; value: string; sub?: s
       )}
     </div>
   );
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }

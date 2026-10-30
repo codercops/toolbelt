@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatBytes } from "@/lib/base64-utils";
 import { computeStats, gzipSize } from "@/lib/json-utils";
 
 export function StatsBar({ input, output }: { input: string; output: string }) {
@@ -26,9 +27,9 @@ export function StatsBar({ input, output }: { input: string; output: string }) {
   return (
     <div className="card p-4 animate-fade-in">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-        <StatCell label="Size" value={fmt(stats.bytes)} />
-        <StatCell label="Minified" value={`${fmt(stats.bytesMin)}`} sub={`-${savedPct}%`} />
-        <StatCell label="Gzipped" value={gzip === null ? "…" : fmt(gzip)} />
+        <StatCell label="Size" value={formatBytes(stats.bytes)} />
+        <StatCell label="Minified" value={`${formatBytes(stats.bytesMin)}`} sub={`-${savedPct}%`} />
+        <StatCell label="Gzipped" value={gzip === null ? "…" : formatBytes(gzip)} />
         <StatCell label="Depth" value={String(stats.depth)} />
         <StatCell label="Keys" value={String(stats.totalKeys)} sub={`${stats.objects} obj · ${stats.arrays} arr`} />
         <StatCell
@@ -55,10 +56,4 @@ function StatCell({ label, value, sub }: { label: string; value: string; sub?: s
       )}
     </div>
   );
-}
-
-function fmt(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
 }
