@@ -104,6 +104,25 @@ describe("JsonFormatterClient", () => {
     });
   });
 
+  describe("JSON5 mode", () => {
+    it("minifies and sorts JSON5 input", async () => {
+      renderClient();
+
+      toggleJson5();
+      typeInput("{b: 2, a: 1,}");
+      fireEvent.click(screen.getByRole("button", { name: "Minify" }));
+
+      await waitFor(() => expect(document.querySelector(".whitespace-pre")).toHaveTextContent('{"b":2,"a":1}'));
+      expect(screen.queryByText("Invalid JSON")).not.toBeInTheDocument();
+
+      typeInput("{b: 2, a: 1,}");
+      fireEvent.click(screen.getByRole("button", { name: "Sort keys" }));
+
+      await waitFor(() => expect(inputEl().value).toBe('{\n  "a": 1,\n  "b": 2\n}'));
+      expect(screen.queryByText("Invalid JSON")).not.toBeInTheDocument();
+    });
+  });
+
   describe("Fetch from URL", () => {
     beforeEach(() => {
       vi.stubGlobal("fetch", vi.fn());
