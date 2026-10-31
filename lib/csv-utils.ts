@@ -551,8 +551,24 @@ export function csvToTypeScript(header: string[], typeName = "Row"): string {
   return `export interface ${name} {\n${fields.join("\n")}\n}`;
 }
 
+// Control characters, the C1 range, the Unicode line and paragraph separators and the noncharacters FFFE and FFFF
+// (tab, \n and \r have their own escapes). A raw one in a double-quoted scalar is invalid YAML: js-yaml won't load it.
+const YAML_CONTROL_CHARS = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f\u2028\u2029\ufffe\uffff]/g;
+
 function yamlString(value: string): string {
-  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r")}"`;
+  const escaped = value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")
+    .replace(YAML_CONTROL_CHARS, (char) => {
+      const code = char.charCodeAt(0);
+      return code < 0x100
+        ? `\\x${code.toString(16).toUpperCase().padStart(2, "0")}`
+        : `\\u${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    });
+  return `"${escaped}"`;
 }
 
 function yamlKey(key: string): string {

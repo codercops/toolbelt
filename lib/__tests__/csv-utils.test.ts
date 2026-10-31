@@ -217,6 +217,55 @@ describe("csvToYaml", () => {
     expect(csvToYaml(["note"], [['a "b" \\ c\nd']])).toBe('- note: "a \\"b\\" \\\\ c\\nd"');
   });
 
+  // A raw control character makes the document invalid YAML, and js-yaml refuses to load it. Escaped the way the
+  // JSON formatter's YAML conversion does (#234).
+  describe("control characters", () => {
+    const yamlOf = (value: string) => csvToYaml(["note"], [[value]]);
+
+    it.each([
+      ["NUL", "\u0000", "\\x00"],
+      ["BEL", "\u0007", "\\x07"],
+      ["backspace", "\u0008", "\\x08"],
+      ["vertical tab", "\u000b", "\\x0B"],
+      ["form feed", "\u000c", "\\x0C"],
+      ["shift out", "\u000e", "\\x0E"],
+      ["ESC", "\u001b", "\\x1B"],
+      ["unit separator", "\u001f", "\\x1F"],
+      ["DEL", "\u007f", "\\x7F"],
+      ["next line", "\u0085", "\\x85"],
+      ["C1 control", "\u009f", "\\x9F"],
+      ["line separator", "\u2028", "\\u2028"],
+      ["paragraph separator", "\u2029", "\\u2029"],
+      ["noncharacter FFFE", "\ufffe", "\\uFFFE"],
+      ["noncharacter FFFF", "\uffff", "\\uFFFF"],
+    ])("writes %s as an escape", (_name, character, escape) => {
+      expect(yamlOf(`a${character}b`)).toBe(`- note: "a${escape}b"`);
+    });
+
+    it("writes a tab as \\t", () => {
+      expect(yamlOf("a\tb")).toBe('- note: "a\\tb"');
+    });
+
+    it("keeps the escapes it already had", () => {
+      expect(yamlOf('q"\\\n\r')).toBe('- note: "q\\"\\\\\\n\\r"');
+    });
+
+    it("leaves no raw control character anywhere in the output", () => {
+      const every = Array.from({ length: 0xa0 }, (_, code) => String.fromCharCode(code)).join("");
+      const output = csvToYaml([`k${every}`], [[every, `x${every}y`]]);
+      // Only the line breaks between the lines of the document are left.
+      expect(output.replace(/\n/g, "")).not.toMatch(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/);
+    });
+
+    it("escapes them in a column name too", () => {
+      expect(csvToYaml(["a\u0007b"], [["x"]])).toBe('- "a\\x07b": "x"');
+    });
+
+    it("leaves other text, accents and emoji as they were", () => {
+      expect(yamlOf("café \u00e9 \u{1f600} \u00a0")).toBe('- note: "café \u00e9 \u{1f600} \u00a0"');
+    });
+  });
+
   it("quotes non-identifier keys", () => {
     expect(csvToYaml(["first name"], [["Ada"]])).toBe('- "first name": "Ada"');
   });
