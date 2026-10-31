@@ -1,6 +1,6 @@
 {
   "name": "toolbelt",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "description": "A developer's toolbelt: fast, privacy-first browser tools — JSON formatter, JWT decoder, Base64, URL encoder, invoice generator, unicode inspector. By CODERCOPS.",
   "license": "MIT",
