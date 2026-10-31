@@ -211,6 +211,10 @@ Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) and the [Cod
 
 Found a vulnerability? Please report it privately per [SECURITY.md](./SECURITY.md) rather than opening a public issue.
 
+## Maintainers and funding
+
+toolbelt is maintained by CODERCOPS together with contributors who have Triage access. [GOVERNANCE.md](https://github.com/codercops/.github/blob/main/GOVERNANCE.md) lists who they are and how to become one. The project is free and MIT licensed, and CODERCOPS doesn't sell it or a hosted version of it. If it's useful to you, you can [sponsor the maintainers](https://github.com/sponsors/anurag629). The money pays for review time and hosting.
+
 ## License
 
 MIT, see [LICENSE](./LICENSE). The bundled Noto Sans font subsets are under the SIL Open Font License 1.1 ([public/fonts/OFL.txt](public/fonts/OFL.txt)).
