@@ -62,7 +62,9 @@ const INVISIBLE: Record<number, InvisibleEntry> = {
   0x206d: { label: "ACTIVATE ARABIC FORM SHAPING", intentional: true },
   0x206e: { label: "NATIONAL DIGIT SHAPES", intentional: true },
   0x206f: { label: "NOMINAL DIGIT SHAPES", intentional: true },
+  0x2800: { label: "BRAILLE PATTERN BLANK" },
   0x3000: { label: "IDEOGRAPHIC SPACE" },
+  0x3164: { label: "HANGUL FILLER", intentional: true },
   0xfeff: { label: "BYTE ORDER MARK (BOM)" },
   0xffa0: { label: "HALFWIDTH HANGUL FILLER", intentional: true },
   0x1d159: { label: "MUSICAL SYMBOL NULL NOTEHEAD" },
@@ -199,7 +201,7 @@ function getInvisibleInfo(cp: number, char: string): { label: string | null; int
   }
   const isControl =
     (cp <= 0x1f && cp !== 0x09 && cp !== 0x0a && cp !== 0x0d) ||
-    (cp >= 0x80 && cp <= 0x9f);
+    (cp >= 0x7f && cp <= 0x9f);
   if (isControl) {
     return { label: `CONTROL (U+${hex4(cp)})`, intentional: false };
   }

@@ -110,6 +110,49 @@ describe("inspectUnicode", () => {
     expect(inspectUnicode("\ufeff").rows[0].invisibleLabel).toBe("BYTE ORDER MARK (BOM)");
   });
 
+  it("labels DELETE as a control character, like the other controls", () => {
+    expect(inspectUnicode("\u007f").rows[0]).toMatchObject({
+      invisibleLabel: "CONTROL (U+007F)",
+      intentional: false,
+    });
+    expect(inspectUnicode("a\u007fb").rows.map((row) => row.invisibleLabel)).toEqual([null, "CONTROL (U+007F)", null]);
+  });
+
+  it("labels the Hangul filler and the blank Braille pattern, which show nothing on screen", () => {
+    expect(inspectUnicode("\u3164").rows[0]).toMatchObject({
+      invisibleLabel: "HANGUL FILLER",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u2800").rows[0]).toMatchObject({
+      invisibleLabel: "BRAILLE PATTERN BLANK",
+      intentional: false,
+    });
+  });
+
+  it("keeps the other Hangul fillers as they were", () => {
+    expect(inspectUnicode("\u115f").rows[0]).toMatchObject({ invisibleLabel: "HANGUL CHOSEONG FILLER", intentional: true });
+    expect(inspectUnicode("\u1160").rows[0]).toMatchObject({ invisibleLabel: "HANGUL JUNGSEONG FILLER", intentional: true });
+    expect(inspectUnicode("\uffa0").rows[0]).toMatchObject({ invisibleLabel: "HALFWIDTH HANGUL FILLER", intentional: true });
+  });
+
+  it("does not label the characters next to them, which are visible", () => {
+    for (const visible of ["~", "\u00a1", "\u2801", "\u28ff", "\u3163", "\u3165", "\u3001", "\u4e2d", "a", "0"]) {
+      expect(inspectUnicode(visible).rows[0].invisibleLabel, visible.codePointAt(0)?.toString(16)).toBeNull();
+    }
+  });
+
+  it("labels every control, space separator and format character in the BMP", () => {
+    const unlabelled: string[] = [];
+    for (let code = 0; code <= 0xffff; code++) {
+      if (code >= 0xd800 && code <= 0xdfff) continue;
+      const char = String.fromCharCode(code);
+      if (/[\p{Cc}\p{Zs}\p{Cf}]/u.test(char) && inspectUnicode(char).rows[0].invisibleLabel === null) {
+        unlabelled.push(`U+${code.toString(16).toUpperCase().padStart(4, "0")}`);
+      }
+    }
+    expect(unlabelled).toEqual([]);
+  });
+
   it("falls back to category labels for unlisted Zs or Cf characters", () => {
     expect(inspectUnicode("\u0600").rows[0]).toMatchObject({
       invisibleLabel: "FORMAT CHARACTER",
