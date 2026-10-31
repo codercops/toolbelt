@@ -70,6 +70,16 @@ export const MAX_REPORTED_ROW_ERRORS = 25;
 const BOM = "\uFEFF";
 const PLAIN_NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+// Words TypeScript will not take as an interface name: reserved words, those reserved in strict mode (a module is
+// strict), `await`, and the names of the built-in types. A property can still be called any of them.
+const RESERVED_TYPE_NAMES = new Set(
+  (
+    "break case catch class const continue debugger default delete do else enum export extends false finally for " +
+    "function if import in instanceof new null return super switch this throw true try typeof var void while with " +
+    "implements interface let package private protected public static yield await " +
+    "any unknown never number bigint boolean string symbol object undefined"
+  ).split(" "),
+);
 const YAML_KEY_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
 // Plain YAML keys that a 1.1 parser reads as null or a boolean. They must be
 // quoted, or `null: x` becomes `{None: "x"}` and `on: y` becomes `{True: "y"}`.
@@ -542,7 +552,7 @@ function tsProperty(name: string): string {
  */
 export function csvToTypeScript(header: string[], typeName = "Row"): string {
   const keys = uniqueHeaders(header);
-  const name = IDENTIFIER_RE.test(typeName) ? typeName : "Row";
+  const name = IDENTIFIER_RE.test(typeName) && !RESERVED_TYPE_NAMES.has(typeName) ? typeName : "Row";
 
   if (keys.length === 0) return `export interface ${name} {}`;
 
