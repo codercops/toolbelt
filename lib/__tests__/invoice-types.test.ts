@@ -152,6 +152,32 @@ describe("nextInvoiceNumber", () => {
     expect(nextInvoiceNumber([base("1001  "), base("draft"), base("")])).toBe("1002");
   });
 
+  // A JavaScript number holds 15 digits exactly, so these used to come back lower than the number they follow.
+  it.each([
+    ["20261031143012345", "20261031143012346"],
+    ["INV-9007199254740993", "INV-9007199254740994"],
+    ["INV-9007199254740992", "INV-9007199254740993"],
+    ["INV-99999999999999999999", "INV-100000000000000000000"],
+    ["INV-9999999999999999999999", "INV-10000000000000000000000"],
+    ["INV-0000000000000000000007", "INV-0000000000000000000008"],
+    ["INV-12345678901234567890123456789", "INV-12345678901234567890123456790"],
+    ["2026-00000000000000000099", "2026-00000000000000000100"],
+  ])("counts on from %s without losing digits, giving %s", (highest, expected) => {
+    expect(nextInvoiceNumber([base(highest)])).toBe(expected);
+  });
+
+  it("picks the highest of long numbers that a JavaScript number cannot tell apart", () => {
+    expect(nextInvoiceNumber([base("INV-9007199254740993"), base("INV-9007199254740992")])).toBe("INV-9007199254740994");
+    expect(nextInvoiceNumber([base("INV-9007199254740992"), base("INV-9007199254740993")])).toBe("INV-9007199254740994");
+    expect(nextInvoiceNumber([base("INV-100000000000000000001"), base("INV-100000000000000000002"), base("INV-099999999999999999999")])).toBe(
+      "INV-100000000000000000003",
+    );
+  });
+
+  it("never gives a number that is not made of digits", () => {
+    expect(nextInvoiceNumber([base(`INV-${"9".repeat(40)}`)])).toBe(`INV-1${"0".repeat(40)}`);
+  });
+
   it("starts at the fallback prefix when no invoice has a number", () => {
     expect(nextInvoiceNumber([base("draft"), base("")])).toBe("INV0001");
     expect(nextInvoiceNumber([], "BILL", 6)).toBe("BILL000001");
