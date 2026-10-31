@@ -1,3 +1,4 @@
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import {
   csvToJson,
@@ -205,6 +206,77 @@ describe("csvToTypeScript", () => {
 
   it("handles no columns", () => {
     expect(csvToTypeScript([])).toBe("export interface Row {}");
+  });
+
+  describe("the type name", () => {
+    // Words TypeScript will not take as the name of an interface: reserved words, the ones reserved in strict mode
+    // (which a module always is), `await`, and the names of the built-in types.
+    const reserved = [
+      "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum",
+      "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "new", "null",
+      "return", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with",
+      "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield", "await",
+      "any", "unknown", "never", "number", "bigint", "boolean", "string", "symbol", "object", "undefined",
+    ];
+    // Words that look like they might be, and are fine.
+    const allowed = [
+      "Class", "Default", "String", "Number", "Object", "Array", "Date", "Row", "Person", "type", "of", "as", "async",
+      "from", "get", "set", "constructor", "declare", "module", "namespace", "readonly", "keyof", "abstract", "is",
+      "global", "require", "infer", "asserts", "arguments", "eval", "_", "$", "class_", "$class", "classy",
+    ];
+
+    /** The diagnostics the TypeScript compiler gives each source text, all checked in one program. */
+    function diagnose(texts: string[]): string[][] {
+      const files = new Map(texts.map((text, index) => [`/probe/f${index}.ts`, text]));
+      const options: ts.CompilerOptions = { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ESNext };
+      const host = ts.createCompilerHost(options);
+      const getSourceFile = host.getSourceFile.bind(host);
+      host.getSourceFile = (name, languageVersion, ...rest) =>
+        files.has(name) ? ts.createSourceFile(name, files.get(name) as string, languageVersion) : getSourceFile(name, languageVersion, ...rest);
+      host.fileExists = (name) => files.has(name) || ts.sys.fileExists(name);
+      host.readFile = (name) => files.get(name) ?? ts.sys.readFile(name);
+      const program = ts.createProgram([...files.keys()], options, host);
+      return [...files.keys()].map((name) => {
+        const file = program.getSourceFile(name) as ts.SourceFile;
+        return [...program.getSyntacticDiagnostics(file), ...program.getSemanticDiagnostics(file)].map((d) => ts.flattenDiagnosticMessageText(d.messageText, " "));
+      });
+    }
+
+    it.each(reserved)("falls back to Row for the reserved name %s", (name) => {
+      expect(csvToTypeScript(["a"], name)).toBe("export interface Row {\n  a: string;\n}");
+    });
+
+    it("keeps a name that only looks reserved, or differs in case", () => {
+      for (const name of allowed) expect(csvToTypeScript(["a"], name), name).toBe(`export interface ${name} {\n  a: string;\n}`);
+    });
+
+    it("still falls back for a name that is not an identifier", () => {
+      for (const name of ["", " ", "my type", "1st", "a-b", "a.b", "é", "class Row"]) {
+        expect(csvToTypeScript(["a"], name), JSON.stringify(name)).toBe("export interface Row {\n  a: string;\n}");
+      }
+    });
+
+    it("uses the default name for no name at all", () => {
+      expect(csvToTypeScript(["a"])).toBe("export interface Row {\n  a: string;\n}");
+    });
+
+    it("writes TypeScript that compiles, for every name here, and the list is what the compiler rejects", () => {
+      const names = [...reserved, ...allowed];
+      const outputs = names.map((name) => csvToTypeScript(["a", "class", "first name"], name));
+      const written = diagnose(outputs);
+      expect(written.map((found, index) => (found.length ? `${names[index]}: ${found[0]}` : null)).filter(Boolean)).toEqual([]);
+
+      // The same names used as they were typed: the compiler rejects exactly the reserved ones.
+      const raw = diagnose(names.map((name) => `export interface ${name} {\n  a: string;\n}\n`));
+      const rejected = names.filter((_, index) => raw[index].length > 0);
+      expect(rejected.sort()).toEqual([...reserved].sort());
+    });
+
+    it("leaves property names alone, since a reserved word is fine as a property", () => {
+      expect(csvToTypeScript(["class", "default", "string"], "Row")).toBe(
+        "export interface Row {\n  class: string;\n  default: string;\n  string: string;\n}",
+      );
+    });
   });
 });
 
