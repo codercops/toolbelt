@@ -121,6 +121,17 @@ describe("JsonFormatterClient", () => {
       await waitFor(() => expect(inputEl().value).toBe('{\n  "a": 1,\n  "b": 2\n}'));
       expect(screen.queryByText("Invalid JSON")).not.toBeInTheDocument();
     });
+
+    it("validates JSON5 input", async () => {
+      renderClient();
+
+      toggleJson5();
+      typeInput("{b: 2, a: 1,}");
+      fireEvent.click(screen.getByRole("button", { name: "Validate" }));
+
+      expect(await screen.findByText("Valid JSON ✓")).toBeInTheDocument();
+      expect(screen.queryByText("Invalid JSON")).not.toBeInTheDocument();
+    });
   });
 
   describe("Fetch from URL", () => {

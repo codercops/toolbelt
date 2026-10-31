@@ -120,7 +120,8 @@ export function JsonFormatterClient() {
   }, [input, strictInput, push, history]);
 
   const doValidate = useCallback(() => {
-    const r = validate(input);
+    const strict = strictInput();
+    const r = strict.ok ? validate(strict.value) : strict;
     if (r.ok) {
       setError(null);
       push("Valid JSON ✓", "success");
@@ -129,7 +130,7 @@ export function JsonFormatterClient() {
       setErrorShake((n) => n + 1);
       push("Invalid JSON", "error");
     }
-  }, [input, push]);
+  }, [strictInput, push]);
 
   const doSort = useCallback(() => {
     const strict = strictInput();
