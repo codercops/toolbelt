@@ -98,8 +98,15 @@ export function JsonFormatterClient() {
     [input, indent, json5, push, history]
   );
 
+  // In JSON5 mode, read the input the way Format does before working on it.
+  const strictInput = useCallback(() => {
+    if (!json5) return { ok: true as const, value: input };
+    return parseJson5Compat(input, indent);
+  }, [input, indent, json5]);
+
   const doMinify = useCallback(() => {
-    const r = minify(input);
+    const strict = strictInput();
+    const r = strict.ok ? minify(strict.value) : strict;
     if (r.ok) {
       setOutput(r.value);
       setError(null);
@@ -110,10 +117,11 @@ export function JsonFormatterClient() {
       setErrorShake((n) => n + 1);
       push("Invalid JSON", "error");
     }
-  }, [input, push, history]);
+  }, [input, strictInput, push, history]);
 
   const doValidate = useCallback(() => {
-    const r = validate(input);
+    const strict = strictInput();
+    const r = strict.ok ? validate(strict.value) : strict;
     if (r.ok) {
       setError(null);
       push("Valid JSON ✓", "success");
@@ -122,10 +130,11 @@ export function JsonFormatterClient() {
       setErrorShake((n) => n + 1);
       push("Invalid JSON", "error");
     }
-  }, [input, push]);
+  }, [strictInput, push]);
 
   const doSort = useCallback(() => {
-    const r = sortKeys(input, indent);
+    const strict = strictInput();
+    const r = strict.ok ? sortKeys(strict.value, indent) : strict;
     if (r.ok) {
       setOutput(r.value);
       setInput(r.value);
@@ -136,7 +145,7 @@ export function JsonFormatterClient() {
       setErrorShake((n) => n + 1);
       push("Invalid JSON", "error");
     }
-  }, [input, indent, push]);
+  }, [indent, strictInput, push]);
 
   const handleClear = useCallback(() => {
     setInput("");

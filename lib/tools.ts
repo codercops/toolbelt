@@ -767,6 +767,59 @@ export const TOOLS: Tool[] = [
     cta: { headline: "Need a content editor in your product?", sub: "CODERCOPS builds polished developer tools, content workflows, and full-stack applications for startups and businesses.", primaryLabel: "View our work", primaryHref: CTA_PROJECTS, secondaryLabel: "Get a free quote", secondaryHref: CTA_CONTACT },
     sitemapPriority: 0.9,
   },
+  {
+    slug: "unicode-inspector",
+    path: "/unicode-inspector",
+    title: "Unicode & Invisible Character Inspector",
+    tagline: "Unicode",
+    cardDescription:
+      "Break any text into Unicode code points and expose invisible characters. Shows code point, UTF-16 offset, UTF-8 bytes, and NFC/NFD normalization.",
+    features: ["Code points", "Invisible chars", "UTF-8 bytes", "NFC/NFD", "Examples"],
+    accentVar: "--fuchsia",
+    accentHex: "#E879F9",
+    metaTitle: "Unicode & Invisible Character Inspector",
+    metaDescription:
+      "Inspect any string as Unicode code points. See UTF-16 offsets, UTF-8 bytes, invisible characters, and NFC/NFD normalization, all in your browser.",
+    ogTitle: "Unicode & Invisible Character Inspector - CODERCOPS Tools",
+    ogDescription:
+      "Break text into code points, expose invisible characters, and preview NFC/NFD normalization client-side.",
+    heroBreadcrumb: "Code points · Invisible chars · Normalization",
+    heroHeading: "Unicode & Invisible Character Inspector",
+    heroDim: "&",
+    heroDescription:
+      "Paste text to see every Unicode code point, expose invisible characters, and preview NFC/NFD normalization. Everything runs in your browser with zero uploads.",
+    jsonLdName: "Unicode & Invisible Character Inspector",
+    jsonLdDescription:
+      "A browser-based tool to inspect text as Unicode code points, expose invisible and control characters, and preview NFC/NFD normalization.",
+    applicationCategory: "DeveloperApplication",
+    faqs: [
+      {
+        q: "What are invisible characters and why do they matter?",
+        a: "Invisible characters are Unicode code points that have no visible glyph, including zero-width spaces, joiners, non-breaking spaces, and bidirectional controls. They can cause string-comparison failures, unexpected rendering, and security issues, like a right-to-left override that makes text display in a different order than it's stored. This tool makes them visible.",
+      },
+      {
+        q: "What is the difference between NFC and NFD normalization?",
+        a: "NFC (Canonical Decomposition, followed by Canonical Composition) composes characters into their precomposed forms (for example, e + combining accent becomes a single é). NFD decomposes them into base character + combining mark. Two strings that look identical can compare as unequal if one is NFC and the other is NFD.",
+      },
+      {
+        q: "Why do some invisible characters show as intentional?",
+        a: "Joiners (U+200C, U+200D) are required in some scripts like Arabic and Devanagari, and in multi-component emoji. Bidi controls are needed to correctly display mixed-direction text. The tool flags these as intentional so you can distinguish expected characters from unexpected ones.",
+      },
+      {
+        q: "Is my text sent anywhere?",
+        a: "No. All inspection, normalization, and analysis run entirely in your browser. Nothing you type leaves the tab.",
+      },
+    ],
+    cta: {
+      headline: "Need text processing or encoding logic in your app?",
+      sub: "CODERCOPS builds reliable backends, data pipelines, and full-stack applications for startups and enterprises.",
+      primaryLabel: "View our work",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Get in touch",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {

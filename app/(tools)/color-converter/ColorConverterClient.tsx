@@ -21,6 +21,7 @@ import {
   contrastRatio,
   formatContrastRatio,
   wcagRating,
+  type ParseColorResult,
   type RgbaColor,
 } from "@/lib/color-utils";
 import { CopyButton } from "@/components/shared/CopyButton";
@@ -39,6 +40,12 @@ function hex6(color: RgbaColor): string {
   const g = Math.round(Math.max(0, Math.min(255, color.g))).toString(16).padStart(2, "0");
   const b = Math.round(Math.max(0, Math.min(255, color.b))).toString(16).padStart(2, "0");
   return `#${r}${g}${b}`;
+}
+
+// The native picker has no alpha, so keep the current one
+function keepAlpha(hex: string, current: ParseColorResult): string {
+  const next = parseColor(hex);
+  return current.ok && current.value.a < 1 && next.ok ? toHex({ ...next.value, a: current.value.a }) : hex;
 }
 
 export function ColorConverterClient() {
@@ -89,14 +96,7 @@ export function ColorConverterClient() {
 
   // Color picker synchronization
   function handleNativeColorChange(hex: string) {
-    if (parsed.ok && parsed.value.a < 1) {
-      const nextParsed = parseColor(hex);
-      if (nextParsed.ok) {
-        setColorInput(toHex({ ...nextParsed.value, a: parsed.value.a }));
-        return;
-      }
-    }
-    setColorInput(hex);
+    setColorInput(keepAlpha(hex, parsed));
   }
 
   function handleAlphaChange(newAlpha: number) {
@@ -519,7 +519,7 @@ export function ColorConverterClient() {
                 id={fgPickerId}
                 type="color"
                 value={parsedFg.ok ? hex6(parsedFg.value) : "#ffffff"}
-                onChange={(e) => setFgInput(e.target.value)}
+                onChange={(e) => setFgInput(keepAlpha(e.target.value, parsedFg))}
                 className="sr-only peer"
                 aria-label="Foreground color picker"
               />
@@ -564,7 +564,7 @@ export function ColorConverterClient() {
                 id={bgPickerId}
                 type="color"
                 value={parsedBg.ok ? hex6(parsedBg.value) : "#000000"}
-                onChange={(e) => setBgInput(e.target.value)}
+                onChange={(e) => setBgInput(keepAlpha(e.target.value, parsedBg))}
                 className="sr-only peer"
                 aria-label="Background color picker"
               />

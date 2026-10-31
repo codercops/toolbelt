@@ -97,6 +97,12 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
       <a href="https://tools.codercops.com/markdown-preview"><img src="./.github/assets/og-markdown-preview.png" alt="Markdown Live Preview"></a>
     </td>
   </tr>
+  <tr>
+    <td width="50%">
+      <a href="https://tools.codercops.com/unicode-inspector"><img src="./.github/assets/og-unicode-inspector.png" alt="Unicode &amp; Invisible Character Inspector"></a>
+    </td>
+    <td width="50%"></td>
+  </tr>
 </table>
 
 - **[JSON formatter and validator](https://tools.codercops.com/json-formatter).** Format, minify, validate, collapsible tree view, and JSON to CSV / TypeScript / YAML / XML / query string. Large numbers are preserved losslessly.
@@ -113,6 +119,7 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
 - **[CSV/TSV formatter & validator](https://tools.codercops.com/csv-formatter).** Parse, validate, and pretty-print CSV/TSV. Auto-detect delimiters, convert to JSON, TypeScript, YAML, SQL, and fix common formatting issues.
 - **[Regex tester](https://tools.codercops.com/regex-tester).** Test a JavaScript regular expression against sample text with highlighted matches, capture groups, named groups and a replace preview.
 - **[Markdown live preview](https://tools.codercops.com/markdown-preview).** Write GitHub-flavored Markdown with a sanitized live HTML preview, syntax-highlighted code, stats, and export tools.
+- **[Unicode & invisible character inspector](https://tools.codercops.com/unicode-inspector).** Inspect text code points, expose invisible and control characters, view UTF-8 and UTF-16 encodings, and preview NFC/NFD normalization.
 
 ## Why it exists
 
@@ -203,6 +210,10 @@ Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) and the [Cod
 ## Security
 
 Found a vulnerability? Please report it privately per [SECURITY.md](./SECURITY.md) rather than opening a public issue.
+
+## Maintainers and funding
+
+toolbelt is maintained by CODERCOPS together with contributors who have Triage access. [GOVERNANCE.md](https://github.com/codercops/.github/blob/main/GOVERNANCE.md) lists who they are and how to become one. The project is free and MIT licensed, and CODERCOPS doesn't sell it or a hosted version of it. If it's useful to you, you can [sponsor the maintainers](https://github.com/sponsors/anurag629). The money pays for review time and hosting.
 
 ## License
 
