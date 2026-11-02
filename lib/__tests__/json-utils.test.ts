@@ -282,6 +282,16 @@ describe("toXML", () => {
     expect(result.value).toContain("  <tag>x</tag>\n  <tag>y</tag>");
   });
 
+  it("names the items of common plurals the way JSON to TypeScript does", () => {
+    const result = toXML('{"categories":["books"],"addresses":["Paris"],"address":["x"]}');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("  <category>books</category>");
+    expect(result.value).toContain("  <address>Paris</address>");
+    expect(result.value).toContain("  <addressItem>x</addressItem>");
+  });
+
   it("wraps a top-level array of arrays, each sub-array in its own element", () => {
     const result = toXML("[[1,2],[3]]");
     expect(result.ok).toBe(true);

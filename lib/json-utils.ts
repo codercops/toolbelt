@@ -684,9 +684,7 @@ export function toXML(raw: string, rootTag = "root"): Result<string> {
     if (node === null) return `${pad}<${tag} nil="true"/>`;
     if (isLosslessNumber(node)) return `${pad}<${tag}>${node.toString()}</${tag}>`;
     if (Array.isArray(node)) {
-      const itemTag = sanitizeTag(
-        tag.endsWith("s") && tag.length > 1 ? tag.slice(0, -1) : `${tag}Item`
-      );
+      const itemTag = sanitizeTag(singularize(tag));
       if (node.length === 0) return `${pad}<${tag}/>`;
       if (parent === "object") {
         return node
