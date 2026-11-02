@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import DOMPurify from "dompurify";
 import { CopyButton } from "@/components/shared/CopyButton";
-import { createStandaloneHtml, getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
+import { createStandaloneHtml, getMarkdownStats, insertLinePrefix, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
 
 const starter = `# Hello, Markdown!\n\nWrite on the left and see **GitHub-flavored Markdown** rendered here.\n\n- [x] Live preview\n- [ ] Copy sanitized HTML\n\n| Feature | Status |\n| --- | --- |\n| Tables | Ready |\n| Code | \`const answer = 42\` |\n\n~~~ts\nconst greeting = "Hello, world!";\n~~~`;
 const MAX_IMPORT_BYTES = 1024 * 1024;
@@ -42,11 +42,17 @@ export function MarkdownPreviewClient() {
   const { words, chars, lines, readingMinutes } = getMarkdownStats(markdown);
 
   function insert(before: string, after = before, placeholder = "text") {
+    apply((start, end) => insertMarkdown(markdown, start, end, before, after, placeholder));
+  }
+
+  function insertLine(prefix: string, placeholder = "text") {
+    apply((start, end) => insertLinePrefix(markdown, start, end, prefix, placeholder));
+  }
+
+  function apply(edit: (start: number, end: number) => ReturnType<typeof insertMarkdown>) {
     const input = textareaRef.current;
     if (!input) return;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    const result = insertMarkdown(markdown, start, end, before, after, placeholder);
+    const result = edit(input.selectionStart, input.selectionEnd);
     setMarkdown(result.value);
     requestAnimationFrame(() => { input.focus(); input.setSelectionRange(result.selectionStart, result.selectionEnd); });
   }
@@ -101,10 +107,11 @@ export function MarkdownPreviewClient() {
 
   return <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 pb-10 space-y-3">
     <div className="flex flex-wrap items-center gap-2">
-      {[['Bold','**','**'],['Italic','*','*'],['Code','`','`'],['Link','[','](https://example.com)'],['H2','## ','']].map(([label, before, after]) => <button key={label} type="button" className="btn" onClick={() => insert(before, after)}>{label}</button>)}
+      {[['Bold','**','**'],['Italic','*','*'],['Code','`','`'],['Link','[','](https://example.com)']].map(([label, before, after]) => <button key={label} type="button" className="btn" onClick={() => insert(before, after)}>{label}</button>)}
+      <button type="button" className="btn" onClick={() => insertLine("## ")}>H2</button>
       <button type="button" className="btn" onClick={insertImage}>Image</button>
       <button type="button" className="btn" onClick={insertTable}>Table</button>
-      <button type="button" className="btn" onClick={() => insert("- [ ] ", "", "task")}>Task</button>
+      <button type="button" className="btn" onClick={() => insertLine("- [ ] ", "task")}>Task</button>
       <button type="button" className="btn" onClick={() => fileInputRef.current?.click()}>Open .md file</button>
       <input ref={fileInputRef} type="file" accept={IMPORT_ACCEPT} onChange={handleFileChange} className="hidden" aria-label="Open Markdown file" />
       <button type="button" className="btn ml-auto" onClick={() => setDarkPreview((v) => !v)}>{darkPreview ? "Light preview" : "Dark preview"}</button>

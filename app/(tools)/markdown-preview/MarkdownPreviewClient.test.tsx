@@ -68,4 +68,18 @@ describe("MarkdownPreviewClient", () => {
     expect(preview?.querySelector("[onerror]")).toBeNull();
     expect(preview?.querySelector('a[href^="javascript:"]')).toBeNull();
   });
+
+  it.each([
+    ["H2", "My title", "## My title"],
+    ["Task", "Shopping list", "- [ ] Shopping list"],
+  ])("%s turns the line under the cursor into its block", (label, text, expected) => {
+    render(<MarkdownPreviewClient />);
+    const editor = screen.getByLabelText("Markdown input") as HTMLTextAreaElement;
+    fireEvent.change(editor, { target: { value: text } });
+    editor.setSelectionRange(text.length, text.length);
+
+    fireEvent.click(screen.getByRole("button", { name: label }));
+
+    expect(editor).toHaveValue(expected);
+  });
 });
