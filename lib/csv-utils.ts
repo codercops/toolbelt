@@ -308,12 +308,18 @@ function generatedHeader(columns: number): string[] {
 
 /** Make column names unique without changing the first occurrence. */
 export function uniqueHeaders(header: string[]): string[] {
-  const seen = new Map<string, number>();
+  const taken = new Set(header.filter((name) => name.trim() !== ""));
+  const kept = new Set<string>();
   return header.map((name, index) => {
+    if (name.trim() !== "" && !kept.has(name)) {
+      kept.add(name);
+      return name;
+    }
     const base = name.trim() === "" ? `column_${index + 1}` : name;
-    const count = seen.get(base) ?? 0;
-    seen.set(base, count + 1);
-    return count === 0 ? base : `${base}_${count + 1}`;
+    let unique = base;
+    for (let n = 2; taken.has(unique); n += 1) unique = `${base}_${n}`;
+    taken.add(unique);
+    return unique;
   });
 }
 

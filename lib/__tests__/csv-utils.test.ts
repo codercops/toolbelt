@@ -149,6 +149,12 @@ describe("uniqueHeaders", () => {
   it("suffixes duplicates and fills empty names", () => {
     expect(uniqueHeaders(["a", "a", "", "b", "a"])).toEqual(["a", "a_2", "column_3", "b", "a_3"]);
   });
+
+  it("skips a suffix that another column already uses", () => {
+    expect(uniqueHeaders(["id", "id", "id_2"])).toEqual(["id", "id_3", "id_2"]);
+    expect(uniqueHeaders(["a", "", "column_2"])).toEqual(["a", "column_2_2", "column_2"]);
+    expect(csvToJson(["id", "id", "id_2"], [["1", "2", "3"]])).toEqual([{ id: "1", id_3: "2", id_2: "3" }]);
+  });
 });
 
 describe("formatCsv", () => {
