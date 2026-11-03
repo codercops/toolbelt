@@ -62,7 +62,7 @@
     "jspdf": "^4.2.1",
     "lossless-json": "^4.3.3",
     "lucide-react": "^0.468.0",
-    "marked": "^18.1.1",
+    "marked": "^18.1.2",
     "next": "^16.4.3",
     "prismjs": "^1.30.0",
     "react": "^19.3.1",
