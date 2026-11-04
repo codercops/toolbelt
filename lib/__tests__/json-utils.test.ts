@@ -12,6 +12,7 @@ import {
   parseJson5Compat,
   diffLines,
   validate,
+  singularize,
   SAMPLE_JSON,
 } from "../json-utils";
 
@@ -315,6 +316,51 @@ describe("toXML", () => {
     expect(result.value).toContain("<case>x</case>");
     expect(result.value).toContain("<address>y</address>");
     expect(result.value).toContain("<status>z</status>");
+  });
+
+  it("singularizes ambiguous -ses words based on stem endings", () => {
+    const stems = toXML(
+      '{"addresses":["a"],"classes":["b"],"statuses":["c"],"viruses":["d"],"bonuses":["e"],"campuses":["f"],"buses":["g"]}',
+    );
+    expect(stems.ok).toBe(true);
+    if (stems.ok) {
+      expect(stems.value).toContain("<address>a</address>");
+      expect(stems.value).toContain("<class>b</class>");
+      expect(stems.value).toContain("<status>c</status>");
+      expect(stems.value).toContain("<virus>d</virus>");
+      expect(stems.value).toContain("<bonus>e</bonus>");
+      expect(stems.value).toContain("<campus>f</campus>");
+      expect(stems.value).toContain("<bus>g</bus>");
+    }
+
+    const nonStems = toXML(
+      '{"cases":["a"],"causes":["b"],"houses":["c"],"responses":["d"],"courses":["e"],"releases":["f"],"licenses":["g"],"databases":["h"]}',
+    );
+    expect(nonStems.ok).toBe(true);
+    if (nonStems.ok) {
+      expect(nonStems.value).toContain("<case>a</case>");
+      expect(nonStems.value).toContain("<cause>b</cause>");
+      expect(nonStems.value).toContain("<house>c</house>");
+      expect(nonStems.value).toContain("<response>d</response>");
+      expect(nonStems.value).toContain("<course>e</course>");
+      expect(nonStems.value).toContain("<release>f</release>");
+      expect(nonStems.value).toContain("<license>g</license>");
+      expect(nonStems.value).toContain("<database>h</database>");
+    }
+  });
+
+  it("handles -zes plurals and caches appropriately in XML", () => {
+    const result = toXML(
+      '{"sizes":["s"],"prizes":["p"],"mazes":["m"],"quizzes":["q"],"caches":["c"]}',
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("<size>s</size>");
+    expect(result.value).toContain("<prize>p</prize>");
+    expect(result.value).toContain("<maze>m</maze>");
+    expect(result.value).toContain("<quiz>q</quiz>");
+    expect(result.value).toContain("<cach>c</cach>");
   });
 
   it("preserves existing singularization for -ies, simple -s, and non-plural keys", () => {
@@ -829,6 +875,119 @@ describe("toTypeScript array items", () => {
     expect(result.value).toContain("addresses: Address[];");
     expect(result.value).toContain("export interface Status {");
     expect(result.value).toContain("statuses: Status[];");
+  });
+
+  it("singularizes -ses and -zes array names in interfaces", () => {
+    const result = toTypeScript(
+      JSON.stringify({
+        classes: [{ id: 1 }],
+        viruses: [{ id: 2 }],
+        bonuses: [{ id: 3 }],
+        campuses: [{ id: 4 }],
+        buses: [{ id: 5 }],
+        causes: [{ id: 6 }],
+        houses: [{ id: 7 }],
+        responses: [{ id: 8 }],
+        courses: [{ id: 9 }],
+        releases: [{ id: 10 }],
+        licenses: [{ id: 11 }],
+        databases: [{ id: 12 }],
+        sizes: [{ id: 13 }],
+        prizes: [{ id: 14 }],
+        mazes: [{ id: 15 }],
+        quizzes: [{ id: 16 }],
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("export interface Class {");
+    expect(result.value).toContain("classes: Class[];");
+    expect(result.value).toContain("export interface Virus {");
+    expect(result.value).toContain("viruses: Virus[];");
+    expect(result.value).toContain("export interface Bonus {");
+    expect(result.value).toContain("bonuses: Bonus[];");
+    expect(result.value).toContain("export interface Campus {");
+    expect(result.value).toContain("campuses: Campus[];");
+    expect(result.value).toContain("export interface Bus {");
+    expect(result.value).toContain("buses: Bus[];");
+    expect(result.value).toContain("export interface Cause {");
+    expect(result.value).toContain("causes: Cause[];");
+    expect(result.value).toContain("export interface House {");
+    expect(result.value).toContain("houses: House[];");
+    expect(result.value).toContain("export interface Response {");
+    expect(result.value).toContain("responses: Response[];");
+    expect(result.value).toContain("export interface Course {");
+    expect(result.value).toContain("courses: Course[];");
+    expect(result.value).toContain("export interface Release {");
+    expect(result.value).toContain("releases: Release[];");
+    expect(result.value).toContain("export interface License {");
+    expect(result.value).toContain("licenses: License[];");
+    expect(result.value).toContain("export interface Database {");
+    expect(result.value).toContain("databases: Database[];");
+    expect(result.value).toContain("export interface Size {");
+    expect(result.value).toContain("sizes: Size[];");
+    expect(result.value).toContain("export interface Prize {");
+    expect(result.value).toContain("prizes: Prize[];");
+    expect(result.value).toContain("export interface Maze {");
+    expect(result.value).toContain("mazes: Maze[];");
+    expect(result.value).toContain("export interface Quiz {");
+    expect(result.value).toContain("quizzes: Quiz[];");
+  });
+});
+
+describe("singularize", () => {
+  it("singularizes all required maintainer corrections and preserves existing rules", () => {
+    // Sibilant plurals: -ches, -shes, -xes
+    expect(singularize("matches")).toBe("match");
+    expect(singularize("branches")).toBe("branch");
+    expect(singularize("hashes")).toBe("hash");
+    expect(singularize("boxes")).toBe("box");
+    expect(singularize("fixes")).toBe("fix");
+    expect(singularize("caches")).toBe("cach");
+
+    // -zes handling: -zzes vs non-doubled
+    expect(singularize("quizzes")).toBe("quiz");
+    expect(singularize("sizes")).toBe("size");
+    expect(singularize("prizes")).toBe("prize");
+    expect(singularize("mazes")).toBe("maze");
+
+    // Ambiguous -ses: stem ends in ss, tus, rus, nus, pus, bus -> remove es
+    expect(singularize("addresses")).toBe("address");
+    expect(singularize("classes")).toBe("class");
+    expect(singularize("statuses")).toBe("status");
+    expect(singularize("viruses")).toBe("virus");
+    expect(singularize("bonuses")).toBe("bonus");
+    expect(singularize("campuses")).toBe("campus");
+    expect(singularize("buses")).toBe("bus");
+
+    // Ambiguous -ses: stem does not end in those endings -> remove trailing s
+    expect(singularize("cases")).toBe("case");
+    expect(singularize("causes")).toBe("cause");
+    expect(singularize("houses")).toBe("house");
+    expect(singularize("responses")).toBe("response");
+    expect(singularize("courses")).toBe("course");
+    expect(singularize("releases")).toBe("release");
+    expect(singularize("licenses")).toBe("license");
+    expect(singularize("databases")).toBe("database");
+
+    // Preserved rules
+    expect(singularize("categories")).toBe("category");
+    expect(singularize("users")).toBe("user");
+    expect(singularize("boss")).toBe("bossItem");
+    expect(singularize("root")).toBe("rootItem");
+
+    // PascalCase support for TypeScript interface naming
+    expect(singularize("Addresses")).toBe("Address");
+    expect(singularize("Classes")).toBe("Class");
+    expect(singularize("Statuses")).toBe("Status");
+    expect(singularize("Viruses")).toBe("Virus");
+    expect(singularize("Bonuses")).toBe("Bonus");
+    expect(singularize("Campuses")).toBe("Campus");
+    expect(singularize("Buses")).toBe("Bus");
+    expect(singularize("Cases")).toBe("Case");
+    expect(singularize("Sizes")).toBe("Size");
+    expect(singularize("Quizzes")).toBe("Quiz");
   });
 });
 

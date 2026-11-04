@@ -237,21 +237,20 @@ function pascalCase(s: string): string {
   return /^[0-9]/.test(result) ? `_${result}` : result;
 }
 
-function singularize(name: string): string {
-  if (/ies$/.test(name)) return name.replace(/ies$/, "y");
+export function singularize(name: string): string {
+  if (/ies$/i.test(name)) return name.replace(/ies$/i, "y");
   // Sibilant plurals with a doubled consonant: quizzes → quiz
-  if (/zzes$/.test(name)) return name.replace(/zes$/, "");
+  if (/zzes$/i.test(name)) return name.replace(/zes$/i, "");
   // Sibilant plurals: matches → match, branches → branch, hashes → hash, boxes → box, fixes → fix
-  if (/(ches|shes|xes|zes)$/.test(name)) return name.replace(/es$/, "");
-  // Ambiguous -ses: addresses → address and statuses → status (strip "es"; the stem ends
-  // in "s" and is long enough to be a real singular), but cases → case (strip just "s";
-  // "cas" is too short).
-  if (/ses$/.test(name)) {
-    const stripped = name.replace(/es$/, "");
-    if (stripped.length >= 5 && /s$/.test(stripped)) return stripped;
-    return name.replace(/s$/, "");
+  if (/(ches|shes|xes)$/i.test(name)) return name.replace(/es$/i, "");
+  // Ambiguous -ses: remove "es" only when the stem ends in ss, tus, rus, nus, pus, or bus;
+  // otherwise remove only the trailing "s".
+  if (/ses$/i.test(name)) {
+    const stem = name.slice(0, -2);
+    if (/(ss|tus|rus|nus|pus|bus)$/i.test(stem)) return stem;
+    return name.slice(0, -1);
   }
-  if (/s$/.test(name) && !/ss$/.test(name)) return name.replace(/s$/, "");
+  if (/s$/i.test(name) && !/ss$/i.test(name)) return name.replace(/s$/i, "");
   return name + "Item";
 }
 
