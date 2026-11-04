@@ -292,6 +292,45 @@ describe("toXML", () => {
     expect(result.value).toContain("  <addressItem>x</addressItem>");
   });
 
+  it("singularizes sibilant plurals (-ches, -shes, -xes, -zes)", () => {
+    const result = toXML(
+      '{"matches":["a"],"branches":["b"],"hashes":["c"],"boxes":["d"],"fixes":["e"],"quizzes":["f"]}',
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("<match>a</match>");
+    expect(result.value).toContain("<branch>b</branch>");
+    expect(result.value).toContain("<hash>c</hash>");
+    expect(result.value).toContain("<box>d</box>");
+    expect(result.value).toContain("<fix>e</fix>");
+    expect(result.value).toContain("<quiz>f</quiz>");
+  });
+
+  it("singularizes ambiguous -ses cases correctly", () => {
+    const result = toXML('{"cases":["x"],"addresses":["y"],"statuses":["z"]}');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("<case>x</case>");
+    expect(result.value).toContain("<address>y</address>");
+    expect(result.value).toContain("<status>z</status>");
+  });
+
+  it("preserves existing singularization for -ies, simple -s, and non-plural keys", () => {
+    const result = toXML(
+      '{"categories":["a"],"users":["b"],"boss":["c"],"root":["d"],"tags":["e"]}',
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("<category>a</category>");
+    expect(result.value).toContain("<user>b</user>");
+    expect(result.value).toContain("<bossItem>c</bossItem>");
+    expect(result.value).toContain("<rootItem>d</rootItem>");
+    expect(result.value).toContain("<tag>e</tag>");
+  });
+
   it("wraps a top-level array of arrays, each sub-array in its own element", () => {
     const result = toXML("[[1,2],[3]]");
     expect(result.ok).toBe(true);
@@ -764,6 +803,32 @@ describe("toTypeScript array items", () => {
       const transpile = ts.transpileModule(topLevelObj.value, { reportDiagnostics: true });
       expect(transpile.diagnostics ?? []).toHaveLength(0);
     }
+  });
+
+  it("singularizes sibilant plural array names in interfaces", () => {
+    const result = toTypeScript('{"matches":[{"x":1}],"branches":[{"y":2}],"boxes":[{"z":3}]}');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("export interface Match {");
+    expect(result.value).toContain("matches: Match[];");
+    expect(result.value).toContain("export interface Branch {");
+    expect(result.value).toContain("branches: Branch[];");
+    expect(result.value).toContain("export interface Box {");
+    expect(result.value).toContain("boxes: Box[];");
+  });
+
+  it("singularizes ambiguous -ses array names in interfaces", () => {
+    const result = toTypeScript('{"cases":[{"a":1}],"addresses":[{"b":2}],"statuses":[{"c":3}]}');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value).toContain("export interface Case {");
+    expect(result.value).toContain("cases: Case[];");
+    expect(result.value).toContain("export interface Address {");
+    expect(result.value).toContain("addresses: Address[];");
+    expect(result.value).toContain("export interface Status {");
+    expect(result.value).toContain("statuses: Status[];");
   });
 });
 

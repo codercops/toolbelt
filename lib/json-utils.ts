@@ -239,7 +239,18 @@ function pascalCase(s: string): string {
 
 function singularize(name: string): string {
   if (/ies$/.test(name)) return name.replace(/ies$/, "y");
-  if (/ses$/.test(name)) return name.replace(/es$/, "");
+  // Sibilant plurals with a doubled consonant: quizzes → quiz
+  if (/zzes$/.test(name)) return name.replace(/zes$/, "");
+  // Sibilant plurals: matches → match, branches → branch, hashes → hash, boxes → box, fixes → fix
+  if (/(ches|shes|xes|zes)$/.test(name)) return name.replace(/es$/, "");
+  // Ambiguous -ses: addresses → address and statuses → status (strip "es"; the stem ends
+  // in "s" and is long enough to be a real singular), but cases → case (strip just "s";
+  // "cas" is too short).
+  if (/ses$/.test(name)) {
+    const stripped = name.replace(/es$/, "");
+    if (stripped.length >= 5 && /s$/.test(stripped)) return stripped;
+    return name.replace(/s$/, "");
+  }
   if (/s$/.test(name) && !/ss$/.test(name)) return name.replace(/s$/, "");
   return name + "Item";
 }
