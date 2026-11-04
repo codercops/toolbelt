@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.4",
-    "@opennextjs/cloudflare": "^1.20.13",
+    "@opennextjs/cloudflare": "^1.20.15",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.17",
     "json5": "^2.2.3",
