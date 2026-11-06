@@ -75,7 +75,7 @@ export function formatUuid(
 }
 
 function unwrapUuid(text: string): string {
-  const trimmed = text.trim();
+  const trimmed = text.trim().replace(/^(["'])([\s\S]*)\1$/, "$2").trim();
   if (URN_PREFIX.test(trimmed)) return trimmed.replace(URN_PREFIX, "");
   return trimmed.startsWith("{") && trimmed.endsWith("}") ? trimmed.slice(1, -1) : trimmed;
 }

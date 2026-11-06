@@ -161,17 +161,18 @@ export function todayISO(): string {
  * "INV0001".
  */
 export function nextInvoiceNumber(invoices: Invoice[], fallbackPrefix = "INV", pad = 4): string {
-  let highest: { prefix: string; digits: string; value: number } | undefined;
+  // BigInt, because a number of more than 15 digits (a timestamp with milliseconds, say) is not exact as a JS number.
+  let highest: { prefix: string; digits: string; value: bigint } | undefined;
   for (const inv of invoices) {
     const match = (inv.number || "").match(/^(.*?)(\d+)\s*$/);
     if (!match) continue;
-    const value = parseInt(match[2], 10);
+    const value = BigInt(match[2]);
     if (!highest || value >= highest.value) {
       highest = { prefix: match[1], digits: match[2], value };
     }
   }
   if (!highest) return `${fallbackPrefix}${String(1).padStart(pad, "0")}`;
-  return `${highest.prefix}${String(highest.value + 1).padStart(highest.digits.length, "0")}`;
+  return `${highest.prefix}${String(highest.value + BigInt(1)).padStart(highest.digits.length, "0")}`;
 }
 
 export const DEFAULT_SENDER: SenderProfile = {

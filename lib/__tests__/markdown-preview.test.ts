@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStandaloneHtml, getMarkdownStats, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
+import { createStandaloneHtml, getMarkdownStats, insertLinePrefix, insertMarkdown, insertTableMarkdown, renderMarkdown } from "@/lib/markdown-preview";
 
 describe("markdown preview", () => {
   it("wraps provided content in a complete light HTML document", () => {
@@ -63,6 +63,24 @@ describe("markdown preview", () => {
   it("counts no words in whitespace-only text", () => expect(getMarkdownStats("  \n\t ").words).toBe(0));
 
   it("inserts formatting around the selection", () => expect(insertMarkdown("hello", 0, 5, "**")).toEqual({ value: "**hello**", selectionStart: 2, selectionEnd: 7 }));
+});
+
+describe("insertLinePrefix", () => {
+  it("turns a line with text into a heading or task wherever the cursor is", () => {
+    expect(insertLinePrefix("My title", 8, 8, "## ")).toEqual({ value: "## My title", selectionStart: 11, selectionEnd: 11 });
+    expect(insertLinePrefix("My title", 3, 8, "## ")).toEqual({ value: "## My title", selectionStart: 6, selectionEnd: 11 });
+    expect(insertLinePrefix("Intro\nShopping list\nEnd", 10, 10, "- [ ] ", "task").value).toBe("Intro\n- [ ] Shopping list\nEnd");
+    expect(renderMarkdown(insertLinePrefix("My title", 8, 8, "## ").value)).toContain("<h2");
+  });
+
+  it("puts the marker and placeholder on an empty line", () => {
+    expect(insertLinePrefix("", 0, 0, "## ")).toEqual({ value: "## text", selectionStart: 3, selectionEnd: 7 });
+    expect(insertLinePrefix("Intro\n\nEnd", 6, 6, "- [ ] ", "task").value).toBe("Intro\n- [ ] task\nEnd");
+    expect(insertLinePrefix("\nEnd", 0, 0, "## ").value).toBe("## text\nEnd");
+    expect(insertLinePrefix("A\n\n    ", 7, 7, "## ").value).toBe("A\n\n## text");
+    expect(insertLinePrefix("A\n\n\t", 4, 4, "## ").value).toBe("A\n\n## text");
+    expect(renderMarkdown(insertLinePrefix("A\n\n    ", 7, 7, "## ").value)).toContain("<h2");
+  });
 });
 
 describe("insertTableMarkdown", () => {

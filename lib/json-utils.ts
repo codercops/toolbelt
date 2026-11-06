@@ -237,10 +237,20 @@ function pascalCase(s: string): string {
   return /^[0-9]/.test(result) ? `_${result}` : result;
 }
 
-function singularize(name: string): string {
-  if (/ies$/.test(name)) return name.replace(/ies$/, "y");
-  if (/ses$/.test(name)) return name.replace(/es$/, "");
-  if (/s$/.test(name) && !/ss$/.test(name)) return name.replace(/s$/, "");
+export function singularize(name: string): string {
+  if (/ies$/i.test(name)) return name.replace(/ies$/i, "y");
+  // Sibilant plurals with a doubled consonant: quizzes → quiz
+  if (/zzes$/i.test(name)) return name.replace(/zes$/i, "");
+  // Sibilant plurals: matches → match, branches → branch, hashes → hash, boxes → box, fixes → fix
+  if (/(ches|shes|xes)$/i.test(name)) return name.replace(/es$/i, "");
+  // Ambiguous -ses: remove "es" only when the stem ends in ss, tus, rus, nus, pus, or bus;
+  // otherwise remove only the trailing "s".
+  if (/ses$/i.test(name)) {
+    const stem = name.slice(0, -2);
+    if (/(ss|tus|rus|nus|pus|bus)$/i.test(stem)) return stem;
+    return name.slice(0, -1);
+  }
+  if (/s$/i.test(name) && !/ss$/i.test(name)) return name.replace(/s$/i, "");
   return name + "Item";
 }
 
@@ -684,9 +694,7 @@ export function toXML(raw: string, rootTag = "root"): Result<string> {
     if (node === null) return `${pad}<${tag} nil="true"/>`;
     if (isLosslessNumber(node)) return `${pad}<${tag}>${node.toString()}</${tag}>`;
     if (Array.isArray(node)) {
-      const itemTag = sanitizeTag(
-        tag.endsWith("s") && tag.length > 1 ? tag.slice(0, -1) : `${tag}Item`
-      );
+      const itemTag = sanitizeTag(singularize(tag));
       if (node.length === 0) return `${pad}<${tag}/>`;
       if (parent === "object") {
         return node

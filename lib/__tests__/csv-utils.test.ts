@@ -1,3 +1,4 @@
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import {
   csvToJson,
@@ -148,6 +149,12 @@ describe("uniqueHeaders", () => {
   it("suffixes duplicates and fills empty names", () => {
     expect(uniqueHeaders(["a", "a", "", "b", "a"])).toEqual(["a", "a_2", "column_3", "b", "a_3"]);
   });
+
+  it("skips a suffix that another column already uses", () => {
+    expect(uniqueHeaders(["id", "id", "id_2"])).toEqual(["id", "id_3", "id_2"]);
+    expect(uniqueHeaders(["a", "", "column_2"])).toEqual(["a", "column_2_2", "column_2"]);
+    expect(csvToJson(["id", "id", "id_2"], [["1", "2", "3"]])).toEqual([{ id: "1", id_3: "2", id_2: "3" }]);
+  });
 });
 
 describe("formatCsv", () => {
@@ -206,6 +213,77 @@ describe("csvToTypeScript", () => {
   it("handles no columns", () => {
     expect(csvToTypeScript([])).toBe("export interface Row {}");
   });
+
+  describe("the type name", () => {
+    // Words TypeScript will not take as the name of an interface: reserved words, the ones reserved in strict mode
+    // (which a module always is), `await`, and the names of the built-in types.
+    const reserved = [
+      "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum",
+      "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "new", "null",
+      "return", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with",
+      "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield", "await",
+      "any", "unknown", "never", "number", "bigint", "boolean", "string", "symbol", "object", "undefined",
+    ];
+    // Words that look like they might be, and are fine.
+    const allowed = [
+      "Class", "Default", "String", "Number", "Object", "Array", "Date", "Row", "Person", "type", "of", "as", "async",
+      "from", "get", "set", "constructor", "declare", "module", "namespace", "readonly", "keyof", "abstract", "is",
+      "global", "require", "infer", "asserts", "arguments", "eval", "_", "$", "class_", "$class", "classy",
+    ];
+
+    /** The diagnostics the TypeScript compiler gives each source text, all checked in one program. */
+    function diagnose(texts: string[]): string[][] {
+      const files = new Map(texts.map((text, index) => [`/probe/f${index}.ts`, text]));
+      const options: ts.CompilerOptions = { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ESNext };
+      const host = ts.createCompilerHost(options);
+      const getSourceFile = host.getSourceFile.bind(host);
+      host.getSourceFile = (name, languageVersion, ...rest) =>
+        files.has(name) ? ts.createSourceFile(name, files.get(name) as string, languageVersion) : getSourceFile(name, languageVersion, ...rest);
+      host.fileExists = (name) => files.has(name) || ts.sys.fileExists(name);
+      host.readFile = (name) => files.get(name) ?? ts.sys.readFile(name);
+      const program = ts.createProgram([...files.keys()], options, host);
+      return [...files.keys()].map((name) => {
+        const file = program.getSourceFile(name) as ts.SourceFile;
+        return [...program.getSyntacticDiagnostics(file), ...program.getSemanticDiagnostics(file)].map((d) => ts.flattenDiagnosticMessageText(d.messageText, " "));
+      });
+    }
+
+    it.each(reserved)("falls back to Row for the reserved name %s", (name) => {
+      expect(csvToTypeScript(["a"], name)).toBe("export interface Row {\n  a: string;\n}");
+    });
+
+    it("keeps a name that only looks reserved, or differs in case", () => {
+      for (const name of allowed) expect(csvToTypeScript(["a"], name), name).toBe(`export interface ${name} {\n  a: string;\n}`);
+    });
+
+    it("still falls back for a name that is not an identifier", () => {
+      for (const name of ["", " ", "my type", "1st", "a-b", "a.b", "é", "class Row"]) {
+        expect(csvToTypeScript(["a"], name), JSON.stringify(name)).toBe("export interface Row {\n  a: string;\n}");
+      }
+    });
+
+    it("uses the default name for no name at all", () => {
+      expect(csvToTypeScript(["a"])).toBe("export interface Row {\n  a: string;\n}");
+    });
+
+    it("writes TypeScript that compiles, for every name here, and the list is what the compiler rejects", () => {
+      const names = [...reserved, ...allowed];
+      const outputs = names.map((name) => csvToTypeScript(["a", "class", "first name"], name));
+      const written = diagnose(outputs);
+      expect(written.map((found, index) => (found.length ? `${names[index]}: ${found[0]}` : null)).filter(Boolean)).toEqual([]);
+
+      // The same names used as they were typed: the compiler rejects exactly the reserved ones.
+      const raw = diagnose(names.map((name) => `export interface ${name} {\n  a: string;\n}\n`));
+      const rejected = names.filter((_, index) => raw[index].length > 0);
+      expect(rejected.sort()).toEqual([...reserved].sort());
+    });
+
+    it("leaves property names alone, since a reserved word is fine as a property", () => {
+      expect(csvToTypeScript(["class", "default", "string"], "Row")).toBe(
+        "export interface Row {\n  class: string;\n  default: string;\n  string: string;\n}",
+      );
+    });
+  });
 });
 
 describe("csvToYaml", () => {
@@ -215,6 +293,55 @@ describe("csvToYaml", () => {
 
   it("escapes quotes, backslashes and newlines", () => {
     expect(csvToYaml(["note"], [['a "b" \\ c\nd']])).toBe('- note: "a \\"b\\" \\\\ c\\nd"');
+  });
+
+  // A raw control character makes the document invalid YAML, and js-yaml refuses to load it. Escaped the way the
+  // JSON formatter's YAML conversion does (#234).
+  describe("control characters", () => {
+    const yamlOf = (value: string) => csvToYaml(["note"], [[value]]);
+
+    it.each([
+      ["NUL", "\u0000", "\\x00"],
+      ["BEL", "\u0007", "\\x07"],
+      ["backspace", "\u0008", "\\x08"],
+      ["vertical tab", "\u000b", "\\x0B"],
+      ["form feed", "\u000c", "\\x0C"],
+      ["shift out", "\u000e", "\\x0E"],
+      ["ESC", "\u001b", "\\x1B"],
+      ["unit separator", "\u001f", "\\x1F"],
+      ["DEL", "\u007f", "\\x7F"],
+      ["next line", "\u0085", "\\x85"],
+      ["C1 control", "\u009f", "\\x9F"],
+      ["line separator", "\u2028", "\\u2028"],
+      ["paragraph separator", "\u2029", "\\u2029"],
+      ["noncharacter FFFE", "\ufffe", "\\uFFFE"],
+      ["noncharacter FFFF", "\uffff", "\\uFFFF"],
+    ])("writes %s as an escape", (_name, character, escape) => {
+      expect(yamlOf(`a${character}b`)).toBe(`- note: "a${escape}b"`);
+    });
+
+    it("writes a tab as \\t", () => {
+      expect(yamlOf("a\tb")).toBe('- note: "a\\tb"');
+    });
+
+    it("keeps the escapes it already had", () => {
+      expect(yamlOf('q"\\\n\r')).toBe('- note: "q\\"\\\\\\n\\r"');
+    });
+
+    it("leaves no raw control character anywhere in the output", () => {
+      const every = Array.from({ length: 0xa0 }, (_, code) => String.fromCharCode(code)).join("");
+      const output = csvToYaml([`k${every}`], [[every, `x${every}y`]]);
+      // Only the line breaks between the lines of the document are left.
+      expect(output.replace(/\n/g, "")).not.toMatch(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/);
+    });
+
+    it("escapes them in a column name too", () => {
+      expect(csvToYaml(["a\u0007b"], [["x"]])).toBe('- "a\\x07b": "x"');
+    });
+
+    it("leaves other text, accents and emoji as they were", () => {
+      expect(yamlOf("café \u00e9 \u{1f600} \u00a0")).toBe('- note: "café \u00e9 \u{1f600} \u00a0"');
+    });
   });
 
   it("quotes non-identifier keys", () => {

@@ -66,6 +66,19 @@ export function insertMarkdown(markdown: string, start: number, end: number, bef
   return { value: markdown.slice(0, start) + before + selected + after + markdown.slice(end), selectionStart: start + before.length, selectionEnd: start + before.length + selected.length };
 }
 
+/** Puts a line marker such as `## ` at the start of the cursor's line, so a line that has text becomes a heading or task. */
+export function insertLinePrefix(markdown: string, start: number, end: number, prefix: string, placeholder = "text") {
+  const lineStart = markdown.slice(0, start).lastIndexOf("\n") + 1;
+  const newline = markdown.indexOf("\n", start);
+  const lineEnd = newline === -1 ? markdown.length : newline;
+  if (markdown.slice(lineStart, lineEnd).trim() === "") {
+    // A blank line: drop its white space, since four spaces or a tab before the marker can make a code block.
+    const at = lineStart + prefix.length;
+    return { value: markdown.slice(0, lineStart) + prefix + placeholder + markdown.slice(lineEnd), selectionStart: at, selectionEnd: at + placeholder.length };
+  }
+  return { value: markdown.slice(0, lineStart) + prefix + markdown.slice(lineStart), selectionStart: start + prefix.length, selectionEnd: end + prefix.length };
+}
+
 const STARTER_TABLE = "| Header | Header |\n| --- | --- |\n| Cell | Cell |\n";
 
 /**

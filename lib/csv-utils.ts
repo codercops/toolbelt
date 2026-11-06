@@ -70,6 +70,16 @@ export const MAX_REPORTED_ROW_ERRORS = 25;
 const BOM = "\uFEFF";
 const PLAIN_NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+// Words TypeScript will not take as an interface name: reserved words, those reserved in strict mode (a module is
+// strict), `await`, and the names of the built-in types. A property can still be called any of them.
+const RESERVED_TYPE_NAMES = new Set(
+  (
+    "break case catch class const continue debugger default delete do else enum export extends false finally for " +
+    "function if import in instanceof new null return super switch this throw true try typeof var void while with " +
+    "implements interface let package private protected public static yield await " +
+    "any unknown never number bigint boolean string symbol object undefined"
+  ).split(" "),
+);
 const YAML_KEY_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
 // Plain YAML keys that a 1.1 parser reads as null or a boolean. They must be
 // quoted, or `null: x` becomes `{None: "x"}` and `on: y` becomes `{True: "y"}`.
@@ -298,12 +308,18 @@ function generatedHeader(columns: number): string[] {
 
 /** Make column names unique without changing the first occurrence. */
 export function uniqueHeaders(header: string[]): string[] {
-  const seen = new Map<string, number>();
+  const taken = new Set(header.filter((name) => name.trim() !== ""));
+  const kept = new Set<string>();
   return header.map((name, index) => {
+    if (name.trim() !== "" && !kept.has(name)) {
+      kept.add(name);
+      return name;
+    }
     const base = name.trim() === "" ? `column_${index + 1}` : name;
-    const count = seen.get(base) ?? 0;
-    seen.set(base, count + 1);
-    return count === 0 ? base : `${base}_${count + 1}`;
+    let unique = base;
+    for (let n = 2; taken.has(unique); n += 1) unique = `${base}_${n}`;
+    taken.add(unique);
+    return unique;
   });
 }
 
@@ -542,7 +558,7 @@ function tsProperty(name: string): string {
  */
 export function csvToTypeScript(header: string[], typeName = "Row"): string {
   const keys = uniqueHeaders(header);
-  const name = IDENTIFIER_RE.test(typeName) ? typeName : "Row";
+  const name = IDENTIFIER_RE.test(typeName) && !RESERVED_TYPE_NAMES.has(typeName) ? typeName : "Row";
 
   if (keys.length === 0) return `export interface ${name} {}`;
 
@@ -551,8 +567,24 @@ export function csvToTypeScript(header: string[], typeName = "Row"): string {
   return `export interface ${name} {\n${fields.join("\n")}\n}`;
 }
 
+// Control characters, the C1 range, the Unicode line and paragraph separators and the noncharacters FFFE and FFFF
+// (tab, \n and \r have their own escapes). A raw one in a double-quoted scalar is invalid YAML: js-yaml won't load it.
+const YAML_CONTROL_CHARS = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f\u2028\u2029\ufffe\uffff]/g;
+
 function yamlString(value: string): string {
-  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r")}"`;
+  const escaped = value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")
+    .replace(YAML_CONTROL_CHARS, (char) => {
+      const code = char.charCodeAt(0);
+      return code < 0x100
+        ? `\\x${code.toString(16).toUpperCase().padStart(2, "0")}`
+        : `\\u${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    });
+  return `"${escaped}"`;
 }
 
 function yamlKey(key: string): string {

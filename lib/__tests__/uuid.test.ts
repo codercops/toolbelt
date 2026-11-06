@@ -105,6 +105,8 @@ describe("inspectUuid", () => {
     ["a urn:uuid: prefix", "urn:uuid:3f2504e0-4f89-41d3-9a0c-0305e82c3301"],
     ["an upper case URN:UUID: prefix", "URN:UUID:3F2504E0-4F89-41D3-9A0C-0305E82C3301"],
     ["surrounding whitespace", "  {3f2504e0-4f89-41d3-9a0c-0305e82c3301}\n"],
+    ["double quotes", "\"3f2504e0-4f89-41d3-9a0c-0305e82c3301\""],
+    ["single quotes", "'3f2504e0-4f89-41d3-9a0c-0305e82c3301'"],
   ])("inspects a UUID with %s the same as the bare value", (_label, text) => {
     expect(inspectUuid(text)).toEqual(inspectUuid("3f2504e0-4f89-41d3-9a0c-0305e82c3301"));
     expect(inspectUuid(text)).toMatchObject({ ok: true, version: 4, variant: "rfc" });
@@ -116,6 +118,7 @@ describe("inspectUuid", () => {
     "{{3f2504e0-4f89-41d3-9a0c-0305e82c3301}}",
     "urn:uuid:{3f2504e0-4f89-41d3-9a0c-0305e82c3301}",
     "uuid:3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+    "\"3f2504e0-4f89-41d3-9a0c-0305e82c3301'",
   ])("rejects %s", (text) => {
     expect(inspectUuid(text)).toEqual({ ok: false });
   });
