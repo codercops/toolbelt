@@ -37,7 +37,7 @@ function base64UrlDecodeToString(input: string): string {
  * claim checks work as before. One that it can't (an ID like 12345678901234567890)
  * is kept as a LosslessNumber, which shows and copies exactly as written.
  */
-export function parseJwtJson(text: string): unknown {
+function parseJwtJson(text: string): unknown {
   try {
     return llParse(text, undefined, (value) => (isSafeNumber(value) ? Number(value) : new LosslessNumber(value)));
   } catch {
@@ -46,6 +46,8 @@ export function parseJwtJson(text: string): unknown {
     return JSON.parse(text);
   }
 }
+
+export { parseJwtJson };
 
 /** JSON.stringify for decoded header and payload values, writing big numbers exactly as they were. */
 export function stringifyJwtJson(value: unknown, indent?: number): string {

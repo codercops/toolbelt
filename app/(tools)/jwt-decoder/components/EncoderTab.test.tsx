@@ -5,7 +5,7 @@ import { encodeJwt } from "@/lib/jwt-utils";
 import { EncoderTab } from "./EncoderTab";
 
 vi.mock("@/lib/jwt-utils", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal() as any;
   return {
     ...actual,
     encodeJwt: vi.fn(),
