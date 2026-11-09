@@ -4,9 +4,13 @@ import { ToastProvider } from "@/components/shared/Toast";
 import { encodeJwt } from "@/lib/jwt-utils";
 import { EncoderTab } from "./EncoderTab";
 
-vi.mock("@/lib/jwt-utils", () => ({
-  encodeJwt: vi.fn(),
-}));
+vi.mock("@/lib/jwt-utils", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    encodeJwt: vi.fn(),
+  };
+});
 
 describe("EncoderTab accessible labels", () => {
   afterEach(cleanup);

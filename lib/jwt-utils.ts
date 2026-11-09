@@ -37,7 +37,7 @@ function base64UrlDecodeToString(input: string): string {
  * claim checks work as before. One that it can't (an ID like 12345678901234567890)
  * is kept as a LosslessNumber, which shows and copies exactly as written.
  */
-function parseJwtJson(text: string): unknown {
+export function parseJwtJson(text: string): unknown {
   try {
     return llParse(text, undefined, (value) => (isSafeNumber(value) ? Number(value) : new LosslessNumber(value)));
   } catch {
@@ -418,8 +418,8 @@ export async function encodeJwt(
 ): Promise<string> {
   const finalHeader = { typ: "JWT", ...headerObj, alg };
   const enc = new TextEncoder();
-  const headerPart = uint8ToBase64Url(enc.encode(JSON.stringify(finalHeader)));
-  const payloadPart = uint8ToBase64Url(enc.encode(JSON.stringify(payloadObj)));
+  const headerPart = uint8ToBase64Url(enc.encode(stringifyJwtJson(finalHeader)));
+  const payloadPart = uint8ToBase64Url(enc.encode(stringifyJwtJson(payloadObj)));
   const signingInput = `${headerPart}.${payloadPart}`;
   const key = await importSignKey(alg, keyMaterial);
   const sig = await crypto.subtle.sign(algSignParams(alg), key, enc.encode(signingInput));
