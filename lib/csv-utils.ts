@@ -132,6 +132,10 @@ function tokenize(raw: string, delimiter: CsvDelimiter, maxRecords = Infinity): 
   let fields: string[] = [];
   let field = "";
   let fieldStarted = false;
+  // True once some field of the current record has been started by a quote or a
+  // non-empty character. A record with no started field (and one empty unquoted
+  // field) is a blank line; a record whose only field is `""` is a real record.
+  let recordHasStartedField = false;
   let inQuotes = false;
   let quoteLine = 1;
   let line = 1;
@@ -145,12 +149,13 @@ function tokenize(raw: string, delimiter: CsvDelimiter, maxRecords = Infinity): 
 
   function pushRecord() {
     pushField();
-    if (fields.length === 1 && fields[0] === "") {
+    if (fields.length === 1 && fields[0] === "" && !recordHasStartedField) {
       blankLines++;
     } else {
       records.push({ fields, line: recordLine });
     }
     fields = [];
+    recordHasStartedField = false;
   }
 
   let i = 0;
@@ -208,6 +213,7 @@ function tokenize(raw: string, delimiter: CsvDelimiter, maxRecords = Infinity): 
     if (ch === '"' && field === "" && !fieldStarted) {
       inQuotes = true;
       fieldStarted = true;
+      recordHasStartedField = true;
       quoteLine = line;
       i++;
       continue;
@@ -239,6 +245,7 @@ function tokenize(raw: string, delimiter: CsvDelimiter, maxRecords = Infinity): 
 
     field += ch;
     fieldStarted = true;
+    recordHasStartedField = true;
     i++;
   }
 
@@ -525,9 +532,14 @@ export function formatCsv(
 ): string {
   const delimiter = options.delimiter ?? ",";
   const lineEnding = options.lineEnding ?? "\n";
+  // In a one-column table an empty field is indistinguishable from a blank line
+  // without the quotes, so the row would be lost when the output is re-parsed.
+  const singleColumn = header.length === 1;
   const lines = [header, ...rows].map((row) =>
     normalizeRow(row, header.length)
-      .map((field) => escapeCsvField(field, delimiter))
+      .map((field) =>
+        singleColumn && field === "" ? '""' : escapeCsvField(field, delimiter),
+      )
       .join(delimiter),
   );
   return lines.join(lineEnding);
