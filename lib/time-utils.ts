@@ -140,8 +140,16 @@ function monthNumber(name: string): number | null {
   return MONTH_NAMES[name.toLowerCase().replace(/\.$/, "")] ?? null;
 }
 
+function parseYear(yearStr: string): number {
+  const y = Number(yearStr);
+  if (yearStr.length === 2) {
+    return y >= 50 ? 1900 + y : 2000 + y;
+  }
+  return y;
+}
+
 function extractCalendarDay(dateString: string): CalendarDay | null {
-  const numeric = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?=\D|$)/.exec(
+  const numeric = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?=\D|$)/.exec(
     dateString
   );
   if (numeric) {
@@ -152,30 +160,30 @@ function extractCalendarDay(dateString: string): CalendarDay | null {
     };
   }
 
-  const monthFirstNumeric = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?!\d)/.exec(
+  const monthFirstNumeric = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4}|\d{2})(?!\d)/.exec(
     dateString
   );
   if (monthFirstNumeric) {
     return {
-      year: Number(monthFirstNumeric[3]),
+      year: parseYear(monthFirstNumeric[3]),
       month: Number(monthFirstNumeric[1]),
       day: Number(monthFirstNumeric[2]),
     };
   }
 
   const dayFirst =
-    /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-]+([A-Za-z]{3,9})\.?,?\s+(\d{4})/i.exec(
+    /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-/.]+([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{4}|\d{2})(?!\d)/i.exec(
       dateString
     );
   if (dayFirst) {
     const month = monthNumber(dayFirst[2]);
     if (month !== null) {
-      return { year: Number(dayFirst[3]), month, day: Number(dayFirst[1]) };
+      return { year: parseYear(dayFirst[3]), month, day: Number(dayFirst[1]) };
     }
   }
 
   const yearFirst =
-    /(?:^|[^\w])(\d{4})[-\s]+([A-Za-z]{3,9})\.?[-\s]+(\d{1,2})(?:st|nd|rd|th)?/i.exec(
+    /(?:^|[^\w])(\d{4})[\s-/.]+([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{1,2})(?:st|nd|rd|th)?/i.exec(
       dateString
     );
   if (yearFirst) {
@@ -186,14 +194,14 @@ function extractCalendarDay(dateString: string): CalendarDay | null {
   }
 
   const monthFirst =
-    /(?:^|[^\w])([A-Za-z]{3,9})\.?\s+(\d{1,2})(?!\d)(?:st|nd|rd|th)?,?(?:\s+(\d{4}))?/i.exec(
+    /(?:^|[^\w])([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{1,2})(?!\d)(?:st|nd|rd|th)?,?(?:[\s-/.]+(\d{4}|\d{2})(?!\d))?/i.exec(
       dateString
     );
   if (monthFirst) {
     const month = monthNumber(monthFirst[1]);
     if (month !== null) {
       return {
-        year: monthFirst[3] ? Number(monthFirst[3]) : null,
+        year: monthFirst[3] ? parseYear(monthFirst[3]) : null,
         month,
         day: Number(monthFirst[2]),
       };
@@ -217,7 +225,7 @@ function hasImpossibleCalendarDay(dateString: string): boolean {
   if (month < 1 || month > 12 || day < 1) return true;
 
   if (year === null) {
-    const maxDay = month === 2 ? 29 : new Date(Date.UTC(2000, month, 0)).getUTCDate();
+    const maxDay = new Date(Date.UTC(2001, month, 0)).getUTCDate();
     return day > maxDay;
   }
 
