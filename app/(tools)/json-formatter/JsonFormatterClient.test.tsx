@@ -132,6 +132,75 @@ describe("JsonFormatterClient", () => {
       expect(await screen.findByText("Valid JSON ✓")).toBeInTheDocument();
       expect(screen.queryByText("Invalid JSON")).not.toBeInTheDocument();
     });
+
+    it("converts JSON5 input in ConversionPanel when JSON5 mode is on", async () => {
+      renderClient();
+
+      toggleJson5();
+      typeInput("{b: 2, a: 1,}");
+
+      fireEvent.click(
+        screen.getByRole("button", { name: /conversions.*validate.*query/i }),
+      );
+
+      const conversionOutput = () =>
+        document.querySelector("#json-conversions-panel pre");
+
+      // TypeScript tab (default)
+      expect(conversionOutput()?.textContent).toContain("b: number");
+      expect(conversionOutput()?.textContent).toContain("a: number");
+
+      // YAML tab
+      fireEvent.click(screen.getByRole("button", { name: "YAML" }));
+      expect(conversionOutput()?.textContent).toContain("b: 2");
+      expect(conversionOutput()?.textContent).toContain("a: 1");
+
+      // XML tab
+      fireEvent.click(screen.getByRole("button", { name: "XML" }));
+      expect(conversionOutput()?.textContent).toContain("<b>2</b>");
+      expect(conversionOutput()?.textContent).toContain("<a>1</a>");
+
+      // Query string tab
+      fireEvent.click(screen.getByRole("button", { name: "Query string" }));
+      expect(conversionOutput()?.textContent).toContain("b=2");
+      expect(conversionOutput()?.textContent).toContain("a=1");
+
+      // JSONPath tab
+      fireEvent.click(screen.getByRole("button", { name: "JSONPath" }));
+      fireEvent.change(screen.getByLabelText("JSONPath expression"), {
+        target: { value: "$.a" },
+      });
+      expect(screen.getByText("1 matches")).toBeInTheDocument();
+      expect(conversionOutput()?.textContent).toContain("1");
+
+      // Schema validate tab
+      fireEvent.click(screen.getByRole("button", { name: "Schema validate" }));
+      fireEvent.change(screen.getByLabelText("JSON Schema to validate against"), {
+        target: { value: '{"type":"object"}' },
+      });
+      expect(screen.getByText("Data conforms to schema ✓")).toBeInTheDocument();
+
+      // CSV tab (expects array of objects)
+      typeInput("[{b: 2, a: 1,}]");
+      fireEvent.click(screen.getByRole("button", { name: "CSV" }));
+      expect(conversionOutput()?.textContent).toMatch(/b.*a/);
+      expect(conversionOutput()?.textContent).toMatch(/2.*1/);
+    });
+
+    it("rejects JSON5 input in ConversionPanel when JSON5 mode is off", async () => {
+      renderClient();
+
+      typeInput("{b: 2, a: 1,}");
+
+      fireEvent.click(
+        screen.getByRole("button", { name: /conversions.*validate.*query/i }),
+      );
+
+      const errorEl = document.querySelector(
+        "#json-conversions-panel .text-\\[var\\(--rose\\)\\]",
+      );
+      expect(errorEl).toBeInTheDocument();
+    });
   });
 
   describe("Fetch from URL", () => {

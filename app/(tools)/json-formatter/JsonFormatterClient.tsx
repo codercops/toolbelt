@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, FileJson, Globe, Loader2, Lightbulb } from "lucide-react";
 import { Toolbar } from "./components/Toolbar";
 import { OutputPanel } from "./components/OutputPanel";
@@ -103,6 +103,12 @@ export function JsonFormatterClient() {
     if (!json5) return { ok: true as const, value: input };
     return parseJson5Compat(input, indent);
   }, [input, indent, json5]);
+
+  const conversionInput = useMemo(() => {
+    if (!json5) return input;
+    const strict = strictInput();
+    return strict.ok ? strict.value : input;
+  }, [input, json5, strictInput]);
 
   const doMinify = useCallback(() => {
     const strict = strictInput();
@@ -477,7 +483,7 @@ export function JsonFormatterClient() {
           </div>
         )}
 
-        <ConversionPanel input={input} />
+        <ConversionPanel input={conversionInput} />
 
         <div className="mt-4">
           <HistoryPanel
