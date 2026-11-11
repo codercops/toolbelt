@@ -95,6 +95,19 @@ describe("parseCsv", () => {
     expect(parsed.warnings.some((warning) => warning.code === "blank-lines")).toBe(true);
   });
 
+  it("keeps a row made of a single quoted empty field", () => {
+    const parsed = parseCsv('a,b\n1,2\n""\n3,4');
+    expect(parsed.rows).toEqual([["1", "2"], [""], ["3", "4"]]);
+    expect(parsed.blankLines).toBe(0);
+    expect(parsed.warnings.some((warning) => warning.code === "blank-lines")).toBe(false);
+  });
+
+  it("keeps a single quoted empty field as the final unterminated record", () => {
+    const parsed = parseCsv('a,b\n1,2\n""');
+    expect(parsed.rows).toEqual([["1", "2"], [""]]);
+    expect(parsed.blankLines).toBe(0);
+  });
+
   it("strips a UTF-8 BOM and warns", () => {
     const parsed = parseCsv("\uFEFFa,b\n1,2");
     expect(parsed.hadBom).toBe(true);
@@ -171,6 +184,18 @@ describe("formatCsv", () => {
 
   it("pads short rows", () => {
     expect(formatCsv(["a", "b", "c"], [["1", "2"]])).toBe("a,b,c\n1,2,");
+  });
+
+  it("quotes an empty value in a one-column table so it survives a round trip", () => {
+    const output = formatCsv(["email"], [["a@x.com"], [""], ["b@x.com"]]);
+    expect(output).toBe('email\na@x.com\n""\nb@x.com');
+    const reparsed = parseCsv(output);
+    expect(reparsed.rows).toEqual([["a@x.com"], [""], ["b@x.com"]]);
+    expect(reparsed.blankLines).toBe(0);
+  });
+
+  it("leaves empty cells bare when the table has more than one column", () => {
+    expect(formatCsv(["a", "b"], [["", "x"], ["y", ""]])).toBe("a,b\n,x\ny,");
   });
 });
 
