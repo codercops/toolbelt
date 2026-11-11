@@ -53,7 +53,7 @@
     "lighthouse": "npx --yes @lhci/cli@0.14.x collect && (npx --yes @lhci/cli@0.14.x assert || true) && node scripts/lighthouse-summary.mjs"
   },
   "dependencies": {
-    "@cfworker/json-schema": "^4.1.4",
+    "@cfworker/json-schema": "^4.1.6",
     "@opennextjs/cloudflare": "^1.20.16",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.17",
