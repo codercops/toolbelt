@@ -1,12 +1,16 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToastProvider } from "@/components/shared/Toast";
-import { encodeJwt } from "@/lib/jwt-utils";
+import { encodeJwt, stringifyJwtJson } from "@/lib/jwt-utils";
 import { EncoderTab } from "./EncoderTab";
 
-vi.mock("@/lib/jwt-utils", () => ({
-  encodeJwt: vi.fn(),
-}));
+vi.mock("@/lib/jwt-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/jwt-utils")>();
+  return {
+    ...actual,
+    encodeJwt: vi.fn(),
+  };
+});
 
 describe("EncoderTab accessible labels", () => {
   afterEach(cleanup);
@@ -92,5 +96,22 @@ describe("EncoderTab payload validation", () => {
       "your-256-bit-secret",
       "HS256",
     );
+  });
+
+  it("keeps big integer claims exact when handing the payload to encodeJwt", async () => {
+    render(
+      <ToastProvider>
+        <EncoderTab />
+      </ToastProvider>
+    );
+    const text = '{"sub":"u1","account_id":12345678901234567890,"n":9007199254740993}';
+    fireEvent.change(screen.getByRole("textbox", { name: "JWT payload" }), {
+      target: { value: text },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Generate JWT" }));
+
+    expect(await screen.findByText("Length · 24 chars")).toBeInTheDocument();
+    expect(stringifyJwtJson(vi.mocked(encodeJwt).mock.calls.at(-1)?.[1])).toBe(text);
   });
 });

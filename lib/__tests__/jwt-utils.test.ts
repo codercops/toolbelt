@@ -9,8 +9,10 @@ import {
   describeAlg,
   isStandardClaim,
   securityAudit,
+  parseJwtJson,
   stringifyJwtJson,
   uint8ToBase64Url,
+  base64UrlToUint8,
   relativeTime,
   SAMPLE_JWT,
   type DecodedJwt,
@@ -336,5 +338,29 @@ describe("relativeTime", () => {
   it("rolls up 360 days to 1 year", () => {
     expect(relativeTime(nowSec - 360 * 86400, nowMs)).toBe("1 year ago");
     expect(relativeTime(nowSec + 360 * 86400, nowMs)).toBe("in 1 year");
+  });
+});
+
+describe("encodeJwt keeps unsafe integers exact", () => {
+  it("round-trips big integer claims without precision loss", async () => {
+    const payload = parseJwtJson(
+      '{"sub":"u1","account_id":12345678901234567890,"n":9007199254740993}'
+    ) as Record<string, unknown>;
+    const token = await encodeJwt({}, payload, "topsecret", "HS256");
+    const json = new TextDecoder().decode(base64UrlToUint8(token.split(".")[1]));
+    expect(json).toBe('{"sub":"u1","account_id":12345678901234567890,"n":9007199254740993}');
+  });
+
+  it("keeps exp, nbf and iat as plain numbers", async () => {
+    const payload = { exp: 1893456000, nbf: 1700000000, iat: 1700000000.5 };
+    const token = await encodeJwt({}, payload, "topsecret", "HS256");
+    const r = decodeJwt(token);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.payload.exp).toBe(1893456000);
+      expect(typeof r.value.payload.exp).toBe("number");
+      expect(r.value.payload.nbf).toBe(1700000000);
+      expect(r.value.payload.iat).toBe(1700000000.5);
+    }
   });
 });

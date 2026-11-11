@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Play, AlertCircle, Sparkles } from "lucide-react";
-import { encodeJwt, type SupportedAlg } from "@/lib/jwt-utils";
+import { encodeJwt, parseJwtJson, type SupportedAlg } from "@/lib/jwt-utils";
 import { validate as validateJson } from "@/lib/json-utils";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { useToast } from "@/components/shared/Toast";
@@ -42,7 +42,7 @@ export function EncoderTab() {
       setError(`Payload is not valid JSON — ${v.error.message}`);
       return;
     }
-    const payloadObj: unknown = JSON.parse(payload);
+    const payloadObj: unknown = parseJwtJson(payload);
     if (typeof payloadObj !== "object" || payloadObj === null || Array.isArray(payloadObj)) {
       setError("The payload must be a JSON object");
       return;
