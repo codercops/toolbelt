@@ -12,6 +12,7 @@ import {
   parseJwtJson,
   stringifyJwtJson,
   uint8ToBase64Url,
+  base64UrlToUint8,
   relativeTime,
   SAMPLE_JWT,
   type DecodedJwt,
@@ -346,15 +347,8 @@ describe("encodeJwt keeps unsafe integers exact", () => {
       '{"sub":"u1","account_id":12345678901234567890,"n":9007199254740993}'
     ) as Record<string, unknown>;
     const token = await encodeJwt({}, payload, "topsecret", "HS256");
-    const r = decodeJwt(token);
-    expect(r.ok).toBe(true);
-    if (r.ok) {
-      const text = stringifyJwtJson(r.value.payload);
-      expect(text).toContain("12345678901234567890");
-      expect(text).toContain("9007199254740993");
-      expect(text).not.toContain("12345678901234567000");
-      expect(text).not.toContain("9007199254740992");
-    }
+    const json = new TextDecoder().decode(base64UrlToUint8(token.split(".")[1]));
+    expect(json).toBe('{"sub":"u1","account_id":12345678901234567890,"n":9007199254740993}');
   });
 
   it("keeps exp, nbf and iat as plain numbers", async () => {
