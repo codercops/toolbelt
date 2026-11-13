@@ -223,6 +223,7 @@ describe("toEpoch", () => {
       "4/31/24",
       "2/29/23",
       "Feb 29",
+      "Feb 29 12:00",
     ];
 
     for (const input of invalidDates) {
@@ -238,6 +239,10 @@ describe("toEpoch", () => {
       "2024.02.29",
       "2/29/24",
       "Feb 28",
+      "Feb 29, 24",
+      "29 Feb 24",
+      "29 Feb 2024 10:00",
+      "Dec 25 10:30",
     ];
 
     for (const input of validDates) {

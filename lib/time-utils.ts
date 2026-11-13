@@ -172,7 +172,7 @@ function extractCalendarDay(dateString: string): CalendarDay | null {
   }
 
   const dayFirst =
-    /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-/.]+([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{4}|\d{2})(?!\d)/i.exec(
+    /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-/.]+([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{4}|\d{2})(?![\d:])/i.exec(
       dateString
     );
   if (dayFirst) {
@@ -194,7 +194,7 @@ function extractCalendarDay(dateString: string): CalendarDay | null {
   }
 
   const monthFirst =
-    /(?:^|[^\w])([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{1,2})(?!\d)(?:st|nd|rd|th)?,?(?:[\s-/.]+(\d{4}|\d{2})(?!\d))?/i.exec(
+    /(?:^|[^\w])([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{1,2})(?!\d)(?:st|nd|rd|th)?,?(?:[\s-/.]+(\d{4}|\d{2})(?![\d:]))?/i.exec(
       dateString
     );
   if (monthFirst) {
