@@ -172,13 +172,17 @@ function extractCalendarDay(dateString: string): CalendarDay | null {
   }
 
   const dayFirst =
-    /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-/.]+([A-Za-z]{3,9})\.?,?[\s-/.]+(\d{4}|\d{2})(?![\d:])/i.exec(
+    /(?:^|[^\w])(\d{1,2})(?:st|nd|rd|th)?[\s-/.]+([A-Za-z]{3,9})(?:\.?,?[\s-/.]+(\d{4}|\d{2})(?![\d:]))?/i.exec(
       dateString
     );
   if (dayFirst) {
     const month = monthNumber(dayFirst[2]);
     if (month !== null) {
-      return { year: parseYear(dayFirst[3]), month, day: Number(dayFirst[1]) };
+      return {
+        year: dayFirst[3] ? parseYear(dayFirst[3]) : null,
+        month,
+        day: Number(dayFirst[1]),
+      };
     }
   }
 

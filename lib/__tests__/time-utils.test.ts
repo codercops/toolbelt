@@ -250,6 +250,41 @@ describe("toEpoch", () => {
     }
   });
 
+  it("rejects impossible days in yearless day-first formats (Issue #487)", () => {
+    const invalidDates = [
+      "30 Feb",
+      "30 February",
+      "30/Feb",
+      "29 Feb",
+      "29 February",
+      "29.Feb",
+      "31 Apr",
+      "31-Apr",
+      "31-Apr 10:00",
+      "30 Feb 12:00",
+    ];
+
+    for (const input of invalidDates) {
+      expect(toEpoch(input).ok, `Expected ${input} to be rejected`).toBe(false);
+    }
+  });
+
+  it("accepts valid days in yearless day-first and dotted formats (Issue #487)", () => {
+    const validDates = [
+      "28 Feb",
+      "30 Apr",
+      "15 March 10:00",
+      "29 Feb. 2024",
+      "29.Feb.2024",
+      "29-Feb-24",
+      "29 Feb 2024 10:00",
+    ];
+
+    for (const input of validDates) {
+      expect(toEpoch(input).ok, `Expected ${input} to be accepted`).toBe(true);
+    }
+  });
+
   it("accepts a valid date whose offset lands on the next UTC day", () => {
     const result = toEpoch("2023-02-28T23:00:00-05:00");
     expect(result.ok).toBe(true);
