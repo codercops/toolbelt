@@ -97,14 +97,31 @@ describe("toEpoch", () => {
     expect(toEpoch("2024/02/30").ok).toBe(false);
     expect(toEpoch("30 February 2024").ok).toBe(false);
     expect(toEpoch("Tue, 31 Apr 2024 10:00:00 GMT").ok).toBe(false);
+    expect(toEpoch("31-Apr-2024").ok).toBe(false);
+    expect(toEpoch("02-30-2024").ok).toBe(false);
+    expect(toEpoch("2024.04.31").ok).toBe(false);
+    expect(toEpoch("31/Apr/2024").ok).toBe(false);
+    expect(toEpoch("31.Apr.2024").ok).toBe(false);
+    expect(toEpoch("Apr-31-2024").ok).toBe(false);
+    expect(toEpoch("2024/Apr/31").ok).toBe(false);
+    expect(toEpoch("2024.Apr.31").ok).toBe(false);
   });
 
-  it.each(["02/30/2024", "2/30/2024", "02/29/2023", "04/31/2024"])(
-    "rejects impossible US-style numeric date %s",
-    (input) => {
-      expect(toEpoch(input).ok).toBe(false);
-    }
-  );
+  it.each([
+    "02/30/2024",
+    "2/30/2024",
+    "02-30-2024",
+    "2-30-2024",
+    "02.30.2024",
+    "02/29/2023",
+    "02-29-2023",
+    "02.29.2023",
+    "04/31/2024",
+    "04-31-2024",
+    "04.31.2024",
+  ])("rejects impossible US-style numeric date %s", (input) => {
+    expect(toEpoch(input).ok).toBe(false);
+  });
 
   it("accepts valid US-style dates and preserves their local calendar day", () => {
     const dates = [
@@ -173,6 +190,63 @@ describe("toEpoch", () => {
     expect(iso.ok).toBe(true);
     if (iso.ok) {
       expect(iso.seconds).toBe(1_709_164_800);
+    }
+
+    const dots = toEpoch("2024.02.29");
+    expect(dots.ok).toBe(true);
+    if (dots.ok) {
+      const date = new Date(dots.milliseconds);
+      expect(date.getFullYear()).toBe(2024);
+      expect(date.getMonth()).toBe(1);
+      expect(date.getDate()).toBe(29);
+    }
+
+    const hyphenDayFirst = toEpoch("29-Feb-2024");
+    expect(hyphenDayFirst.ok).toBe(true);
+    if (hyphenDayFirst.ok) {
+      const date = new Date(hyphenDayFirst.milliseconds);
+      expect(date.getFullYear()).toBe(2024);
+      expect(date.getMonth()).toBe(1);
+      expect(date.getDate()).toBe(29);
+    }
+  });
+
+  it("rejects impossible days across separators, 2-digit years, and yearless dates (Issue #472)", () => {
+    const invalidDates = [
+      "31-Apr-2024",
+      "31-Apr-24",
+      "2024.04.31",
+      "30/Feb/2024",
+      "Feb-30-2024",
+      "02-30-2024",
+      "04.31.2024",
+      "4/31/24",
+      "2/29/23",
+      "Feb 29",
+      "Feb 29 12:00",
+    ];
+
+    for (const input of invalidDates) {
+      expect(toEpoch(input).ok, `Expected ${input} to be rejected`).toBe(false);
+    }
+  });
+
+  it("accepts valid days across separators, 2-digit years, and yearless dates (Issue #472)", () => {
+    const validDates = [
+      "30-Apr-2024",
+      "29-Feb-2024",
+      "02-29-2024",
+      "2024.02.29",
+      "2/29/24",
+      "Feb 28",
+      "Feb 29, 24",
+      "29 Feb 24",
+      "29 Feb 2024 10:00",
+      "Dec 25 10:30",
+    ];
+
+    for (const input of validDates) {
+      expect(toEpoch(input).ok, `Expected ${input} to be accepted`).toBe(true);
     }
   });
 
