@@ -408,7 +408,7 @@ export const TOOLS: Tool[] = [
       },
       {
         q: "Can I enter modern CSS space-separated color syntax?",
-        a: "Yes. Both legacy comma-separated syntax like rgb(255, 0, 0) and modern CSS Color 4 space-separated syntax like rgb(255 0 0 / 0.5) and hsl(200 100% 50% / 0.8) are supported.",
+        a: "Yes. Both legacy comma-separated syntax like rgb(255, 0, 0) and modern CSS Color 4 space-separated syntax like rgb(255 0 0 / 0.5) and hsl(200 100% 50% / 0.8) are supported. You can also enter a hex value without the leading # (F26DF0) or any of the 148 CSS named colors, such as rebeccapurple or transparent.",
       },
       {
         q: "Is any color data sent to a server?",
