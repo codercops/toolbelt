@@ -5,6 +5,7 @@ import {
   utf8ByteCount,
   codePointCount,
   INSPECTION_LIMIT,
+  EXAMPLES,
 } from "../unicode-inspector";
 
 describe("utf8ByteCount", () => {
@@ -147,6 +148,34 @@ describe("inspectUnicode", () => {
       if (code >= 0xd800 && code <= 0xdfff) continue;
       const char = String.fromCharCode(code);
       if (/[\p{Cc}\p{Zs}\p{Cf}]/u.test(char) && inspectUnicode(char).rows[0].invisibleLabel === null) {
+        unlabelled.push(`U+${code.toString(16).toUpperCase().padStart(4, "0")}`);
+      }
+    }
+    expect(unlabelled).toEqual([]);
+  });
+
+  it("labels the variation selector in the Emoji example and the selector ranges", () => {
+    const emoji = EXAMPLES.find((e) => e.label === "Emoji");
+    if (!emoji) throw new Error("Emoji example is missing");
+    expect(inspectUnicode(emoji.text).rows[2]).toMatchObject({
+      codePoint: 0xfe0f,
+      invisibleLabel: "VARIATION SELECTOR-16",
+      intentional: true,
+    });
+    expect(inspectUnicode("\ufe00").rows[0]).toMatchObject({ invisibleLabel: "VARIATION SELECTOR-1", intentional: true });
+    expect(inspectUnicode("\u{e0100}").rows[0]).toMatchObject({ invisibleLabel: "VARIATION SELECTOR-17", intentional: true });
+    expect(inspectUnicode("\u{e01ef}").rows[0]).toMatchObject({ invisibleLabel: "VARIATION SELECTOR-256", intentional: true });
+    expect(inspectUnicode("\u180b").rows[0]).toMatchObject({ invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR ONE", intentional: true });
+    expect(inspectUnicode("\u180f").rows[0]).toMatchObject({ invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR FOUR", intentional: true });
+  });
+
+  it("labels every default-ignorable code point", () => {
+    const unlabelled: string[] = [];
+    for (let code = 0; code <= 0x10ffff; code++) {
+      if (code >= 0xd800 && code <= 0xdfff) continue;
+      const char = String.fromCodePoint(code);
+      if (!/\p{Default_Ignorable_Code_Point}/u.test(char)) continue;
+      if (inspectUnicode(char).rows[0].invisibleLabel === null) {
         unlabelled.push(`U+${code.toString(16).toUpperCase().padStart(4, "0")}`);
       }
     }

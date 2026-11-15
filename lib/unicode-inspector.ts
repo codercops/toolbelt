@@ -88,6 +88,20 @@ for (let cp = 0xe0020; cp <= 0xe007e; cp++) {
 }
 INVISIBLE[0xe007f] = { label: "CANCEL TAG", intentional: true };
 
+for (let cp = 0xfe00; cp <= 0xfe0f; cp++) {
+  INVISIBLE[cp] = { label: `VARIATION SELECTOR-${cp - 0xfe00 + 1}`, intentional: true };
+}
+
+for (let cp = 0xe0100; cp <= 0xe01ef; cp++) {
+  INVISIBLE[cp] = { label: `VARIATION SELECTOR-${cp - 0xe0100 + 17}`, intentional: true };
+}
+
+const MONGOLIAN_VARIATION_SELECTOR_NAMES = ["ONE", "TWO", "THREE", "FOUR"];
+for (const [index, cp] of [0x180b, 0x180c, 0x180d, 0x180f].entries()) {
+  const name = MONGOLIAN_VARIATION_SELECTOR_NAMES[index] ?? "";
+  INVISIBLE[cp] = { label: `MONGOLIAN FREE VARIATION SELECTOR ${name}`, intentional: true };
+}
+
 export interface CodePointRow {
   codePoint: number;
   codePointStr: string;
@@ -211,6 +225,9 @@ function getInvisibleInfo(cp: number, char: string): { label: string | null; int
     }
     if (/\p{Cf}/u.test(char)) {
       return { label: "FORMAT CHARACTER", intentional: true };
+    }
+    if (/\p{Default_Ignorable_Code_Point}/u.test(char)) {
+      return { label: "DEFAULT IGNORABLE", intentional: true };
     }
   }
   return { label: null, intentional: false };
