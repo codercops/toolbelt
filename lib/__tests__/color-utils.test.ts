@@ -178,14 +178,44 @@ describe("complete color tokens and alpha separators", () => {
   });
 });
 
+describe("HEX without a leading # and CSS named colors", () => {
+  it.each(["F26DF0", "f26df0", "fff", "ff000080"])("parses %s the same as the # form", (input) => {
+    expect(parseColor(input)).toEqual(parseColor(`#${input}`));
+  });
+
+  it("parses CSS named colors and transparent case insensitively", () => {
+    expect(parseColor("rebeccapurple")).toEqual({
+      ok: true,
+      value: { r: 102, g: 51, b: 153, a: 1 },
+    });
+    expect(parseColor("RED")).toEqual({
+      ok: true,
+      value: { r: 255, g: 0, b: 0, a: 1 },
+    });
+    expect(parseColor("SlateGray")).toEqual(parseColor("#708090"));
+    expect(parseColor("transparent")).toEqual({
+      ok: true,
+      value: { r: 0, g: 0, b: 0, a: 0 },
+    });
+  });
+
+  it("rejects five-digit hex, unknown names and currentcolor", () => {
+    for (const input of ["notacolor", "ff00f", "currentcolor"]) {
+      const result = parseColor(input);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.length).toBeGreaterThan(0);
+    }
+
+    const current = parseColor("currentcolor");
+    if (!current.ok) expect(current.error).toContain("currentcolor");
+  });
+});
+
 describe("invalid input handling", () => {
   it.each([
     "",
     "   ",
     "not-a-color",
-    "red",
-    "transparent",
-    "blue",
     "#12345",
     "#gggggg",
     "rgb(255, 0)",
