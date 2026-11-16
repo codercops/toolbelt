@@ -519,7 +519,7 @@ export function parseColor(input: string): ParseColorResult {
   }
 
   const named = CSS_NAMED_COLORS[str.toLowerCase()];
-  if (named !== undefined) {
+  if (Object.hasOwn(CSS_NAMED_COLORS, str.toLowerCase())) {
     return {
       ok: true,
       value: { r: (named >> 16) & 0xff, g: (named >> 8) & 0xff, b: named & 0xff, a: 1 },

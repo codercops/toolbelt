@@ -209,6 +209,10 @@ describe("HEX without a leading # and CSS named colors", () => {
     const current = parseColor("currentcolor");
     if (!current.ok) expect(current.error).toContain("currentcolor");
   });
+
+  it.each(["constructor", "__proto__"])("rejects inherited property %s as a color name", (input) => {
+    expect(parseColor(input).ok).toBe(false);
+  });
 });
 
 describe("invalid input handling", () => {
