@@ -244,7 +244,7 @@ export function ColorConverterClient() {
                 type="text"
                 value={colorInput}
                 onChange={(e) => setColorInput(e.target.value)}
-                placeholder="e.g. #F26DF0, rgb(242, 109, 240), hsl(301, 84%, 69%)"
+                placeholder="e.g. #F26DF0, F26DF0, rebeccapurple, hsl(301, 84%, 69%)"
                 className={cn(
                   "w-full px-3.5 py-2.5 rounded-lg font-mono text-[13.5px] bg-[var(--bg-card)] border text-[var(--fg)] placeholder:text-[var(--fg-dim)] transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--fuchsia)]",
                   parsed.ok
