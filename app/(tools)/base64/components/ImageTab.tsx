@@ -13,8 +13,18 @@ interface ImageInfo {
   size: number;
   width: number;
   height: number;
+  decodable: boolean;
   dataUri: string;
   base64Only: string;
+}
+
+function escapeHtmlAttribute(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function imgTag(dataUri: string, info: ImageInfo) {
+  const size = info.decodable ? ` width="${info.width}" height="${info.height}"` : "";
+  return `<img src="${dataUri}" alt="${escapeHtmlAttribute(info.name)}"${size} />`;
 }
 
 export function ImageTab() {
@@ -33,10 +43,10 @@ export function ImageTab() {
       const buf = new Uint8Array(await file.arrayBuffer());
       const base64 = bytesToBase64(buf, { urlSafe: false, padding: true });
       const dataUri = `data:${file.type};base64,${base64}`;
-      const dims = await new Promise<{ width: number; height: number }>((resolve) => {
+      const dims = await new Promise<{ width: number; height: number; decodable: boolean }>((resolve) => {
         const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => resolve({ width: 0, height: 0 });
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight, decodable: true });
+        img.onerror = () => resolve({ width: 0, height: 0, decodable: false });
         img.src = dataUri;
       });
       setInfo({
@@ -45,6 +55,7 @@ export function ImageTab() {
         size: file.size,
         width: dims.width,
         height: dims.height,
+        decodable: dims.decodable,
         dataUri,
         base64Only: base64,
       });
@@ -60,9 +71,7 @@ export function ImageTab() {
     if (file) handleFile(file);
   }
 
-  const htmlSnippet = info
-    ? `<img src="${info.dataUri.slice(0, 40)}..." alt="${info.name}" width="${info.width}" height="${info.height}" />`
-    : "";
+  const htmlSnippet = info ? imgTag(`${info.dataUri.slice(0, 40)}...`, info) : "";
   const cssSnippet = info
     ? `background-image: url("${info.dataUri.slice(0, 40)}...");`
     : "";
@@ -100,22 +109,31 @@ export function ImageTab() {
           />
           {info ? (
             <div className="animate-fade-in pointer-events-none">
-              <div className="mx-auto mb-3 overflow-hidden rounded-md border border-[var(--hairline)] bg-black/30 inline-block">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={info.dataUri}
-                  alt={info.name}
-                  style={{
-                    maxWidth: 200,
-                    maxHeight: 200,
-                    display: "block",
-                  }}
-                />
-              </div>
+              {info.decodable && (
+                <div className="mx-auto mb-3 overflow-hidden rounded-md border border-[var(--hairline)] bg-black/30 inline-block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={info.dataUri}
+                    alt={info.name}
+                    style={{
+                      maxWidth: 200,
+                      maxHeight: 200,
+                      display: "block",
+                    }}
+                  />
+                </div>
+              )}
               <div className="font-mono text-[12px] text-[var(--fg)] break-all">{info.name}</div>
               <div className="mt-1 font-mono text-[11px] text-[var(--fg-muted)]">
-                {info.mime} · {formatBytes(info.size)} · {info.width}×{info.height}
+                {info.mime} · {formatBytes(info.size)} ·{" "}
+                {info.decodable ? `${info.width}×${info.height}` : "size unknown"}
               </div>
+              {!info.decodable && (
+                <p className="mt-1 text-[12px] text-[var(--fg-muted)]">
+                  The browser can&apos;t display this format, so there&apos;s no preview. The data URI itself is
+                  still valid.
+                </p>
+              )}
               <button
                 type="button"
                 className="btn mt-3 relative z-10 pointer-events-auto"
@@ -155,7 +173,7 @@ export function ImageTab() {
         <div className="space-y-3 animate-fade-in">
           <OutputBlock label="Full data URI" value={info.dataUri} copyLabel="Copy full data URI" wrap />
           <OutputBlock label="Base64 only (no prefix)" value={info.base64Only} copyLabel="Copy Base64 only" wrap />
-          <OutputBlock label="HTML <img> tag" value={htmlSnippet} copyLabel="Copy HTML img tag" full={`<img src="${info.dataUri}" alt="${info.name}" width="${info.width}" height="${info.height}" />`} />
+          <OutputBlock label="HTML <img> tag" value={htmlSnippet} copyLabel="Copy HTML img tag" full={imgTag(info.dataUri, info)} />
           <OutputBlock label="CSS background-image" value={cssSnippet} copyLabel="Copy CSS background-image" full={`background-image: url("${info.dataUri}");`} />
         </div>
       ) : (
