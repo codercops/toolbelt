@@ -130,8 +130,8 @@ export function ImageTab() {
               </div>
               {!info.decodable && (
                 <p className="mt-1 text-[12px] text-[var(--fg-muted)]">
-                  The browser can&apos;t display this format, so there&apos;s no preview. The data URI itself is
-                  still valid.
+                  This image couldn&apos;t be decoded, so there&apos;s no preview. The data URI itself is still
+                  valid.
                 </p>
               )}
               <button

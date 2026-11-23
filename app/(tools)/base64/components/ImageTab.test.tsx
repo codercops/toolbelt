@@ -112,7 +112,7 @@ describe("ImageTab HTML snippet", () => {
     await upload("broken.tiff", "image/tiff");
 
     expect(screen.getByText(/size unknown/)).toBeInTheDocument();
-    expect(screen.getByText(/can't display this format/)).toBeInTheDocument();
+    expect(screen.getByText(/couldn't be decoded/)).toBeInTheDocument();
     expect(screen.getByText(/data URI itself is still valid/)).toBeInTheDocument();
   });
 
