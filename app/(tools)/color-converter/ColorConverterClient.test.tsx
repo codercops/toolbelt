@@ -101,6 +101,17 @@ describe("accessible foreground suggestions", () => {
   });
 });
 
+describe("quick info tip text", () => {
+  it("mentions hex without # and CSS color names", () => {
+    render(<ColorConverterClient />);
+    const tip = screen.getByText(/rebeccapurple/);
+    expect(tip).toBeInTheDocument();
+    const parent = tip.closest("p")!;
+    expect(parent.textContent).toContain("F26DF0");
+    expect(parent.textContent).toContain("without");
+  });
+});
+
 describe("contrast color pickers", () => {
   it("keep the alpha of the current colors", () => {
     const { foreground, background } = failingPair();
