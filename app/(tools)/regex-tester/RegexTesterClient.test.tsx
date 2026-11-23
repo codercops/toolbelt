@@ -54,6 +54,17 @@ describe("RegexTesterClient", () => {
     fireEvent.click(copyButton);
     await waitFor(() => expect(mockWriteText).toHaveBeenCalled());
   });
+
+  it("exposes the v flag and keeps it mutually exclusive with u", () => {
+    renderClient();
+    const unicode = screen.getByRole("button", { name: "Unicode" });
+    const unicodeSets = screen.getByRole("button", { name: "Unicode sets: set operations and string properties" });
+    fireEvent.click(unicode);
+    expect(unicode).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(unicodeSets);
+    expect(unicodeSets).toHaveAttribute("aria-pressed", "true");
+    expect(unicode).toHaveAttribute("aria-pressed", "false");
+  });
 });
 
 describe("RegexTesterClient match navigation", () => {

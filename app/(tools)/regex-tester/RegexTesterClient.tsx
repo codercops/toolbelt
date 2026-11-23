@@ -10,6 +10,7 @@ const FLAGS = [
   { flag: "m", title: "Multiline: ^ and $ match at line breaks" },
   { flag: "s", title: "Dot all: . also matches line breaks" },
   { flag: "u", title: "Unicode" },
+  { flag: "v", title: "Unicode sets: set operations and string properties" },
   { flag: "y", title: "Sticky: match only at lastIndex" },
 ];
 
@@ -67,9 +68,15 @@ export function RegexTesterClient() {
 
   function toggleFlag(flag: string) {
     setActiveMatchIndex(0);
-    setFlags((current) =>
-      FLAGS.map((f) => f.flag).filter((f) => (f === flag ? !current.includes(f) : current.includes(f))).join("")
-    );
+    setFlags((current) => {
+      const enabling = !current.includes(flag);
+      const next = new Set(current);
+      if (enabling) next.add(flag);
+      else next.delete(flag);
+      if (enabling && flag === "u") next.delete("v");
+      if (enabling && flag === "v") next.delete("u");
+      return FLAGS.map((f) => f.flag).filter((f) => next.has(f)).join("");
+    });
   }
 
   function goToMatch(step: number) {

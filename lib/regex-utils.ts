@@ -17,6 +17,9 @@ export function compileRegex(pattern: string, flags: string): CompileResult {
   if (!/^[dgimsuvy]*$/.test(flags) || new Set(flags).size !== flags.length) {
     return { ok: false, error: `Invalid flags "${flags}": use each of d, g, i, m, s, u, v, y at most once.` };
   }
+  if (flags.includes("u") && flags.includes("v")) {
+    return { ok: false, error: `Invalid flags "${flags}": u and v cannot be used together.` };
+  }
   try {
     return { ok: true, regex: new RegExp(pattern, flags) };
   } catch (error) {
@@ -46,7 +49,7 @@ export function findMatches(regex: RegExp, text: string, { limit = 1000 } = {}):
     });
     if (!regex.global) break;
     // A zero-length match leaves lastIndex where it was, so step past it or the loop never ends.
-    if (match[0] === "") re.lastIndex += re.unicode && text.codePointAt(re.lastIndex)! > 0xffff ? 2 : 1;
+    if (match[0] === "") re.lastIndex += (re.unicode || re.unicodeSets) && text.codePointAt(re.lastIndex)! > 0xffff ? 2 : 1;
   }
   return { matches, truncated };
 }

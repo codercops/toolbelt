@@ -22,6 +22,13 @@ describe("compileRegex", () => {
     expect(result.ok).toBe(false);
     expect(!result.ok && result.error).toContain(`Invalid flags "${flags}"`);
   });
+
+  it("explains that Unicode and Unicode Sets flags are mutually exclusive", () => {
+    expect(compileRegex("a", "uv")).toEqual({
+      ok: false,
+      error: 'Invalid flags "uv": u and v cannot be used together.',
+    });
+  });
 });
 
 describe("findMatches", () => {
@@ -53,6 +60,12 @@ describe("findMatches", () => {
   it("steps over a whole surrogate pair for zero-length matches with the u flag", () => {
     const { matches } = findMatches(compile("", "gu"), "a😀");
     expect(matches.map((match) => match.index)).toEqual([0, 1, 3]);
+  });
+
+  it("steps over a whole surrogate pair for zero-length matches with the v flag", () => {
+    const { matches, truncated } = findMatches(compile("", "gv"), "😀a");
+    expect(matches.map((match) => match.index)).toEqual([0, 2, 3]);
+    expect(truncated).toBe(false);
   });
 
   it("stops after the first match without the g flag", () => {
