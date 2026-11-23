@@ -17,6 +17,11 @@ export function compileRegex(pattern: string, flags: string): CompileResult {
   if (!/^[dgimsuvy]*$/.test(flags) || new Set(flags).size !== flags.length) {
     return { ok: false, error: `Invalid flags "${flags}": use each of d, g, i, m, s, u, v, y at most once.` };
   }
+  if (flags.includes("u") && flags.includes("v")) {
+    // `v` already implies Unicode mode, and `new RegExp(..., "uv")` throws a message about the
+    // constructor rather than about the two flags that cannot be combined.
+    return { ok: false, error: `Invalid flags "${flags}": u and v cannot be used together, since v already implies Unicode mode.` };
+  }
   try {
     return { ok: true, regex: new RegExp(pattern, flags) };
   } catch (error) {
@@ -29,6 +34,9 @@ export function compileRegex(pattern: string, flags: string): CompileResult {
 
 export function findMatches(regex: RegExp, text: string, { limit = 1000 } = {}): FindResult {
   const re = new RegExp(regex.source, regex.global ? regex.flags : regex.flags + "g");
+  // Both `u` and `v` make the engine treat a surrogate pair as one character, so an empty match
+  // has to step over the whole pair; stepping one code unit lands inside it and repeats the match.
+  const codePointMode = re.unicode || re.unicodeSets;
   const matches: RegexMatch[] = [];
   let truncated = false;
   let match: RegExpExecArray | null;
@@ -46,7 +54,7 @@ export function findMatches(regex: RegExp, text: string, { limit = 1000 } = {}):
     });
     if (!regex.global) break;
     // A zero-length match leaves lastIndex where it was, so step past it or the loop never ends.
-    if (match[0] === "") re.lastIndex += re.unicode && text.codePointAt(re.lastIndex)! > 0xffff ? 2 : 1;
+    if (match[0] === "") re.lastIndex += codePointMode && text.codePointAt(re.lastIndex)! > 0xffff ? 2 : 1;
   }
   return { matches, truncated };
 }

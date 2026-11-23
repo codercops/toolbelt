@@ -714,7 +714,7 @@ export const TOOLS: Tool[] = [
     faqs: [
       {
         q: "Which regex flavor does it use?",
-        a: "JavaScript, through your browser's own RegExp engine, so a pattern behaves here exactly as it does in your code. The flags g, i, m, s, u and y can be switched on and off. PCRE, Python and other flavors are not supported, and some of their syntax, such as possessive quantifiers, is not valid here.",
+        a: "JavaScript, through your browser's own RegExp engine, so a pattern behaves here exactly as it does in your code. The flags g, i, m, s, u, v and y can be switched on and off. `v` (Unicode sets) adds set operations such as `[\\p{L}--[a-z]]` and properties such as `\\p{RGI_Emoji}`, and cannot be combined with `u`. PCRE, Python and other flavors are not supported, and some of their syntax, such as possessive quantifiers, is not valid here.",
       },
       {
         q: "How do I use capture groups in the replacement?",

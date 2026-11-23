@@ -54,6 +54,34 @@ describe("RegexTesterClient", () => {
     fireEvent.click(copyButton);
     await waitFor(() => expect(mockWriteText).toHaveBeenCalled());
   });
+
+  it("offers the v flag and keeps u and v mutually exclusive", () => {
+    renderClient();
+    const unicode = screen.getByRole("button", { name: "Unicode" });
+    const unicodeSets = screen.getByRole("button", { name: "Unicode sets: set operations and string properties" });
+    expect(unicodeSets).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(unicode);
+    expect(unicode).toHaveAttribute("aria-pressed", "true");
+    expect(unicodeSets).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(unicodeSets);
+    expect(unicodeSets).toHaveAttribute("aria-pressed", "true");
+    expect(unicode).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(unicode);
+    expect(unicode).toHaveAttribute("aria-pressed", "true");
+    expect(unicodeSets).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("counts matches correctly once v is on and the pattern is an empty match", async () => {
+    renderClient();
+    fireEvent.click(screen.getByRole("button", { name: "Unicode sets: set operations and string properties" }));
+    fireEvent.change(screen.getByLabelText("Pattern"), { target: { value: "x*" } });
+    fireEvent.change(screen.getByLabelText("Test text"), { target: { value: "😀😀" } });
+
+    expect(await screen.findByRole("heading", { name: "3 matches" })).toBeInTheDocument();
+  });
 });
 
 describe("RegexTesterClient match navigation", () => {

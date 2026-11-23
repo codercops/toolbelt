@@ -22,6 +22,19 @@ describe("compileRegex", () => {
     expect(result.ok).toBe(false);
     expect(!result.ok && result.error).toContain(`Invalid flags "${flags}"`);
   });
+
+  it("rejects u and v together instead of passing them to the constructor", () => {
+    const result = compileRegex("a", "uv");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toContain('Invalid flags "uv"');
+    expect(!result.ok && result.error).toContain("cannot be used together");
+  });
+
+  it("compiles a v pattern that uses set operations", () => {
+    const result = compileRegex("[\\p{L}--[a-z]]+", "gv");
+    expect(result.ok).toBe(true);
+    expect(result.ok && findMatches(result.regex, "abcÉf").matches.map((match) => match.text)).toEqual(["É"]);
+  });
 });
 
 describe("findMatches", () => {
@@ -53,6 +66,16 @@ describe("findMatches", () => {
   it("steps over a whole surrogate pair for zero-length matches with the u flag", () => {
     const { matches } = findMatches(compile("", "gu"), "a😀");
     expect(matches.map((match) => match.index)).toEqual([0, 1, 3]);
+  });
+
+  it.each([
+    ["", "😀a", [0, 2, 3]],
+    ["x*", "😀😀", [0, 2, 4]],
+    ["(?:)", "a😀b", [0, 1, 3, 4]],
+  ])("steps over a surrogate pair with the v flag too (%s on %s)", (pattern, text, indexes) => {
+    const { matches, truncated } = findMatches(compile(pattern, "gv"), text);
+    expect(truncated).toBe(false);
+    expect(matches.map((match) => match.index)).toEqual(indexes);
   });
 
   it("stops after the first match without the g flag", () => {
