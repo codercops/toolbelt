@@ -88,6 +88,27 @@ for (let cp = 0xe0020; cp <= 0xe007e; cp++) {
 }
 INVISIBLE[0xe007f] = { label: "CANCEL TAG", intentional: true };
 
+// Variation selectors: VS1–VS16 (U+FE00–U+FE0F)
+for (let cp = 0xfe00; cp <= 0xfe0f; cp++) {
+  INVISIBLE[cp] = { label: `VARIATION SELECTOR-${cp - 0xfe00 + 1}`, intentional: true };
+}
+
+// Variation selectors: VS17–VS256 (U+E0100–U+E01EF)
+for (let cp = 0xe0100; cp <= 0xe01ef; cp++) {
+  INVISIBLE[cp] = { label: `VARIATION SELECTOR-${cp - 0xe0100 + 17}`, intentional: true };
+}
+
+// Mongolian free variation selectors (U+180B–U+180D, U+180F)
+const MONGOLIAN_FVS_NAMES: Record<number, string> = {
+  0x180b: "MONGOLIAN FREE VARIATION SELECTOR ONE",
+  0x180c: "MONGOLIAN FREE VARIATION SELECTOR TWO",
+  0x180d: "MONGOLIAN FREE VARIATION SELECTOR THREE",
+  0x180f: "MONGOLIAN FREE VARIATION SELECTOR FOUR",
+};
+for (const [cp, label] of Object.entries(MONGOLIAN_FVS_NAMES)) {
+  INVISIBLE[Number(cp)] = { label, intentional: true };
+}
+
 export interface CodePointRow {
   codePoint: number;
   codePointStr: string;
@@ -211,6 +232,9 @@ function getInvisibleInfo(cp: number, char: string): { label: string | null; int
     }
     if (/\p{Cf}/u.test(char)) {
       return { label: "FORMAT CHARACTER", intentional: true };
+    }
+    if (/\p{Default_Ignorable_Code_Point}/u.test(char)) {
+      return { label: "DEFAULT IGNORABLE", intentional: true };
     }
   }
   return { label: null, intentional: false };

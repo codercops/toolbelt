@@ -5,6 +5,7 @@ import {
   utf8ByteCount,
   codePointCount,
   INSPECTION_LIMIT,
+  EXAMPLES,
 } from "../unicode-inspector";
 
 describe("utf8ByteCount", () => {
@@ -158,6 +159,62 @@ describe("inspectUnicode", () => {
       invisibleLabel: "FORMAT CHARACTER",
       intentional: true,
     });
+  });
+
+  it("labels U+FE0F in the Emoji example as VARIATION SELECTOR-16 (blue)", () => {
+    const emojiExample = EXAMPLES.find((e) => e.label === "Emoji")!;
+    const rows = inspectUnicode(emojiExample.text).rows;
+    const vs16Row = rows.find((r) => r.codePoint === 0xfe0f)!;
+    expect(vs16Row.invisibleLabel).toBe("VARIATION SELECTOR-16");
+    expect(vs16Row.intentional).toBe(true);
+  });
+
+  it("labels variation selectors VS1–VS16 (U+FE00–U+FE0F)", () => {
+    expect(inspectUnicode("\uFE00").rows[0]).toMatchObject({
+      invisibleLabel: "VARIATION SELECTOR-1",
+      intentional: true,
+    });
+    expect(inspectUnicode("\uFE0F").rows[0]).toMatchObject({
+      invisibleLabel: "VARIATION SELECTOR-16",
+      intentional: true,
+    });
+  });
+
+  it("labels variation selectors VS17–VS256 (U+E0100–U+E01EF)", () => {
+    const vs17 = inspectUnicode(String.fromCodePoint(0xe0100)).rows[0];
+    expect(vs17.invisibleLabel).toBe("VARIATION SELECTOR-17");
+    expect(vs17.intentional).toBe(true);
+
+    const vs256 = inspectUnicode(String.fromCodePoint(0xe01ef)).rows[0];
+    expect(vs256.invisibleLabel).toBe("VARIATION SELECTOR-256");
+    expect(vs256.intentional).toBe(true);
+  });
+
+  it("labels Mongolian free variation selectors (U+180B–U+180D, U+180F)", () => {
+    expect(inspectUnicode("\u180B").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR ONE",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u180D").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR THREE",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u180F").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR FOUR",
+      intentional: true,
+    });
+  });
+
+  it("labels every Default_Ignorable_Code_Point in the full Unicode range", () => {
+    const unlabelled: string[] = [];
+    for (let code = 0; code <= 0x10ffff; code++) {
+      if (code >= 0xd800 && code <= 0xdfff) continue;
+      const char = String.fromCodePoint(code);
+      if (/\p{Default_Ignorable_Code_Point}/u.test(char) && inspectUnicode(char).rows[0].invisibleLabel === null) {
+        unlabelled.push(`U+${code.toString(16).toUpperCase().padStart(4, "0")}`);
+      }
+    }
+    expect(unlabelled).toEqual([]);
   });
 
   it("reports correct UTF-16 offsets and counts for mixed characters", () => {
