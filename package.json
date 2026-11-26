@@ -2,7 +2,7 @@
   "name": "toolbelt",
   "version": "0.12.0",
   "private": true,
-  "description": "A developer's toolbelt: fast, privacy-first browser tools — JSON formatter, JWT decoder, Base64, URL encoder, invoice generator, unicode inspector. By CODERCOPS.",
+  "description": "A developer's toolbelt: fast, privacy-first browser tools — JSON formatter, JWT decoder, Base64, URL encoder, invoice generator, GST invoice generator, unicode inspector. By CODERCOPS.",
   "license": "MIT",
   "author": "CODERCOPS (https://www.codercops.com)",
   "homepage": "https://tools.codercops.com",
@@ -30,6 +30,7 @@
     "regex-tester",
     "markdown-preview",
     "unicode-inspector",
+    "gst-invoice-generator",
     "nextjs",
     "privacy",
     "client-side"
