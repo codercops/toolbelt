@@ -820,6 +820,59 @@ export const TOOLS: Tool[] = [
     },
     sitemapPriority: 0.9,
   },
+  {
+    slug: "gst-invoice-generator",
+    path: "/gst-invoice-generator",
+    title: "GST Invoice Generator",
+    tagline: "GST",
+    cardDescription:
+      "Make GST tax invoices for India: GSTINs, HSN/SAC codes, place of supply, and the CGST + SGST or IGST split worked out for you. Download a PDF, saved in your browser.",
+    features: ["CGST/SGST/IGST", "HSN/SAC", "Export under LUT", "Amount in words", "PDF export"],
+    accentVar: "--amber",
+    accentHex: "#FFB547",
+    metaTitle: "Free GST Invoice Generator - Make a GST Tax Invoice PDF",
+    metaDescription:
+      "Free GST invoice generator for India: GSTIN checks, HSN/SAC codes, place of supply, and the CGST, SGST or IGST split. Download a PDF, saved in your browser.",
+    ogTitle: "GST Invoice Generator - CODERCOPS Tools",
+    ogDescription:
+      "Make GST tax invoices for India with the CGST, SGST or IGST split, HSN/SAC codes and a PDF download. Nothing leaves your browser.",
+    heroBreadcrumb: "India · Tax invoice · PDF",
+    heroHeading: "GST Invoice Generator",
+    heroDim: "Generator",
+    heroDescription:
+      "Fill in your GSTIN, your client and the place of supply. The tax splits into CGST + SGST or IGST on its own, and you download a clean tax invoice PDF. Everything stays in your browser.",
+    jsonLdName: "GST Invoice Generator",
+    jsonLdDescription:
+      "Create GST tax invoices for India as PDF: supplier and client GSTINs with check-digit validation, HSN/SAC codes, place of supply, the CGST + SGST, UTGST or IGST split, exports under a Letter of Undertaking, reverse charge, and the amount in words. Saved locally in your browser.",
+    applicationCategory: "BusinessApplication",
+    faqs: [
+      {
+        q: "How does it decide between CGST + SGST and IGST?",
+        a: "From your GSTIN and the place of supply. The first two digits of a GSTIN are the state code. If the place of supply is your own state, the tax splits into CGST and SGST (or UTGST in Chandigarh, Ladakh, Lakshadweep, Andaman and Nicobar, and Dadra and Nagar Haveli and Daman and Diu). If it's another state, the whole rate is IGST.",
+      },
+      {
+        q: "Can I bill a client outside India?",
+        a: "Yes. Pick \"Outside India (export)\" as the place of supply. If you've filed a Letter of Undertaking (LUT) for the financial year, tick \"Export under LUT\" and the invoice carries no IGST, with the declaration the rules ask for and your LUT ARN. Without a LUT it charges IGST. Exports can be billed in another currency.",
+      },
+      {
+        q: "What does the invoice include?",
+        a: "The words \"Tax Invoice\", a number of up to 16 characters, the date, your name, address and GSTIN, the client's name, address and GSTIN if registered, the place of supply, the HSN or SAC code of each line, the taxable value, the tax split, the total in figures and in words, whether reverse charge applies, and a signatory block.",
+      },
+      {
+        q: "Where are my invoices stored?",
+        a: "Only in your browser's local storage on this device. There is no server and no account, and nothing you type leaves the tab. Download every PDF and keep it somewhere safe: clearing browser data deletes the saved invoices, and GST records have to be kept for years.",
+      },
+    ],
+    cta: {
+      headline: "Need GST billing inside your product?",
+      sub: "CODERCOPS builds invoicing, payments and tax handling into web apps and SaaS products for businesses in India and abroad.",
+      primaryLabel: "See our projects",
+      primaryHref: CTA_PROJECTS,
+      secondaryLabel: "Let's build together",
+      secondaryHref: CTA_CONTACT,
+    },
+    sitemapPriority: 0.9,
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {

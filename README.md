@@ -101,7 +101,9 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
     <td width="50%">
       <a href="https://tools.codercops.com/unicode-inspector"><img src="./.github/assets/og-unicode-inspector.png" alt="Unicode &amp; Invisible Character Inspector"></a>
     </td>
-    <td width="50%"></td>
+    <td width="50%">
+      <a href="https://tools.codercops.com/gst-invoice-generator"><img src="./.github/assets/og-gst-invoice-generator.png" alt="GST Invoice Generator"></a>
+    </td>
   </tr>
 </table>
 
@@ -120,6 +122,7 @@ A developer's toolbelt: fast, privacy-first browser tools. Everything runs clien
 - **[Regex tester](https://tools.codercops.com/regex-tester).** Test a JavaScript regular expression against sample text with highlighted matches, capture groups, named groups and a replace preview.
 - **[Markdown live preview](https://tools.codercops.com/markdown-preview).** Write GitHub-flavored Markdown with a sanitized live HTML preview, syntax-highlighted code, stats, and export tools.
 - **[Unicode & invisible character inspector](https://tools.codercops.com/unicode-inspector).** Inspect text code points, expose invisible and control characters, view UTF-8 and UTF-16 encodings, and preview NFC/NFD normalization.
+- **[GST invoice generator](https://tools.codercops.com/gst-invoice-generator).** GST tax invoices for India: GSTIN check digits, HSN/SAC codes, place of supply, the CGST + SGST, UTGST or IGST split, exports under LUT, reverse charge and the amount in words, as an A4 PDF saved locally.
 
 ## Why it exists
 
@@ -159,7 +162,7 @@ Note: Type-checking a fresh clone will fail if `generated/og-fonts.ts` doesn't e
 
 ## Deploy your own
 
-tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`), `lib/og.tsx:198,212`, `lib/invoice-pdf.ts:315` and `routes` in `wrangler.jsonc` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
+tools.codercops.com runs on Cloudflare Workers through the OpenNext adapter (`wrangler.jsonc`, `open-next.config.ts`), deployed by Workers Builds: build with `npx opennextjs-cloudflare build`, deploy with `npx opennextjs-cloudflare deploy` (`--env dev` for the `toolbelt-dev` develop Worker). The only build variable is `NEXT_PUBLIC_DEPLOY_ENV` (`production`, or `develop`, which makes the site noindex). The GitHub star count is cached in the `toolbelt-cache` R2 bucket. `npm run preview` builds and serves the Worker locally. If you fork it, update the domain in `lib/tools.ts` (`SITE_URL`), `lib/og.tsx:198,212`, `lib/invoice-pdf.ts:315`, `lib/gst-invoice-pdf.ts:360` and `routes` in `wrangler.jsonc` so the sitemap and canonical URLs point at your host, and update `GITHUB_REPO` in `lib/tools.ts` so the star-count link points at your fork.
 
 Verifying site ownership in Google Search Console and Bing Webmaster Tools is optional. Configure `GOOGLE_SITE_VERIFICATION` and/or `BING_SITE_VERIFICATION` as secrets on your Worker rather than plain-text environment variables (plain-text variables are removed on subsequent deploys because `keep_vars` is not enabled in `wrangler.jsonc`, whereas secrets persist across deploys, are available at runtime, and require no rebuild). Run `npx wrangler secret put GOOGLE_SITE_VERIFICATION` and `npx wrangler secret put BING_SITE_VERIFICATION` (pass `--env dev` for the development Worker). Alternatively, add both with type `Secret` under Cloudflare dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets. Each token renders its ownership meta tag (`google-site-verification`, and Bing's `msvalidate.01`) only when its secret is configured, so previews and forks that leave them unset render no verification tags at all.
 
