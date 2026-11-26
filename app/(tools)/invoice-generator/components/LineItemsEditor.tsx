@@ -7,20 +7,13 @@ import { NumberInput } from "./NumberInput";
 interface LineItemsEditorProps {
   items: LineItem[];
   currency: string;
-  /** Show the HSN/SAC code column (GST invoices). */
-  showHsn?: boolean;
   onChange: (items: LineItem[]) => void;
 }
-
-// Full class strings, so Tailwind sees both layouts when it scans the source.
-const COLS = "sm:grid-cols-[16px_1fr_96px_64px_96px_28px]";
-const COLS_HSN = "sm:grid-cols-[16px_1fr_72px_96px_56px_104px_28px]";
 
 const cell =
   "px-2.5 py-2 rounded-md border border-[var(--hairline)] bg-[var(--bg-soft)] text-[var(--fg)] text-[13px] outline-none focus:border-[var(--hairline-strong)] transition-colors";
 
-export function LineItemsEditor({ items, currency, showHsn = false, onChange }: LineItemsEditorProps) {
-  const cols = showHsn ? COLS_HSN : COLS;
+export function LineItemsEditor({ items, currency, onChange }: LineItemsEditorProps) {
   const update = (id: string, patch: Partial<LineItem>) =>
     onChange(items.map((it) => (it.id === id ? { ...it, ...patch } : it)));
 
@@ -37,10 +30,9 @@ export function LineItemsEditor({ items, currency, showHsn = false, onChange }: 
   return (
     <div className="flex flex-col gap-2.5">
       {/* Column labels (hidden on mobile where rows stack) */}
-      <div className={`hidden sm:grid ${cols} gap-2 px-1 font-mono text-[10px] tracking-[0.16em] uppercase text-[var(--fg-dim)]`}>
+      <div className="hidden sm:grid grid-cols-[16px_1fr_96px_64px_96px_28px] gap-2 px-1 font-mono text-[10px] tracking-[0.16em] uppercase text-[var(--fg-dim)]">
         <span />
         <span>Description</span>
-        {showHsn ? <span>HSN/SAC</span> : null}
         <span className="text-right">Rate</span>
         <span className="text-right">Qty</span>
         <span className="text-right">Amount</span>
@@ -50,7 +42,7 @@ export function LineItemsEditor({ items, currency, showHsn = false, onChange }: 
       {items.map((item, i) => (
         <div
           key={item.id}
-          className={`grid grid-cols-[1fr_28px] ${cols} gap-2 items-center`}
+          className="grid grid-cols-[1fr_28px] sm:grid-cols-[16px_1fr_96px_64px_96px_28px] gap-2 items-center"
         >
           <div className="hidden sm:flex flex-col items-center text-[var(--fg-dim)]">
             <button
@@ -71,18 +63,6 @@ export function LineItemsEditor({ items, currency, showHsn = false, onChange }: 
             placeholder="Item description"
             className={cell + " col-span-1"}
           />
-
-          {showHsn ? (
-            <input
-              value={item.hsn ?? ""}
-              onChange={(e) => update(item.id, { hsn: e.target.value.replace(/\s+/g, "") })}
-              placeholder="998314"
-              inputMode="numeric"
-              maxLength={8}
-              aria-label="HSN or SAC code"
-              className={cell + " font-mono"}
-            />
-          ) : null}
 
           <NumberInput
             value={item.rate}

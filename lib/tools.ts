@@ -220,13 +220,13 @@ export const TOOLS: Tool[] = [
     title: "Invoice Generator",
     tagline: "Billing",
     cardDescription:
-      "Fill in your details, preview live, and download a crisp invoice PDF. Saves invoices in your browser — reusable sender profile, deductions, auto-numbering, and India GST tax invoices.",
-    features: ["Live preview", "PDF export", "Saved locally", "Deductions", "Auto-number", "India GST"],
+      "Fill in your details, preview live, and download a crisp invoice PDF. Saves invoices in your browser — reusable sender profile, deductions, and auto-numbering.",
+    features: ["Live preview", "PDF export", "Saved locally", "Deductions", "Auto-number"],
     accentVar: "--lime",
     accentHex: "#A6F36B",
     metaTitle: "Free Invoice Generator - Make & Download PDF",
     metaDescription:
-      "Free invoice generator: create invoices and India GST tax invoices, then download a PDF. Live preview, reusable sender profile, saved in your browser.",
+      "Free invoice generator: create professional invoices and download a PDF. Live preview, reusable sender profile, and auto-numbering, saved in your browser.",
     ogTitle: "Invoice Generator - CODERCOPS Tools",
     ogDescription:
       "Build invoices in your browser and download a crisp PDF. Saved locally, no account, no data leaves your tab.",
@@ -237,7 +237,7 @@ export const TOOLS: Tool[] = [
       "Fill in your details, watch the live preview, and download a clean invoice PDF. Everything is saved in your browser — no account, no server, no data leaves your tab.",
     jsonLdName: "Invoice Generator",
     jsonLdDescription:
-      "Create, save, and download professional invoices as PDF, including India GST tax invoices with HSN/SAC codes and the CGST, SGST or IGST split. Reusable sender profile, line items with deductions, tax, and auto-incrementing invoice numbers — all stored locally in your browser.",
+      "Create, save, and download professional invoices as PDF. Reusable sender profile, line items with deductions, tax, and auto-incrementing invoice numbers — all stored locally in your browser.",
     applicationCategory: "BusinessApplication",
     faqs: [
       {
@@ -251,10 +251,6 @@ export const TOOLS: Tool[] = [
       {
         q: "Can I reuse my details and edit past invoices?",
         a: "Your sender details are saved as a reusable profile that pre-fills every new invoice. Saved invoices can be edited, duplicated, or deleted, and numbers auto-increment from the highest one.",
-      },
-      {
-        q: "Can it make a GST tax invoice for India?",
-        a: "Yes. Turn on India GST to add your GSTIN and the client's, HSN/SAC codes, the place of supply and the reverse charge line. Tax splits into CGST and SGST (or UTGST) inside one state and IGST between states, exports can go out under a Letter of Undertaking with the required declaration, and the total is written out in words.",
       },
       {
         q: "Can I add tax and discounts to an invoice?",

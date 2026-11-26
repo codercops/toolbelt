@@ -4,19 +4,15 @@
 
 import {
   computeTotals,
-  exportDeclaration,
   formatDate,
   formatMoney,
   formatMoneyWithCode,
-  gstDetailLines,
   invoiceFileName,
   lineAmount,
-  taxLineLabel,
   type Invoice,
   roundTo, 
   currencyMinorDigits,
 } from "./invoice-types";
-import { amountInWordsINR } from "./gst";
 
 // Letter page, points. Points make font sizing and layout math intuitive.
 const PAGE_W = 612;
@@ -32,9 +28,6 @@ const COL_QTY = RIGHT - 96;
 const COL_RATE = RIGHT - 176;
 const DESC_LEFT = LEFT;
 const DESC_MAX_W = COL_RATE - 70 - DESC_LEFT;
-// GST invoices add a left-aligned HSN/SAC column, so descriptions wrap sooner.
-const COL_HSN = COL_RATE - 124;
-const DESC_MAX_W_GST = COL_HSN - 12 - DESC_LEFT;
 
 // Totals block.
 const TOTALS_LABEL_LEFT = RIGHT - 210;
@@ -93,11 +86,8 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const FONT = await registerUnicodeFont(doc);
-  const { subtotal, total, taxLines, reverseCharge } = computeTotals(invoice);
+  const { subtotal, tax, total } = computeTotals(invoice);
   const currency = invoice.currency || "USD";
-  const gstOn = Boolean(invoice.gst?.enabled);
-  const gstLines = gstDetailLines(invoice);
-  const descMaxW = gstOn ? DESC_MAX_W_GST : DESC_MAX_W;
 
   doc.setProperties({
     title: `Invoice ${invoice.number}`,
@@ -137,7 +127,7 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
   doc.setFont(FONT, "normal");
   doc.setFontSize(10);
   doc.setTextColor(...BODY);
-  const senderLines = [...sender.addressLines, sender.phone, sender.email, gstLines.sender].filter(
+  const senderLines = [...sender.addressLines, sender.phone, sender.email].filter(
     (l) => l && l.trim()
   );
   for (const l of senderLines) {
@@ -159,7 +149,7 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
     doc.text(value || "—", RIGHT, ry, { align: "right" });
     ry += 22;
   };
-  headerField(gstOn ? "Tax Invoice" : "Invoice", invoice.number);
+  headerField("Invoice", invoice.number);
   headerField("Date", formatDate(invoice.dateISO));
   headerField("Due", invoice.dueText);
   headerField("Balance Due", formatMoneyWithCode(total, currency));
@@ -185,7 +175,7 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
   doc.setFont(FONT, "normal");
   doc.setFontSize(10.5);
   doc.setTextColor(...BODY);
-  const billLines = [invoice.billTo.email, ...invoice.billTo.addressLines, ...gstLines.billTo].filter(
+  const billLines = [invoice.billTo.email, ...invoice.billTo.addressLines].filter(
     (l) => l && l.trim()
   );
   for (const l of billLines) {
@@ -204,7 +194,6 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
     doc.setFontSize(8.5);
     doc.setTextColor(...INK);
     doc.text("DESCRIPTION", DESC_LEFT, y, { charSpace: 0.4 });
-    if (gstOn) doc.text("HSN/SAC", COL_HSN, y, { charSpace: 0.4 });
     doc.text("RATE", COL_RATE, y, { align: "right", charSpace: 0.4 });
     doc.text("QTY", COL_QTY, y, { align: "right", charSpace: 0.4 });
     doc.text("AMOUNT", COL_AMOUNT, y, { align: "right", charSpace: 0.4 });
@@ -225,9 +214,8 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
     doc.setFont(FONT, "normal");
     doc.setFontSize(10.5);
     doc.setTextColor(...INK);
-    const descLines = doc.splitTextToSize(item.description || "—", descMaxW) as string[];
+    const descLines = doc.splitTextToSize(item.description || "—", DESC_MAX_W) as string[];
     doc.text(descLines, DESC_LEFT, y);
-    if (gstOn && item.hsn) doc.text(item.hsn, COL_HSN, y);
     doc.text(formatMoney(item.rate, currency), COL_RATE, y, { align: "right" });
     doc.text(String(item.qty), COL_QTY, y, { align: "right" });
     doc.text(formatMoney(roundTo(lineAmount(item), currencyMinorDigits(currency)), currency),COL_AMOUNT,y,{ align: "right" });
@@ -246,7 +234,7 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
 
   // Keep the closing rule, totals, and balance-due block together and above the
   // footer — otherwise the most important numbers can clip off the page bottom.
-  const TOTALS_BLOCK_H = 210 + 18 * (taxLines.length - 1) + (reverseCharge ? 14 : 0);
+  const TOTALS_BLOCK_H = 210;
   if (y > PAGE_H - TOTALS_BLOCK_H) {
     doc.addPage();
     y = 72;
@@ -259,7 +247,6 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
 
   // ---- Totals ----
   let sy = y + 24;
-  const totalsTop = sy;
   const totalRow = (
     label: string,
     value: string,
@@ -273,128 +260,45 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
     doc.text(value, COL_AMOUNT, sy, { align: "right" });
     sy += opts.gap ?? 18;
   };
-  totalRow(gstOn ? "TAXABLE VALUE" : "SUBTOTAL", formatMoney(subtotal, currency), { bold: true, size: 9.5 });
-  taxLines.forEach((line, i) => {
-    const last = i === taxLines.length - 1;
-    totalRow(taxLineLabel(line).toUpperCase(), formatMoney(line.amount, currency), {
-      bold: true,
-      size: 9.5,
-      gap: last ? 20 : 18,
-    });
-  });
+  totalRow("SUBTOTAL", formatMoney(subtotal, currency), { bold: true, size: 9.5 });
+  totalRow(`TAX (${invoice.taxRate}%)`, formatMoney(tax, currency), { bold: true, size: 9.5, gap: 20 });
   doc.setDrawColor(...LINE);
   doc.setLineWidth(0.9);
   doc.line(TOTALS_LABEL_LEFT, sy - 10, RIGHT, sy - 10);
-  totalRow("TOTAL", formatMoney(total, currency), { bold: true, size: 10.5, gap: reverseCharge ? 16 : 34 });
-  if (reverseCharge) {
-    doc.setFont(FONT, "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...MUTE);
-    doc.text("Tax payable by the recipient under reverse charge", RIGHT, sy, { align: "right" });
-    sy += 32;
-  }
+  totalRow("TOTAL", formatMoney(total, currency), { bold: true, size: 10.5, gap: 34 });
 
-  if (!gstOn) {
-    // Prominent balance due (right-aligned, mirrors the header).
-    doc.setFont(FONT, "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(...MUTE);
-    doc.text("BALANCE DUE", RIGHT, sy, { align: "right", charSpace: 0.6 });
-    sy += 24;
-    doc.setFont(FONT, "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(...INK);
-    doc.text(formatMoneyWithCode(total, currency), RIGHT, sy, { align: "right" });
-    sy += 10;
-    doc.setDrawColor(...LINE);
-    doc.setLineWidth(1);
-    doc.line(TOTALS_LABEL_LEFT, sy, RIGHT, sy);
-  }
+  // Prominent balance due (right-aligned, mirrors the header).
+  doc.setFont(FONT, "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...MUTE);
+  doc.text("BALANCE DUE", RIGHT, sy, { align: "right", charSpace: 0.6 });
+  sy += 24;
+  doc.setFont(FONT, "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(...INK);
+  doc.text(formatMoneyWithCode(total, currency), RIGHT, sy, { align: "right" });
+  sy += 10;
+  doc.setDrawColor(...LINE);
+  doc.setLineWidth(1);
+  doc.line(TOTALS_LABEL_LEFT, sy, RIGHT, sy);
 
-  // ---- GST: amount in words and the export declaration, left of the totals ----
-  // A GST invoice already shows the balance due in its header, so it skips the
-  // big block above and uses the empty space beside the totals instead. That
-  // keeps a short GST invoice on one page.
-  let leftY = totalsTop;
-  const sideW = TOTALS_LABEL_LEFT - 24 - LEFT;
-  const words = gstOn && currency.toUpperCase() === "INR" ? amountInWordsINR(total) : "";
-  if (words) {
+  // ---- Notes ----
+  if (invoice.notes && invoice.notes.trim()) {
+    let ny = sy + 34;
+    if (ny > PAGE_H - 90) {
+      doc.addPage();
+      ny = 72;
+    }
     doc.setFont(FONT, "bold");
     doc.setFontSize(8);
     doc.setTextColor(...MUTE);
-    doc.text("AMOUNT IN WORDS", LEFT, leftY, { charSpace: 0.6 });
-    leftY += 15;
+    doc.text("NOTES", LEFT, ny, { charSpace: 0.6 });
+    ny += 15;
     doc.setFont(FONT, "normal");
     doc.setFontSize(10);
     doc.setTextColor(...BODY);
-    const wordLines = doc.splitTextToSize(words, sideW) as string[];
-    doc.text(wordLines, LEFT, leftY);
-    leftY += wordLines.length * 12 + 10;
-  }
-  const declaration = exportDeclaration(invoice.gst);
-  if (declaration) {
-    doc.setFont(FONT, "bold");
-    doc.setFontSize(9.5);
-    doc.setTextColor(...INK);
-    const declLines = doc.splitTextToSize(declaration, sideW) as string[];
-    doc.text(declLines, LEFT, leftY);
-    leftY += declLines.length * 12 + 10;
-  }
-
-  // Everything below flows from one cursor and starts a new page when the next
-  // block would run into the footer.
-  let cy = gstOn ? Math.max(sy, leftY) + 10 : sy + 34;
-  const notes = (invoice.notes || "").trim();
-
-  if (!gstOn) {
-    // ---- Notes ----
-    if (notes) {
-      if (cy > PAGE_H - 90) {
-        doc.addPage();
-        cy = 72;
-      }
-      doc.setFont(FONT, "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(...MUTE);
-      doc.text("NOTES", LEFT, cy, { charSpace: 0.6 });
-      cy += 15;
-      doc.setFont(FONT, "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(...BODY);
-      const noteLines = doc.splitTextToSize(notes, CONTENT_W * 0.62) as string[];
-      doc.text(noteLines, LEFT, cy);
-    }
-  } else {
-    // ---- GST: notes on the left, signatory on the right ----
-    doc.setFont(FONT, "normal");
-    doc.setFontSize(10);
-    const noteLines = notes ? (doc.splitTextToSize(notes, CONTENT_W * 0.55) as string[]) : [];
-    const rowH = Math.max(noteLines.length ? 15 + noteLines.length * 11.5 : 0, 58);
-    if (cy + rowH > PAGE_H - 48) {
-      doc.addPage();
-      cy = 72;
-    }
-    if (noteLines.length) {
-      doc.setFont(FONT, "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(...MUTE);
-      doc.text("NOTES", LEFT, cy, { charSpace: 0.6 });
-      doc.setFont(FONT, "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(...BODY);
-      doc.text(noteLines, LEFT, cy + 15);
-    }
-    doc.setFont(FONT, "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(...INK);
-    doc.text(`For ${sender.name || "your business"}`, RIGHT, cy, { align: "right" });
-    doc.setDrawColor(...MUTE);
-    doc.setLineWidth(0.7);
-    doc.line(RIGHT - 170, cy + 42, RIGHT, cy + 42);
-    doc.setFont(FONT, "normal");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...MUTE);
-    doc.text("Authorised Signatory", RIGHT, cy + 55, { align: "right" });
+    const noteLines = doc.splitTextToSize(invoice.notes.trim(), CONTENT_W * 0.62) as string[];
+    doc.text(noteLines, LEFT, ny);
   }
 
   // ---- Footer ----
