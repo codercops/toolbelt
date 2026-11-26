@@ -1,11 +1,15 @@
 // Invoice generator — data model and pure helpers (no React, no DOM).
 // Shared by the client UI, the on-screen preview, and the jsPDF renderer.
 
+import { EXPORT_PLACE, placeOfSupplyLabel, stateFromGstin, stateTaxLabel, supplyKind } from "./gst";
+
 export interface LineItem {
   id: string;
   description: string;
   rate: number;
   qty: number;
+  /** HSN code for goods or SAC code for services. Shown on GST invoices. */
+  hsn?: string;
 }
 
 export interface SenderProfile {
@@ -15,12 +19,29 @@ export interface SenderProfile {
   email: string;
   /** Optional logo as a data URL (PNG/JPEG). Kept small; stored in localStorage. */
   logoDataUrl?: string;
+  /** India GST registration number, printed on GST invoices. */
+  gstin?: string;
 }
 
 export interface BillTo {
   name: string;
   email: string;
   addressLines: string[];
+  /** The client's GSTIN, if they are GST registered. */
+  gstin?: string;
+}
+
+/** India GST settings for one invoice. Off unless the sender turns it on. */
+export interface InvoiceGst {
+  enabled: boolean;
+  /** GST state code of the place of supply, e.g. "09"; "96" for an export. */
+  placeOfSupply: string;
+  /** Tax is payable by the recipient under reverse charge. */
+  reverseCharge: boolean;
+  /** Exports only: zero rated under a Letter of Undertaking instead of paying IGST. */
+  exportUnderLut: boolean;
+  /** Exports only: the LUT's ARN, printed with the export declaration. */
+  lutArn: string;
 }
 
 export interface Invoice {
@@ -40,12 +61,28 @@ export interface Invoice {
   notes: string;
   createdAt: number;
   updatedAt: number;
+  /** Missing on invoices saved before GST mode existed; treat that as off. */
+  gst?: InvoiceGst;
+}
+
+/** One tax row in the totals, e.g. CGST 9%. */
+export interface TaxLine {
+  label: string;
+  rate: number;
+  amount: number;
 }
 
 export interface InvoiceTotals {
   subtotal: number;
   tax: number;
   total: number;
+  /** The rows that make up `tax`: one "Tax" row, or the GST split. */
+  taxLines: TaxLine[];
+  /**
+   * GST reverse charge: the client pays the tax to the government, so it's
+   * shown but left out of `total`.
+   */
+  reverseCharge: boolean;
 }
 
 /** Collision-resistant id with a fallback for older browsers. */
@@ -94,7 +131,11 @@ export function roundTo(value: number, digits: number): number {
 }
 
 export function computeTotals(
-  invoice: Pick<Invoice, "items" | "taxRate"> & { currency?: string }
+  invoice: Pick<Invoice, "items" | "taxRate"> & {
+    currency?: string;
+    gst?: InvoiceGst;
+    sender?: Pick<SenderProfile, "gstin">;
+  }
 ): InvoiceTotals {
   const digits = currencyMinorDigits(invoice.currency || "USD");
   // Round each line to minor units so the printed rows actually sum to the
@@ -103,17 +144,100 @@ export function computeTotals(
     invoice.items.reduce((sum, item) => sum + roundTo(lineAmount(item), digits), 0),
     digits
   );
-  const tax = roundTo(subtotal * ((Number(invoice.taxRate) || 0) / 100), digits);
-  return { subtotal, tax, total: roundTo(subtotal + tax, digits) };
+  const rate = Number(invoice.taxRate) || 0;
+  const taxLines = invoice.gst?.enabled
+    ? gstTaxLines(subtotal, rate, invoice.gst, invoice.sender?.gstin, digits)
+    : [{ label: "Tax", rate, amount: roundTo(subtotal * (rate / 100), digits) }];
+  const tax = roundTo(
+    taxLines.reduce((sum, line) => sum + line.amount, 0),
+    digits
+  );
+  const reverseCharge = Boolean(invoice.gst?.enabled && invoice.gst.reverseCharge);
+  return {
+    subtotal,
+    tax,
+    total: roundTo(reverseCharge ? subtotal : subtotal + tax, digits),
+    taxLines,
+    reverseCharge,
+  };
+}
+
+/**
+ * The GST rows for an invoice: CGST + SGST (or UTGST) inside one state, IGST
+ * between states and on exports, nothing on an export under LUT, and a plain
+ * "GST" row until the supplier's GSTIN and the place of supply are known.
+ */
+export function gstTaxLines(
+  subtotal: number,
+  rate: number,
+  gst: InvoiceGst,
+  supplierGstin: string | undefined,
+  digits = 2
+): TaxLine[] {
+  const at = (r: number) => roundTo(subtotal * (r / 100), digits);
+  switch (supplyKind(supplierGstin, gst.placeOfSupply)) {
+    case "intra": {
+      const half = rate / 2;
+      return [
+        { label: "CGST", rate: half, amount: at(half) },
+        { label: stateTaxLabel(gst.placeOfSupply), rate: half, amount: at(half) },
+      ];
+    }
+    case "inter":
+      return [{ label: "IGST", rate, amount: at(rate) }];
+    case "export":
+      return gst.exportUnderLut
+        ? [{ label: "IGST", rate: 0, amount: 0 }]
+        : [{ label: "IGST", rate, amount: at(rate) }];
+    default:
+      return [{ label: "GST", rate, amount: at(rate) }];
+  }
+}
+
+/** The legally required export line, or "" for a domestic invoice. */
+export function exportDeclaration(gst: InvoiceGst | undefined): string {
+  if (!gst?.enabled || gst.placeOfSupply !== EXPORT_PLACE) return "";
+  if (!gst.exportUnderLut) return "Supply meant for export on payment of integrated tax.";
+  const arn = gst.lutArn.trim();
+  return `Supply meant for export under Letter of Undertaking without payment of integrated tax.${arn ? ` LUT ARN: ${arn}` : ""}`;
+}
+
+/**
+ * The GST lines printed under the sender and the client on a GST invoice:
+ * GSTINs, the place of supply, and whether reverse charge applies.
+ */
+export function gstDetailLines(
+  invoice: Pick<Invoice, "gst" | "sender" | "billTo">
+): { sender: string; billTo: string[] } {
+  const gst = invoice.gst;
+  if (!gst?.enabled) return { sender: "", billTo: [] };
+  const senderGstin = (invoice.sender.gstin ?? "").trim();
+  const clientGstin = (invoice.billTo.gstin ?? "").trim();
+  const place = placeOfSupplyLabel(gst.placeOfSupply);
+  return {
+    sender: senderGstin ? `GSTIN: ${senderGstin}` : "",
+    billTo: [
+      clientGstin ? `GSTIN: ${clientGstin}` : "",
+      place ? `Place of supply: ${place}` : "",
+      `Reverse charge: ${gst.reverseCharge ? "Yes" : "No"}`,
+    ].filter(Boolean),
+  };
+}
+
+/** "CGST (9%)", "IGST (0%)", "Tax (18%)". */
+export function taxLineLabel(line: TaxLine): string {
+  return `${line.label} (${line.rate}%)`;
 }
 
 /** "$1,800.00" / "-$200.00" — currency symbol, no code. Falls back gracefully. */
 export function formatMoney(amount: number, currency: string): string {
   const value = Number.isFinite(amount) ? amount : 0;
+  const code = (currency || "USD").toUpperCase();
   try {
-    return new Intl.NumberFormat("en-US", {
+    // Rupee amounts use Indian grouping (₹1,18,000.00), as Indian invoices do.
+    return new Intl.NumberFormat(code === "INR" ? "en-IN" : "en-US", {
       style: "currency",
-      currency: (currency || "USD").toUpperCase(),
+      currency: code,
       currencyDisplay: "symbol",
     }).format(value);
   } catch {
@@ -182,25 +306,41 @@ export const DEFAULT_SENDER: SenderProfile = {
   email: "",
 };
 
+/**
+ * GST settings for a new invoice. A sender who has saved a GSTIN gets GST
+ * invoices by default, with their own state as the place of supply.
+ */
+export function defaultGst(sender: Pick<SenderProfile, "gstin">): InvoiceGst {
+  return {
+    enabled: Boolean(sender.gstin && sender.gstin.trim()),
+    placeOfSupply: stateFromGstin(sender.gstin) ?? "",
+    reverseCharge: false,
+    exportUnderLut: false,
+    lutArn: "",
+  };
+}
+
 export function newLineItem(partial: Partial<LineItem> = {}): LineItem {
   return { id: uid(), description: "", rate: 0, qty: 1, ...partial };
 }
 
 export function emptyInvoice(sender: SenderProfile, number: string): Invoice {
   const now = Date.now();
+  const gst = defaultGst(sender);
   return {
     id: uid(),
     number,
     dateISO: todayISO(),
     dueText: "On Receipt",
-    currency: "USD",
+    currency: gst.enabled ? "INR" : "USD",
     sender: cloneSender(sender),
     billTo: { name: "", email: "", addressLines: [] },
     items: [newLineItem()],
-    taxRate: 0,
+    taxRate: gst.enabled ? 18 : 0,
     notes: "",
     createdAt: now,
     updatedAt: now,
+    gst,
   };
 }
 
@@ -225,6 +365,7 @@ export function placeholderInvoice(): Invoice {
     notes: "",
     createdAt: 0,
     updatedAt: 0,
+    gst: defaultGst(DEFAULT_SENDER),
   };
 }
 
@@ -262,6 +403,7 @@ export function cloneSender(sender: SenderProfile): SenderProfile {
     phone: sender.phone,
     email: sender.email,
     logoDataUrl: sender.logoDataUrl,
+    gstin: sender.gstin,
   };
 }
 
@@ -272,6 +414,7 @@ export function cloneInvoice(invoice: Invoice): Invoice {
     sender: cloneSender(invoice.sender),
     billTo: { ...invoice.billTo, addressLines: [...invoice.billTo.addressLines] },
     items: invoice.items.map((it) => ({ ...it })),
+    gst: invoice.gst ? { ...invoice.gst } : undefined,
   };
 }
 
