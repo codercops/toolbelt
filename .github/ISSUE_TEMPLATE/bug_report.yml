@@ -26,6 +26,7 @@ body:
         - Regex Tester
         - Markdown Live Preview
         - Unicode & Invisible Character Inspector
+        - GST invoice generator
         - Shell (theme, command palette, header)
         - Other / not sure
     validations:

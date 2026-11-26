@@ -233,7 +233,7 @@ export function ColorConverterClient() {
               Color input
             </label>
             <span className="font-mono text-[11px] text-[var(--fg-dim)]">
-              HEX · RGB · HSL
+              HEX · RGB · HSL · Names
             </span>
           </div>
 
@@ -457,7 +457,11 @@ export function ColorConverterClient() {
           <div className="card p-4 bg-[var(--bg-card)] border border-[var(--hairline)] flex items-start gap-3">
             <Sparkles className="w-4 h-4 text-[var(--fuchsia)] shrink-0 mt-0.5" />
             <p className="text-[12.5px] text-[var(--fg-muted)] leading-relaxed">
-              Accepts HEX (3, 4, 6, 8 digits), standard <code className="text-[var(--fg)]">rgb()</code> /{" "}
+              Accepts HEX with or without{" "}
+              <code className="text-[var(--fg)]">#</code> (3, 4, 6, 8 digits, e.g.{" "}
+              <code className="text-[var(--fg)]">F26DF0</code>), CSS color names (e.g.{" "}
+              <code className="text-[var(--fg)]">rebeccapurple</code>),{" "}
+              <code className="text-[var(--fg)]">rgb()</code> /{" "}
               <code className="text-[var(--fg)]">rgba()</code>, and <code className="text-[var(--fg)]">hsl()</code> /{" "}
               <code className="text-[var(--fg)]">hsla()</code> with both comma-separated and modern CSS space-separated slash syntax.
             </p>
