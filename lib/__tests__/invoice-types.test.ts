@@ -1,14 +1,18 @@
 import { describe, it, expect } from "vitest";
 import {
+  cloneInvoice,
   computeTotals,
   currencyMinorDigits,
   DEFAULT_SENDER,
   emptyInvoice,
+  exportDeclaration,
   formatMoney,
+  gstDetailLines,
   roundTo,
   nextInvoiceNumber,
   placeholderInvoice,
   type Invoice,
+  type InvoiceGst,
   type LineItem,
 } from "../invoice-types";
 
@@ -209,5 +213,130 @@ describe("placeholderInvoice", () => {
 
   it("doesn't share the default sender object", () => {
     expect(placeholderInvoice().sender).not.toBe(DEFAULT_SENDER);
+  });
+});
+
+describe("GST invoices", () => {
+  // Made-up GSTINs with correct check digits (not real registrations).
+  const UP_GSTIN = "09ABCDE1234F1ZY";
+  const CHANDIGARH_GSTIN = "04ABCDE1234F1Z8";
+
+  function gst(partial: Partial<InvoiceGst> = {}): InvoiceGst {
+    return { enabled: true, placeOfSupply: "09", reverseCharge: false, exportUnderLut: false, lutArn: "", ...partial };
+  }
+
+  function totals(placeOfSupply: string, extra: Partial<InvoiceGst> = {}, gstin = UP_GSTIN, amount = 100000) {
+    return computeTotals({
+      items: items([amount, 1]),
+      taxRate: 18,
+      currency: "INR",
+      gst: gst({ placeOfSupply, ...extra }),
+      sender: { gstin },
+    });
+  }
+
+  it("splits into CGST and SGST inside one state", () => {
+    const t = totals("09");
+    expect(t.taxLines).toEqual([
+      { label: "CGST", rate: 9, amount: 9000 },
+      { label: "SGST", rate: 9, amount: 9000 },
+    ]);
+    expect(t.tax).toBe(18000);
+    expect(t.total).toBe(118000);
+  });
+
+  it("charges IGST to another state", () => {
+    const t = totals("29");
+    expect(t.taxLines).toEqual([{ label: "IGST", rate: 18, amount: 18000 }]);
+    expect(t.total).toBe(118000);
+  });
+
+  it("uses UTGST inside a union territory without a legislature", () => {
+    const t = totals("04", {}, CHANDIGARH_GSTIN);
+    expect(t.taxLines.map((l) => l.label)).toEqual(["CGST", "UTGST"]);
+  });
+
+  it("charges nothing on an export under LUT, and IGST on one without", () => {
+    const lut = totals("96", { exportUnderLut: true });
+    expect(lut.taxLines).toEqual([{ label: "IGST", rate: 0, amount: 0 }]);
+    expect(lut.total).toBe(100000);
+    const paid = totals("96");
+    expect(paid.taxLines).toEqual([{ label: "IGST", rate: 18, amount: 18000 }]);
+    expect(paid.total).toBe(118000);
+  });
+
+  it("shows one GST row until the supplier's GSTIN is known", () => {
+    const t = totals("09", {}, "");
+    expect(t.taxLines).toEqual([{ label: "GST", rate: 18, amount: 18000 }]);
+  });
+
+  it("leaves reverse-charge tax out of the total", () => {
+    const t = totals("29", { reverseCharge: true });
+    expect(t.tax).toBe(18000);
+    expect(t.total).toBe(100000);
+    expect(t.reverseCharge).toBe(true);
+  });
+
+  it("rounds each half of the split so the rows add up to the total", () => {
+    const t = totals("09", {}, UP_GSTIN, 100.03);
+    expect(t.taxLines.map((l) => l.amount)).toEqual([9, 9]);
+    expect(t.tax).toBe(18);
+    expect(t.total).toBe(118.03);
+  });
+
+  it("keeps the plain tax row when GST is off or missing", () => {
+    const off = computeTotals({ items: items([100, 1]), taxRate: 18, gst: gst({ enabled: false }), sender: { gstin: UP_GSTIN } });
+    expect(off.taxLines).toEqual([{ label: "Tax", rate: 18, amount: 18 }]);
+    const old = computeTotals({ items: items([100, 1]), taxRate: 18 });
+    expect(old.taxLines).toEqual([{ label: "Tax", rate: 18, amount: 18 }]);
+    expect(old.reverseCharge).toBe(false);
+  });
+
+  it("starts GST invoices for a sender with a GSTIN", () => {
+    const inv = emptyInvoice({ ...DEFAULT_SENDER, gstin: UP_GSTIN }, "CC/26-27/001");
+    expect(inv.gst).toEqual(gst({ placeOfSupply: "09" }));
+    expect(inv.currency).toBe("INR");
+    expect(inv.taxRate).toBe(18);
+    expect(inv.sender.gstin).toBe(UP_GSTIN);
+  });
+
+  it("keeps new invoices as before for a sender without a GSTIN", () => {
+    const inv = emptyInvoice(DEFAULT_SENDER, "INV0001");
+    expect(inv.gst?.enabled).toBe(false);
+    expect(inv.currency).toBe("USD");
+    expect(inv.taxRate).toBe(0);
+  });
+
+  it("copies GST settings when cloning, so edits don't leak into the saved copy", () => {
+    const inv = emptyInvoice({ ...DEFAULT_SENDER, gstin: UP_GSTIN }, "CC/26-27/001");
+    const copy = cloneInvoice(inv);
+    copy.gst!.placeOfSupply = "29";
+    expect(inv.gst!.placeOfSupply).toBe("09");
+  });
+
+  it("prints GSTINs, place of supply and reverse charge", () => {
+    const inv = emptyInvoice({ ...DEFAULT_SENDER, gstin: UP_GSTIN }, "CC/26-27/001");
+    inv.billTo.gstin = "29ABCDE1234F1ZW";
+    inv.gst = gst({ placeOfSupply: "29" });
+    expect(gstDetailLines(inv)).toEqual({
+      sender: `GSTIN: ${UP_GSTIN}`,
+      billTo: ["GSTIN: 29ABCDE1234F1ZW", "Place of supply: Karnataka (29)", "Reverse charge: No"],
+    });
+    inv.gst.enabled = false;
+    expect(gstDetailLines(inv)).toEqual({ sender: "", billTo: [] });
+  });
+
+  it("writes the export declaration only on exports", () => {
+    expect(exportDeclaration(gst({ placeOfSupply: "09" }))).toBe("");
+    expect(exportDeclaration(gst({ placeOfSupply: "96" }))).toBe("Supply meant for export on payment of integrated tax.");
+    expect(exportDeclaration(gst({ placeOfSupply: "96", exportUnderLut: true, lutArn: " AD0904260000000 " }))).toBe(
+      "Supply meant for export under Letter of Undertaking without payment of integrated tax. LUT ARN: AD0904260000000"
+    );
+    expect(exportDeclaration(undefined)).toBe("");
+  });
+
+  it("formats rupees with Indian digit grouping", () => {
+    expect(formatMoney(118000, "INR")).toBe("₹1,18,000.00");
+    expect(formatMoney(1800, "USD")).toBe("$1,800.00");
   });
 });
