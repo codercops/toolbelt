@@ -5,6 +5,7 @@ import {
   utf8ByteCount,
   codePointCount,
   INSPECTION_LIMIT,
+  EXAMPLES,
 } from "../unicode-inspector";
 
 describe("utf8ByteCount", () => {
@@ -157,6 +158,74 @@ describe("inspectUnicode", () => {
     expect(inspectUnicode("\u0600").rows[0]).toMatchObject({
       invisibleLabel: "FORMAT CHARACTER",
       intentional: true,
+    });
+  });
+
+  it("labels U+FE0F in the Emoji example as VARIATION SELECTOR-16 and intentional", () => {
+    const emojiText = EXAMPLES.find((e) => e.label === "Emoji")!.text;
+    const result = inspectUnicode(emojiText);
+    expect(result.rows[2]).toMatchObject({
+      codePoint: 0xfe0f,
+      codePointStr: "U+FE0F",
+      invisibleLabel: "VARIATION SELECTOR-16",
+      intentional: true,
+    });
+  });
+
+  it("labels variation selectors across BMP, supplementary, and Mongolian ranges", () => {
+    expect(inspectUnicode("\ufe00").rows[0]).toMatchObject({
+      invisibleLabel: "VARIATION SELECTOR-1",
+      intentional: true,
+    });
+    expect(inspectUnicode("\ufe0f").rows[0]).toMatchObject({
+      invisibleLabel: "VARIATION SELECTOR-16",
+      intentional: true,
+    });
+    expect(inspectUnicode(String.fromCodePoint(0xe0100)).rows[0]).toMatchObject({
+      invisibleLabel: "VARIATION SELECTOR-17",
+      intentional: true,
+    });
+    expect(inspectUnicode(String.fromCodePoint(0xe01ef)).rows[0]).toMatchObject({
+      invisibleLabel: "VARIATION SELECTOR-256",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u180b").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR ONE",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u180c").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR TWO",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u180d").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR THREE",
+      intentional: true,
+    });
+    expect(inspectUnicode("\u180f").rows[0]).toMatchObject({
+      invisibleLabel: "MONGOLIAN FREE VARIATION SELECTOR FOUR",
+      intentional: true,
+    });
+  });
+
+  it("labels every code point that matches \\p{Default_Ignorable_Code_Point}", () => {
+    const unlabelled: string[] = [];
+    for (let cp = 0; cp <= 0x10ffff; cp++) {
+      if (cp >= 0xd800 && cp <= 0xdfff) continue;
+      const char = String.fromCodePoint(cp);
+      if (/\p{Default_Ignorable_Code_Point}/u.test(char)) {
+        const row = inspectUnicode(char).rows[0];
+        if (row.invisibleLabel === null) {
+          unlabelled.push(`U+${cp.toString(16).toUpperCase().padStart(4, "0")}`);
+        }
+      }
+    }
+    expect(unlabelled).toEqual([]);
+  });
+
+  it("falls back to DEFAULT IGNORABLE for unlisted default ignorable characters", () => {
+    expect(inspectUnicode("\u2065").rows[0]).toMatchObject({
+      invisibleLabel: "DEFAULT IGNORABLE",
+      intentional: false,
     });
   });
 
