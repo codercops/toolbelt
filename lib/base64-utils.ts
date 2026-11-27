@@ -161,6 +161,30 @@ export function splitLines(s: string, n = 76): string {
   return out.join("\n");
 }
 
+/**
+ * How much of the encoded output the File tab renders. A 20 MB file produces
+ * ~28M characters; putting all of them in one `<pre>` stalls the page (#497),
+ * while Copy and the `.b64` download still need the full string.
+ */
+export const BASE64_PREVIEW_LIMIT = 64 * 1024;
+
+export interface Base64Preview {
+  /** The part of the value that may be rendered. */
+  text: string;
+  /** Whether `text` is shorter than the value. */
+  truncated: boolean;
+  /** Length of the full value, in characters. */
+  total: number;
+  /** Number of characters kept in `text`. */
+  shown: number;
+}
+
+export function base64Preview(value: string, limit = BASE64_PREVIEW_LIMIT): Base64Preview {
+  const total = value.length;
+  const shown = Math.min(total, Math.max(0, limit));
+  return { text: value.slice(0, shown), truncated: total > shown, total, shown };
+}
+
 export interface Base64DataUri {
   /** The media type, or "text/plain" when the URI leaves it out (`data:;base64,...`). */
   mediaType: string;

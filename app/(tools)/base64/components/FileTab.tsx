@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Upload, Download, File as FileIcon, Layers } from "lucide-react";
 import { CopyButton } from "@/components/shared/CopyButton";
-import { bytesToBase64, formatBytes, splitLines } from "@/lib/base64-utils";
+import { base64Preview, bytesToBase64, formatBytes, splitLines } from "@/lib/base64-utils";
 import { downloadBlob } from "@/lib/download";
 import { useToast } from "@/components/shared/Toast";
 import { cn } from "@/lib/cn";
@@ -80,7 +80,13 @@ export function FileTab() {
     push("Downloaded .b64", "success");
   }
 
-  const displayed = info ? (chunked ? splitLines(info.base64) : info.base64) : "";
+  // The full string still goes to Copy and the .b64 download; only what the page
+  // renders is capped, because a big file in one <pre> stalls it (#497).
+  const full = useMemo(
+    () => (info ? (chunked ? splitLines(info.base64) : info.base64) : ""),
+    [info, chunked]
+  );
+  const preview = useMemo(() => base64Preview(full), [full]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
@@ -183,7 +189,7 @@ export function FileTab() {
         <div className="card overflow-hidden animate-fade-in">
           <div className="flex items-center justify-between flex-wrap gap-2 px-3 py-2 border-b border-[var(--hairline)] bg-[var(--bg-raise)]">
             <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[var(--amber)]">
-              Base64 · {formatBytes(new Blob([displayed]).size)}
+              Base64 · {formatBytes(full.length)}
             </span>
             <div className="flex items-center gap-2">
               <div className="segmented" role="group" aria-label="Line length">
@@ -195,7 +201,7 @@ export function FileTab() {
                 </button>
               </div>
               <CopyButton
-                value={displayed}
+                value={full}
                 ariaLabel={`Copy ${info.name} as Base64`}
                 className="py-1"
               />
@@ -206,8 +212,13 @@ export function FileTab() {
             </div>
           </div>
           <pre className="p-4 font-mono text-[12px] leading-[1.65] text-[var(--amber)] whitespace-pre-wrap break-all max-h-[420px] overflow-auto">
-            {displayed}
+            {preview.text}
           </pre>
+          {preview.truncated ? (
+            <p className="px-4 py-2 border-t border-[var(--hairline)] font-mono text-[10.5px] text-[var(--fg-muted)]">
+              Showing the first {preview.shown.toLocaleString("en-US")} of {preview.total.toLocaleString("en-US")} characters. Copy and .b64 keep the full output.
+            </p>
+          ) : null}
         </div>
       ) : batch ? (
         <div className="card overflow-hidden animate-fade-in">
@@ -245,7 +256,8 @@ export function FileTab() {
                   />
                 </div>
                 <pre className="mt-1 font-mono text-[11px] text-[var(--amber)] max-h-12 overflow-hidden opacity-80 truncate">
-                  {b.base64.slice(0, 160)}...
+                  {b.base64.slice(0, 160)}
+                  {b.base64.length > 160 ? "..." : ""}
                 </pre>
               </div>
             ))}
