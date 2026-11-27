@@ -234,7 +234,7 @@ function getInvisibleInfo(cp: number, char: string): { label: string | null; int
       return { label: "FORMAT CHARACTER", intentional: true };
     }
     if (/\p{Default_Ignorable_Code_Point}/u.test(char)) {
-      return { label: "DEFAULT IGNORABLE", intentional: true };
+      return { label: "DEFAULT IGNORABLE", intentional: false };
     }
   }
   return { label: null, intentional: false };

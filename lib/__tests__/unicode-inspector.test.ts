@@ -217,6 +217,13 @@ describe("inspectUnicode", () => {
     expect(unlabelled).toEqual([]);
   });
 
+  it("labels unassigned Default_Ignorable_Code_Point characters as amber (intentional: false)", () => {
+    expect(inspectUnicode(String.fromCodePoint(0xe0080)).rows[0]).toMatchObject({
+      invisibleLabel: "DEFAULT IGNORABLE",
+      intentional: false,
+    });
+  });
+
   it("reports correct UTF-16 offsets and counts for mixed characters", () => {
     const result = inspectUnicode("A😀B");
     expect(result.utf16Count).toBe(4);
